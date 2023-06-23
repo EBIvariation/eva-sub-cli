@@ -58,5 +58,5 @@ class StudySubmitter:
 
 
 if __name__ == "__main__":
-    submitter = StudySubmitter(WEBIN_SUBMIT_ENDPOINT="http://localhost:8080/v1/submission/initiate/webin")
+    submitter = StudySubmitter()
     submitter.auth_prompt()
