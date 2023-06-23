@@ -11,17 +11,20 @@ class StudySubmitter:
         self.WEBIN_SUBMIT_ENDPOINT = WEBIN_SUBMIT_ENDPOINT
 
     # TODO
-    def initiate_submit_with_lsri_auth(self):
+    def submit_with_lsri_auth(self):
         return NotImplementedError
 
     # TODO
     def upload_submission(self, submission_id, submission_upload_url):
         pass
 
-    def initiate_submit_with_webin_auth(self):
-        print("Proceeding with ENA Webin authentication...")
+    def _get_webin_credentials(self):
         username = input("Enter your ENA Webin username: ")
         password = getpass("Enter your ENA Webin password: ")
+        return username, password
+
+    def submit_with_webin_auth(self, username, password):
+        print("Proceeding with ENA Webin authentication...")
 
         headers = {"accept": "*/*", "Content-Type": "application/json"}
         data = {"authRealms": ["ENA"], "username": username, "password": password}
@@ -45,9 +48,10 @@ class StudySubmitter:
         choice = int(input("Enter the number corresponding to your choice: "))
 
         if choice == 1:
-            self.initiate_submit_with_webin_auth()
+            webin_username, webin_password = self._get_webin_credentials()
+            self.submit_with_webin_auth(webin_username, webin_password)
         elif choice == 2:
-            self.initiate_submit_with_lsri_auth()
+            self.submit_with_lsri_auth()
         else:
             print("Invalid choice! Try again!")
             self.auth_prompt()
