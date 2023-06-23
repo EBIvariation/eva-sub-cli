@@ -2,4 +2,5 @@ pyyaml
 jinja2
 minify_html
 openpyxl
+requests
 jsonschema
