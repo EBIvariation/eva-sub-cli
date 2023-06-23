@@ -33,7 +33,7 @@ class StudySubmitter:
             response = requests.post(self.WEBIN_SUBMIT_ENDPOINT + "/" + webin_token)
             response_json = json.loads(response.text)
             print("Submission ID {} received!!".format(response_json["submissionId"]))
-
+            self.upload_submission(response_json["submissionId"], response_json["uploadUrl"])
         else:
             print("Authentication failed")
 
