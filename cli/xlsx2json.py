@@ -2,11 +2,11 @@
 import argparse
 import datetime
 import json
-import logging
 from json import JSONEncoder
 
 import openpyxl
 import yaml
+from ebi_eva_common_pyutils.logger import logging_config
 from openpyxl.reader.excel import load_workbook
 from openpyxl.workbook import Workbook
 
@@ -23,6 +23,8 @@ SAMPLE_ACCESSION_KEY = 'Sample Accession'
 SAMPLE_NAME_KEY = 'Sample Name'
 SCIENTIFIC_NAME_KEY = 'Scientific Name'
 SPECIES = 'species'
+
+logger = logging_config.get_logger(__name__)
 
 
 class DateTimeEncoder(JSONEncoder):
@@ -51,7 +53,7 @@ class XlsxParser:
         try:
             self.workbook = load_workbook(xlsx_filename, read_only=True)
         except Exception as e:
-            logging.error('Error loading %s', xlsx_filename)
+            logger.error('Error loading %s', xlsx_filename)
             raise e
         self.worksheets = None
         self._active_worksheet = None
@@ -147,7 +149,7 @@ class XlsxParser:
         """
         worksheet = self.active_worksheet
         if worksheet is None:
-            logging.warning('No worksheet is specified!')
+            logger.warning('No worksheet is specified!')
             return None
 
         if worksheet not in self.row_offset:
@@ -193,7 +195,7 @@ class XlsxParser:
     def get_project_json_data(self):
         project_data = self.get_rows()
         if len(project_data) > 1:
-            logging.warning(f"{PROJECT} worksheet expects a single row of info but more than one found in the file. "
+            logger.warning(f"{PROJECT} worksheet expects a single row of info but more than one found in the file. "
                             f"Only the first row's data will be taken into consideration")
 
         first_row = project_data[0]
@@ -288,7 +290,7 @@ class XlsxParser:
             return self.xlsx_conf[title][REQUIRED_HEADERS_KEY_NAME][header]
         if header in self.xlsx_conf[title].get(OPTIONAL_HEADERS_KEY_NAME, {}):
             return self.xlsx_conf[title][OPTIONAL_HEADERS_KEY_NAME][header]
-        logging.warning(
+        logger.warning(
             f'Header {header} in {title} sheet does not have translation in the config file. Leave it as is')
         return header
 
@@ -328,6 +330,7 @@ def main():
                             help='Configuration file describing the expected content of the Excel spreadsheet')
 
     args = arg_parser.parse_args()
+    logging_config.add_stdout_handler()
     parser = XlsxParser(args.metadata_xlsx, args.conversion_configuration)
     parser.json(args.metadata_json)
 

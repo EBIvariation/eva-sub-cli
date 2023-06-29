@@ -2,12 +2,16 @@
 import argparse
 import gzip
 import json
-import logging
 import os
 import pathlib
+
 from collections import defaultdict
+from ebi_eva_common_pyutils.logger import logging_config
 
 import yaml
+
+
+logger = logging_config.get_logger(__name__)
 
 
 def open_gzip_if_required(input_file):
@@ -28,7 +32,7 @@ def get_samples_from_vcf(vcf_file):
                 if len(sp_line) > 9:
                     return sp_line[9:]
                 else:
-                    logging.warning(f"No Sample names found in file {vcf_file}")
+                    logger.warning(f"No Sample names found in file {vcf_file}")
                     return []
 
 
@@ -149,6 +153,7 @@ def main():
                             help='Path to the location of the results')
 
     args = arg_parser.parse_args()
+    logging_config.add_stdout_handler()
     check_sample_name_concordance(args.metadata_json, args.vcf_dir_prefix, args.output_yaml)
 
 
