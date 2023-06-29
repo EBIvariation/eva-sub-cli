@@ -34,7 +34,8 @@ class TestStudySubmitter(unittest.TestCase):
 
         # Check if the WEBIN_SUBMIT_ENDPOINT was called with the correct parameters
         mock_post.assert_any_call(
-            self.submitter.WEBIN_SUBMIT_ENDPOINT + "/mock_webin_token"
+            self.submitter.SUBMISSION_INITIATE_ENDPOINT, headers={'Accept': 'application/hal+json',
+                                                                  'Authorization': 'Bearer ' + 'mock_webin_token'}
         )
 
         # Check the total number of calls to requests.post

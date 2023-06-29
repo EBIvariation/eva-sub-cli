@@ -6,9 +6,9 @@ from getpass import getpass
 
 class StudySubmitter:
     def __init__(self, ENA_AUTH_URL="https://www.ebi.ac.uk/ena/submit/webin/auth/token",
-                 WEBIN_SUBMIT_ENDPOINT ="http://www.ebi.ac.uk/eva/v1/submission/initiate/webin"):
+                 SUBMISSION_INITIATE_ENDPOINT ="http://www.ebi.ac.uk/eva/v1/submission/initiate/webin"):
         self.ENA_AUTH_URL = ENA_AUTH_URL
-        self.WEBIN_SUBMIT_ENDPOINT = WEBIN_SUBMIT_ENDPOINT
+        self.SUBMISSION_INITIATE_ENDPOINT = SUBMISSION_INITIATE_ENDPOINT
 
     # TODO
     def submit_with_lsri_auth(self):
@@ -33,7 +33,9 @@ class StudySubmitter:
         if response.status_code == 200:
             print("Authentication successful")
             webin_token = response.text
-            response = requests.post(self.WEBIN_SUBMIT_ENDPOINT + "/" + webin_token)
+            response = requests.post(self.SUBMISSION_INITIATE_ENDPOINT,
+                                     headers={'Accept': 'application/hal+json',
+                                              'Authorization': 'Bearer ' + webin_token})
             response_json = json.loads(response.text)
             print("Submission ID {} received!!".format(response_json["submissionId"]))
             self.upload_submission(response_json["submissionId"], response_json["uploadUrl"])
