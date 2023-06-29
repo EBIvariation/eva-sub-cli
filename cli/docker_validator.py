@@ -1,14 +1,14 @@
 import argparse
 import csv
-import logging
 import os
 import subprocess
 import time
 
 from cli import ETC_DIR
 from cli.reporter import Reporter
+from ebi_eva_common_pyutils.logger import logging_config
 
-logging.basicConfig(format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p', level='INFO')
+logger = logging_config.get_logger(__name__)
 
 container_image = 'eva_sub_cli'
 container_validation_dir = '/opt/vcf_validation'
@@ -19,8 +19,8 @@ def run_command_with_output(command_description, command, return_process_output=
                             log_error_stream_to_output=False):
     process_output = ""
 
-    logging.info(f"Starting process: {command_description}")
-    logging.info(f"Running command: {command}")
+    logger.info(f"Starting process: {command_description}")
+    logger.info(f"Running command: {command}")
 
     stdout = subprocess.PIPE
     # Some utilities output non-error messages to error stream. This is a workaround for that
@@ -29,18 +29,18 @@ def run_command_with_output(command_description, command, return_process_output=
                           shell=True) as process:
         for line in iter(process.stdout.readline, ''):
             line = str(line).rstrip()
-            logging.info(line)
+            logger.info(line)
             if return_process_output:
                 process_output += line + "\n"
         if not log_error_stream_to_output:
             for line in iter(process.stderr.readline, ''):
                 line = str(line).rstrip()
-                logging.error(line)
+                logger.error(line)
     if process.returncode != 0:
-        logging.error(f"{command_description} - failed! Refer to the error messages for details.")
+        logger.error(f"{command_description} - failed! Refer to the error messages for details.")
         raise subprocess.CalledProcessError(process.returncode, process.args)
     else:
-        logging.info(f"{command_description} - completed successfully")
+        logger.info(f"{command_description} - completed successfully")
     if return_process_output:
         return process_output
 
@@ -120,7 +120,7 @@ class DockerValidator(Reporter):
                 f"{self.docker_path} cp {self.container_name}:{container_validation_output_dir} {self.output_dir}"
             )
         except subprocess.CalledProcessError as ex:
-            logging.error(ex)
+            logger.error(ex)
 
     def check_if_file_missing(self):
         files_missing = False
@@ -147,16 +147,16 @@ class DockerValidator(Reporter):
                 f"{self.docker_path} --version"
             )
         except subprocess.CalledProcessError as ex:
-            logging.error(ex)
+            logger.error(ex)
             raise RuntimeError(f"Please make sure docker ({self.docker_path}) is installed and available on the path")
 
     def verify_container_is_running(self):
         container_run_cmd_ouptut = run_command_with_output("check if container is running", f"{self.docker_path} ps")
         if container_run_cmd_ouptut is not None and self.container_name in container_run_cmd_ouptut:
-            logging.info(f"Container ({self.container_name}) is running")
+            logger.info(f"Container ({self.container_name}) is running")
             return True
         else:
-            logging.info(f"Container ({self.container_name}) is not running")
+            logger.info(f"Container ({self.container_name}) is not running")
             return False
 
     def verify_container_is_stopped(self):
@@ -165,20 +165,20 @@ class DockerValidator(Reporter):
             f"{self.docker_path} ps -a"
         )
         if container_stop_cmd_ouptut is not None and self.container_name in container_stop_cmd_ouptut:
-            logging.info(f"Container ({self.container_name}) is in stop state")
+            logger.info(f"Container ({self.container_name}) is in stop state")
             return True
         else:
-            logging.info(f"Container ({self.container_name}) is not in stop state")
+            logger.info(f"Container ({self.container_name}) is not in stop state")
             return False
 
     def try_restarting_container(self):
-        logging.info(f"Trying to restart container {self.container_name}")
+        logger.info(f"Trying to restart container {self.container_name}")
         try:
             run_command_with_output("Try restarting container", f"{self.docker_path} start {self.container_name}")
             if not self.verify_container_is_running():
                 raise RuntimeError(f"Container ({self.container_name}) could not be restarted")
         except subprocess.CalledProcessError as ex:
-            logging.error(ex)
+            logger.error(ex)
             raise RuntimeError(f"Container ({self.container_name}) could not be restarted")
 
     def verify_image_available_locally(self):
@@ -187,14 +187,14 @@ class DockerValidator(Reporter):
             f"{self.docker_path} images"
         )
         if container_images_cmd_ouptut is not None and container_image in container_images_cmd_ouptut:
-            logging.info(f"Container ({container_image}) image is available locally")
+            logger.info(f"Container ({container_image}) image is available locally")
             return True
         else:
-            logging.info(f"Container ({container_image}) image is not available locally")
+            logger.info(f"Container ({container_image}) image is not available locally")
             return False
 
     def run_container(self):
-        logging.info(f"Trying to run container {self.container_name}")
+        logger.info(f"Trying to run container {self.container_name}")
         try:
             run_command_with_output(
                 "Try running container",
@@ -205,7 +205,7 @@ class DockerValidator(Reporter):
             if not self.verify_container_is_running():
                 raise RuntimeError(f"Container ({self.container_name}) could not be started")
         except subprocess.CalledProcessError as ex:
-            logging.error(ex)
+            logger.error(ex)
             raise RuntimeError(f"Container ({self.container_name}) could not be started")
 
     def stop_running_container(self):
@@ -216,13 +216,13 @@ class DockerValidator(Reporter):
             )
 
     def download_container_image(self):
-        logging.info(f"Pulling container ({container_image}) image")
+        logger.info(f"Pulling container ({container_image}) image")
         try:
             run_command_with_output("pull container image", f"{self.docker_path} pull {container_image}")
             if not self.run_container():
                 raise RuntimeError(f"Container ({self.container_name}) could not be started")
         except subprocess.CalledProcessError as ex:
-            logging.error(ex)
+            logger.error(ex)
             raise RuntimeError(f"Cannot pull container ({container_image}) image")
 
     def verify_docker_env(self):
@@ -282,6 +282,7 @@ if __name__ == "__main__":
     docker_path = args.docker_path if args.docker_path else 'docker'
     docker_container_name = args.container_name if args.container_name else container_image
 
+    logging_config.add_stdout_handler()
     validator = DockerValidator(args.vcf_files_mapping, args.output_dir, args.metadata_json, args.metadata_xlsx,
                                 docker_container_name, docker_path)
     validator.validate()

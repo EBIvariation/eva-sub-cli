@@ -4,3 +4,4 @@ minify_html
 openpyxl
 requests
 jsonschema
+ebi_eva_common_pyutils==0.5.6
