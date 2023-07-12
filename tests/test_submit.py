@@ -29,14 +29,14 @@ class TestStudySubmitter(unittest.TestCase):
 
         # Check if the ENA_AUTH_URL was called with the correct parameters
         mock_post.assert_any_call(
-            self.submitter.ENA_AUTH_URL,
+            self.submitter.ena_auth_url,
             headers={"accept": "*/*", "Content-Type": "application/json"},
             data=json.dumps({"authRealms": ["ENA"], "username": "mock_username", "password": "mock_password"}),
         )
 
         # Check if the WEBIN_SUBMIT_ENDPOINT was called with the correct parameters
         mock_post.assert_any_call(
-            self.submitter.SUBMISSION_INITIATE_WEBIN_URL, headers={'Accept': 'application/hal+json',
+            self.submitter.submission_initiate_webin_url, headers={'Accept': 'application/hal+json',
                                                                   'Authorization': 'Bearer ' + 'mock_webin_token'}
         )
 
@@ -70,7 +70,7 @@ class TestStudySubmitter(unittest.TestCase):
 
         # Check if the post-authentication call to eva-submission-ws was called with the correct parameters
         mock_post.assert_any_call(
-            self.submitter.SUBMISSION_INITIATE_LSRI_URL, headers={'Accept': 'application/hal+json'},
+            self.submitter.submission_initiate_lsri_url, headers={'Accept': 'application/hal+json'},
             params={'deviceCode': 'device_code', 'expiresIn': 600}
         )
 
