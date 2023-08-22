@@ -14,11 +14,8 @@ RUN curl -LJo /usr/local/bin/vcf_validator  https://github.com/EBIvariation/vcf-
     && chmod 755 /usr/local/bin/vcf_assembly_checker /usr/local/bin/vcf_validator
 
 # Install biovalidator and make it executable
-# FIXME: remove hack to make executable when https://github.com/elixir-europe/biovalidator/pull/70 is merged
 RUN git clone https://github.com/elixir-europe/biovalidator.git  \
     && cd biovalidator  \
-    && bash -c "cat <(echo '#!/usr/bin/env node') <(cat src/biovalidator.js) > tmp"  \
-    && mv tmp src/biovalidator.js \
     && chmod +x src/biovalidator.js \
     && sed -i 's/dist/src/' package.json \
     && npm install \

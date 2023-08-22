@@ -58,7 +58,7 @@ class TestDockerValidator(TestCase):
             mapping_file=self.mapping_file,
             output_dir=self.output_dir,
             metadata_json=self.metadata_json,
-            container_name='test'
+            container_name='eva-sub-cli-test'
         )
         shutil.copyfile(
             os.path.join(self.resources_folder, 'EVA_Submission_template.V1.1.4.xlsx'),
@@ -69,12 +69,14 @@ class TestDockerValidator(TestCase):
             mapping_file=self.mapping_file,
             output_dir=self.output_dir,
             metadata_xlsx=self.metadata_xlsx,
-            container_name='test'
+            container_name='eva-sub-cli-test'
         )
 
     def tearDown(self):
         if os.path.exists(self.test_run_dir):
             shutil.rmtree(self.test_run_dir)
+        self.validator.stop_running_container()
+        self.validator_from_excel.stop_running_container()
 
     def test_validate(self):
         # run validation in docker

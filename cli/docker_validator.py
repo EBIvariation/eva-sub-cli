@@ -163,11 +163,11 @@ class DockerValidator(Reporter):
             return False
 
     def verify_container_is_stopped(self):
-        container_stop_cmd_ouptut = run_command_with_output(
+        container_stop_cmd_output = run_command_with_output(
             "check if container is stopped",
             f"{self.docker_path} ps -a"
         )
-        if container_stop_cmd_ouptut is not None and self.container_name in container_stop_cmd_ouptut:
+        if container_stop_cmd_output is not None and self.container_name in container_stop_cmd_output:
             logger.info(f"Container ({self.container_name}) is in stop state")
             return True
         else:
