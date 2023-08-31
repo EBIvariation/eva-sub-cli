@@ -49,6 +49,15 @@ class TestReporter(TestCase):
             }
         }
         self.reporter._collect_validation_workflow_results()
+
+        # Drop report paths from comparison (test will fail if missing)
+        del self.reporter.results['metadata_check']['report_path']
+        del self.reporter.results['sample_check']['report_path']
+        for file in self.reporter.results['vcf_check'].values():
+            del file['report_path']
+        for file in self.reporter.results['assembly_check'].values():
+            del file['report_path']
+
         assert self.reporter.results == expected_results
 
     def test_create_report(self):

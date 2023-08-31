@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import csv
+import datetime
 import glob
 import os
 import re
@@ -23,6 +23,8 @@ class Reporter:
         self.output_dir = output_dir
         self.vcf_files = vcf_files
         self.results = {}
+        self.project_title = None  # TODO fill this from metadata?
+        self.validation_date = datetime.datetime.now()
 
     def validate(self):
         self._validate()
@@ -144,6 +146,7 @@ class Reporter:
             else:
                 valid, warning_count, error_count, critical_count, error_list, critical_list = (False, 0, 0, 1, [], ['Process failed'])
             self.results['vcf_check'][vcf_name] = {
+                'report_path': vcf_check_text_report,
                 'valid': valid,
                 'error_list': error_list,
                 'error_count': error_count,
@@ -154,7 +157,6 @@ class Reporter:
 
     def _collect_assembly_check_results(self):
         # detect output files for assembly check
-        total_error = 0
         self.results['assembly_check'] = {}
         for vcf_file in self.vcf_files:
             vcf_name = os.path.basename(vcf_file)
@@ -179,6 +181,7 @@ class Reporter:
             else:
                 error_list, mismatch_list, nb_mismatch, nb_error, match, total = (['Process failed'], [], 0, 1, 0, 0)
             self.results['assembly_check'][vcf_name] = {
+                'report_path': assembly_check_text_report,
                 'error_list': error_list,
                 'mismatch_list': mismatch_list,
                 'nb_mismatch': nb_mismatch,
@@ -191,6 +194,7 @@ class Reporter:
         sample_check_yaml = resolve_single_file_path(os.path.join(self.output_dir, 'sample_checker.yml'))
         with open(sample_check_yaml) as open_yaml:
             self.results['sample_check'] = yaml.safe_load(open_yaml)
+        self.results['sample_check']['report_path'] = sample_check_yaml
 
     def _parse_metadata_validation_results(self):
         """
@@ -212,7 +216,7 @@ class Reporter:
                 if line is None:
                     break  # EOF
                 elif not line:
-                    continue # Empty line
+                    continue  # Empty line
                 if not collect:
                     if line.startswith('Validation failed with following error(s):'):
                         collect = True
@@ -221,12 +225,14 @@ class Reporter:
                     if line is None or line2 is None:
                         break  # EOF
                     errors.append({'property': line, 'description': line2})
-        self.results['metadata_check'] = {'json_errors': errors}
+        self.results['metadata_check'] = {
+            'report_path': metadata_check_file,
+            'json_errors': errors
+        }
 
     def create_reports(self):
-        report_html = generate_html_report(self.results)
+        report_html = generate_html_report(self.results, self.validation_date, self.project_title)
         file_path = 'report.html'
         with open(file_path, "w") as f:
             f.write(report_html)
         return file_path
-

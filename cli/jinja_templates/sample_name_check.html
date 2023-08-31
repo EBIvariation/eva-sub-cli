@@ -4,18 +4,28 @@
     {% for analysis, results_for_analysis in results.get('results_per_analysis', {}).items() %}
         {% if results_for_analysis.get('difference') %}
             {% set icon = "&#10060;" %}
-            {% set row_class = "fail collapsible" %}
+            {% set row_class = "report-section fail collapsible" %}
         {% else %}
             {% set icon = "&#10004;" %}
-            {% set row_class = "pass" %}
+            {% set row_class = "report-section pass" %}
         {% endif %}
-        <li class='{{ row_class }}'>{{ icon }} {{ analysis }}: Sample names concordance check </li>
+        <div class='{{ row_class }}'>{{ icon }} {{ analysis }}: Sample names concordance check </div>
         {% if results_for_analysis.get('difference') %}
-            <div class='error-list'>
-                <ul>
-                    <li><strong> List of samples described in the metadata but not in the VCF files:</strong> {{ results_for_analysis.get('more_metadata_submitted_files')|join(", ") }}</li>
-                    <li><strong> List of samples used in the VCF files but not described in the metadata:</strong> {{ results_for_analysis.get('more_submitted_files_metadata')|join(", ") }}</li>
-                </ul>
+            <div class="error-list">
+                <div class="error-description">First 10 errors per category are below. <strong>Full report:</strong> {{ results.get('report_path', '') }}</div>
+                <table>
+                    <tr>
+                        <th>Category</th><th>Error</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Samples described in the metadata but not in the VCF files</strong></td>
+                        <td>{{ results_for_analysis.get('more_metadata_submitted_files')[:10]|join(", ") }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Samples in the VCF files but not described in the metadata</strong></td>
+                        <td>{{ results_for_analysis.get('more_submitted_files_metadata')[:10]|join(", ") }}</td>
+                    </tr>
+                </table>
             </div>
         {% endif %}
     {% endfor %}

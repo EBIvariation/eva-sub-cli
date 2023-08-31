@@ -7,27 +7,72 @@
     <meta charset="UTF-8">
     <title>Validation Report</title>
     <style>
-        table { border-collapse: collapse; }
+        body { font-family: Verdana, sans-serif; }
+
+        .logo { float: left; padding: 20px; }
+        .title { padding: 8px; }
+        header { overflow: auto; }
+        header::after { clear: both; }
+
+        section { padding: 20px 20px 10px 40px; }
+        .description { padding-bottom: 10px}
+        .error-description { padding: 10px 0px 10px}
+
+        .report-section { padding: 12px; border: 1px solid white; }
+        .active, .collapsible:hover, .fail { background-color: #e6a3ae; }
+
+        table { border-collapse: collapse; padding: 10px; }
         th, td { border: 1px solid black;  padding: 8px;  text-align: left; }
         th {  background-color: lightgrey;  }
-        tr.fail { background-color: #FFB6C1; }
-        tr.pass { background-color: #90EE90; }
+        .fail { background-color: #FFB6C1; }
+        .pass { background-color: #90EE90; }
         .error-list { display: none; }
     </style>
 </head>
 <body>
-<img src="data:image/png;base64,{{ logo_data }}" width="100" height="100">
-<h1>Validation Report</h1>
-<h2>Metadata validation results</h2>
-{{ metadata_validation_report(validation_results) }}
 
-{% for file_name in file_names %}
-    <h2>Validation results for file {{ file_name }}</h2>
-    {{ file_validation_report(validation_results, file_name) }}
-{% endfor %}
+<header>
+    <div class="logo">
+    <img src="data:image/png;base64,{{ logo_data }}" width="100" height="100" alt="EVA logo">
+        </div>
+    <div class="title">
+        {% if project_title %}
+            <h1>Validation Report: {{ project_title }}</h1>
+        {% else %}
+            <h1>Validation Report</h1>
+        {% endif %}
+        Generated at {{ validation_date }}
+    </div>
+</header>
 
-<h2>Sample name concordance check</h2>
-{{ sample_name_check_report(validation_results)}}
+<section>
+    <h2>Metadata validation results</h2>
+    <div class="description">
+        Ensures that required fields are present and values are formatted correctly.
+        For requirements, please refer to the <a href="https://www.ebi.ac.uk/eva/?Submit-Data">EVA website</a>.
+    </div>
+    {{ metadata_validation_report(validation_results) }}
+</section>
+
+<section>
+    <h2>VCF validation results</h2>
+    <div class="description">
+        Checks whether each file is compliant with the <a href="http://samtools.github.io/hts-specs/VCFv4.3.pdf">VCF specification</a>.
+        Also checks whether the variants' reference alleles match against the reference assembly.
+    </div>
+    {% for file_name in file_names %}
+        <h3>{{ file_name }}</h3>
+        {{ file_validation_report(validation_results, file_name) }}
+    {% endfor %}
+</section>
+
+<section>
+    <h2>Sample name concordance check</h2>
+    <div class="description">
+        Checks whether information in the metadata is concordant with that contained in the VCF files, in particular sample names.
+    </div>
+    {{ sample_name_check_report(validation_results)}}
+</section>
 
 <script>
     let collapsibles = document.querySelectorAll('.collapsible');
@@ -35,8 +80,13 @@
         collapsible.addEventListener('click', function() {
             this.classList.toggle('active');
             let content = this.nextElementSibling;
-            if (content.style.display === 'block') { content.style.display = 'none'; }
-            else { content.style.display = 'block'; }
+            if (content.style.display === 'block') {
+                content.style.display = 'none';
+            }
+            else {
+                content.style.display = 'block';
+                content.scrollIntoView({block: 'nearest'});
+            }
         });
     }
 </script>

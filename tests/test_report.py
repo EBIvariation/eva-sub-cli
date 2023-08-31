@@ -1,11 +1,13 @@
 # Function to generate HTML report from validation results
 import os
+import datetime
 from unittest import TestCase
 
 from cli.report import generate_html_report
 validation_results = {
     "assembly_check": {
         "input_passed.vcf": {
+            "report_path": "/path/to/assembly_passed/report",
             "error_list": [],
             "match": 247,
             "mismatch_list": [],
@@ -14,6 +16,7 @@ validation_results = {
             "total": 247,
         },
         "input_fail.vcf": {
+            "report_path": "/path/to/assembly_failed/report",
             "error_list": [],
             "match": 26,
             "mismatch_list": [
@@ -34,12 +37,14 @@ validation_results = {
     },
     "vcf_check": {
         "input_passed.vcf": {
+            'report_path': '/path/to/vcf_passed/report',
             "error_count": 0,
             "error_list": [],
             "valid": True,
             "warning_count": 0,
         },
         "input_fail.vcf": {
+            'report_path': '/path/to/vcf_failed/report',
             "critical_count": 1,
             "critical_list": ["Line 4: Error in meta-data section."],
             "error_count": 1,
@@ -49,6 +54,7 @@ validation_results = {
         },
     },
     "sample_check": {
+        'report_path': '/path/to/sample/report',
         'overall_differences': True,
         'results_per_analysis': {
             'AA': {
@@ -59,20 +65,23 @@ validation_results = {
             }
         }
     },
-    'metadata_check': {'json_errors': [
-        {'property': '.files', 'description': "should have required property 'files'"},
-        {'property': '/project.title', 'description': "should have required property 'title'"},
-        {'property': '/project.description', 'description': "should have required property 'description'"},
-        {'property': '/project.taxId', 'description': "should have required property 'taxId'"},
-        {'property': '/project.centre', 'description': "should have required property 'centre'"},
-        {'property': '/analysis/0.analysisTitle', 'description': "should have required property 'analysisTitle'"},
-        {'property': '/analysis/0.description', 'description': "should have required property 'description'"},
-        {'property': '/analysis/0.experimentType', 'description': "should have required property 'experimentType'"},
-        {'property': '/analysis/0.referenceGenome', 'description': "should have required property 'referenceGenome'"},
-        {'property': '/sample/0.bioSampleAccession', 'description': "should have required property 'bioSampleAccession'"},
-        {'property': '/sample/0.bioSampleObject', 'description': "should have required property 'bioSampleObject'"},
-        {'property': '/sample/0', 'description': 'should match exactly one schema in oneOf'}
-    ]}
+    'metadata_check': {
+        'json_errors': [
+            {'property': '.files', 'description': "should have required property 'files'"},
+            {'property': '/project.title', 'description': "should have required property 'title'"},
+            {'property': '/project.description', 'description': "should have required property 'description'"},
+            {'property': '/project.taxId', 'description': "should have required property 'taxId'"},
+            {'property': '/project.centre', 'description': "should have required property 'centre'"},
+            {'property': '/analysis/0.analysisTitle', 'description': "should have required property 'analysisTitle'"},
+            {'property': '/analysis/0.description', 'description': "should have required property 'description'"},
+            {'property': '/analysis/0.experimentType', 'description': "should have required property 'experimentType'"},
+            {'property': '/analysis/0.referenceGenome', 'description': "should have required property 'referenceGenome'"},
+            {'property': '/sample/0.bioSampleAccession', 'description': "should have required property 'bioSampleAccession'"},
+            {'property': '/sample/0.bioSampleObject', 'description': "should have required property 'bioSampleObject'"},
+            {'property': '/sample/0', 'description': 'should match exactly one schema in oneOf'}
+        ],
+        'report_path': '/path/to/metadata/report'
+    }
 }
 
 
@@ -81,7 +90,6 @@ class TestReport(TestCase):
     expected_report = os.path.join(resource_dir, 'validation_reports', 'expected_report.html')
 
     def test_generate_html_report(self):
-        report = generate_html_report(validation_results)
+        report = generate_html_report(validation_results, datetime.datetime(2023, 8, 31, 12, 34, 56), "My cool project")
         with open(self.expected_report) as open_html:
             assert report == open_html.read()
-

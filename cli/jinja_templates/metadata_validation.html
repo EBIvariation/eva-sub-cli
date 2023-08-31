@@ -1,21 +1,28 @@
 
 {% macro metadata_validation_report(validation_results) -%}
-    {% set json_errors = validation_results.get('metadata_check', {}).get('json_errors', []) %}
+    {% set results = validation_results.get('metadata_check', {}) %}
+    {% set json_errors = results.get('json_errors', []) %}
     {% if json_errors %}
         {% set icon = "&#10060;" %}
-        {% set row_class = "fail collapsible" %}
+        {% set row_class = "report-section fail collapsible" %}
     {% else %}
         {% set icon = "&#10004;" %}
-        {% set row_class = "pass" %}
+        {% set row_class = "report-section pass" %}
     {% endif %}
-    <li class='{{ row_class }}'>{{ icon }} Metadata validation check </li>
+    <div class='{{ row_class }}'>{{ icon }} Metadata validation check </div>
     {% if json_errors %}
-        <div class='error-list'>
-            <ul>
-        {% for error in json_errors %}
-                <li><strong> {{ error.get('property') }} : {{ error.get('description') }} </strong></li>
-        {% endfor %}
-            </ul>
+        <div class="error-list">
+            <div class="error-description"><strong>Full report:</strong> {{ results.get('report_path', '') }}</div>
+            <table>
+                <tr>
+                    <th>Property</th><th>Error</th>
+                </tr>
+                {% for error in json_errors %}
+                    <tr>
+                        <td><strong>{{ error.get('property') }}</strong></td><td> {{ error.get('description') }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
         </div>
     {% endif %}
 {%- endmacro %}
