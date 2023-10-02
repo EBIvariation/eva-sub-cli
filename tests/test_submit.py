@@ -24,7 +24,8 @@ class TestSubmit(unittest.TestCase):
 
         # Set the side_effect attribute to return different responses
         with patch('cli.submit.requests.post', return_value=mock_submit_response) as mock_post:
-            self.submitter.submit()
+            with patch('cli.submit.StudySubmitter.create_submission_config_file'):
+                self.submitter.submit('test_submission_directory')
         mock_post.assert_called_once_with('http://www.ebi.ac.uk/eva/v1/submission/initiate',
                                           headers={'Accept': 'application/hal+json', 'Authorization': 'Bearer a token'})
 
