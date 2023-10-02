@@ -40,7 +40,7 @@ class StudySubmitter:
 
     # TODO
     def upload_submission(self, submission_dir, submission_id=None, submission_upload_url=None):
-        if not submission_id or submission_upload_url:
+        if not submission_id or not submission_upload_url:
             submission_id, submission_upload_url = self.get_submission_id_and_upload_url(submission_dir)
         pass
 
