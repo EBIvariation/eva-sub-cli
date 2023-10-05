@@ -36,7 +36,7 @@ class StudySubmitter:
                 return submission_config_data[SUB_CLI_CONFIG_KEY_SUBMISSION_ID], submission_config_data[
                     SUB_CLI_CONFIG_KEY_SUBMISSION_UPLOAD_URL]
         else:
-            raise FileNotFoundError(f'Could not upload. No config file found for the submission in {submission_dir}')
+            raise FileNotFoundError(f'Could not upload. No config file found for the submission in {submission_dir}.')
 
     # TODO
     def upload_submission(self, submission_dir, submission_id=None, submission_upload_url=None):
