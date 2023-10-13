@@ -1,3 +1,4 @@
+#!/bin/bash env
 import csv
 import os
 from argparse import ArgumentParser
