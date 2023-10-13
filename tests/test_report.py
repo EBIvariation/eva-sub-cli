@@ -3,8 +3,8 @@ import os
 import datetime
 from unittest import TestCase
 
-from cli.report import generate_html_report
-from cli.reporter import Reporter
+from eva_sub_cli.report import generate_html_report
+from eva_sub_cli.reporter import Reporter
 
 validation_results = {
     "assembly_check": {

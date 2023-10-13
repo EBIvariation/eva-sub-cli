@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 import yaml
 
-from cli.docker_validator import DockerValidator
+from eva_sub_cli.docker_validator import DockerValidator
 
 
 class TestDockerValidator(TestCase):
@@ -58,7 +58,7 @@ class TestDockerValidator(TestCase):
             mapping_file=self.mapping_file,
             output_dir=self.output_dir,
             metadata_json=self.metadata_json,
-            container_name='eva-sub-cli-test'
+            container_name='eva-sub-eva_sub_cli-test'
         )
         shutil.copyfile(
             os.path.join(self.resources_folder, 'EVA_Submission_template.V1.1.4.xlsx'),
@@ -69,7 +69,7 @@ class TestDockerValidator(TestCase):
             mapping_file=self.mapping_file,
             output_dir=self.output_dir,
             metadata_xlsx=self.metadata_xlsx,
-            container_name='eva-sub-cli-test'
+            container_name='eva-sub-eva_sub_cli-test'
         )
 
     def tearDown(self):

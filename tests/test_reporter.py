@@ -2,7 +2,7 @@ import os.path
 import shutil
 from unittest import TestCase
 
-from cli.reporter import Reporter
+from eva_sub_cli.reporter import Reporter
 
 
 class TestReporter(TestCase):

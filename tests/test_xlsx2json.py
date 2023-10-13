@@ -4,15 +4,15 @@ from unittest import TestCase
 
 import jsonschema
 
-from cli import ETC_DIR
-from cli.xlsx2json import XlsxParser, create_xls_template_from_yaml
+from eva_sub_cli import ETC_DIR
+from eva_sub_cli.xlsx2json import XlsxParser, create_xls_template_from_yaml
 
 
 class TestXlsReader(TestCase):
     resource_dir = os.path.join(os.path.dirname(__file__), 'resources')
     conf_filename = os.path.join(ETC_DIR, 'spreadsheet2json_conf.yaml')
-    eva_schema = os.path.abspath(os.path.join(__file__, "../../cli/etc/eva_schema.json", ))
-    biosample_schema = os.path.abspath(os.path.join(__file__, "../../cli/etc/eva-biosamples.json", ))
+    eva_schema = os.path.abspath(os.path.join(__file__, "../../eva_sub_cli/etc/eva_schema.json", ))
+    biosample_schema = os.path.abspath(os.path.join(__file__, "../../eva_sub_cli/etc/eva-biosamples.json", ))
 
     def test_conversion_2_json(self) -> None:
         xls_filename = os.path.join(self.resource_dir, 'EVA_Submission_template.V1.1.4.xlsx')

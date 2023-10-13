@@ -6,7 +6,7 @@ import requests
 from ebi_eva_common_pyutils.logger import AppLogger
 from urllib3.exceptions import ResponseError
 
-from cli import LSRI_CLIENT_ID
+from eva_sub_cli import LSRI_CLIENT_ID
 
 ENA_AUTH_URL = "https://www.ebi.ac.uk/ena/submit/webin/auth/token",
 LSRI_AUTH_URL = "http://www.ebi.ac.uk/eva/v1/submission/auth/lsri"
@@ -38,7 +38,7 @@ class LSRIAuth(AppLogger):
         # Display the user code and verification URI to the user
         print(f'Please visit {verification_uri} and enter this user code: {user_code}')
         # Delegate subsequent post-authentication processing (which requires LSRI client secret) to eva-submission-ws
-        # so that we can avoid storing that client secret in eva-sub-cli
+        # so that we can avoid storing that client secret in eva-sub-eva_sub_cli
         response = requests.post(self.auth_url, timeout=expires_in,
                                  headers={'Accept': 'application/hal+json'},
                                  params={"deviceCode": device_code, "expiresIn": expires_in})

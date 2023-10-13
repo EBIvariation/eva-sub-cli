@@ -7,18 +7,18 @@ import time
 
 from ebi_eva_common_pyutils.command_utils import run_command_with_output
 
-from cli import ETC_DIR
-from cli.reporter import Reporter
+from eva_sub_cli import ETC_DIR
+from eva_sub_cli.reporter import Reporter
 from ebi_eva_common_pyutils.logger import logging_config
 
 logger = logging_config.get_logger(__name__)
 
 docker_path = 'docker'
-container_image = 'ebivariation/eva-sub-cli'
+container_image = 'ebivariation/eva-sub-eva_sub_cli'
 container_tag = 'v0.0.1.dev0'
 container_validation_dir = '/opt/vcf_validation'
 container_validation_output_dir = '/opt/vcf_validation/vcf_validation_output'
-container_etc_dir = '/opt/cli/etc'
+container_etc_dir = '/opt/eva_sub_cli/etc'
 
 
 class DockerValidator(Reporter):
@@ -49,7 +49,7 @@ class DockerValidator(Reporter):
     def get_docker_validation_cmd(self):
         if self.metadata_xlsx and not self.metadata_json:
             docker_cmd = (
-                f"{self.docker_path} exec {self.container_name} nextflow run cli/nextflow/validation.nf "
+                f"{self.docker_path} exec {self.container_name} nextflow run eva_sub_cli/nextflow/validation.nf "
                 f"--vcf_files_mapping {container_validation_dir}/{self.mapping_file} "
                 f"--metadata_xlsx {container_validation_dir}/{self.metadata_xlsx} "
                 f"--conversion_configuration {container_validation_dir}/{self.spreadsheet2json_conf} "
@@ -58,7 +58,7 @@ class DockerValidator(Reporter):
             )
         else:
             docker_cmd = (
-                f"{self.docker_path} exec {self.container_name} nextflow run cli/nextflow/validation.nf "
+                f"{self.docker_path} exec {self.container_name} nextflow run eva_sub_cli/nextflow/validation.nf "
                 f"--vcf_files_mapping {container_validation_dir}/{self.mapping_file} "
                 f"--metadata_json {container_validation_dir}/{self.metadata_json} "
                 f"--schema_dir {container_etc_dir} "

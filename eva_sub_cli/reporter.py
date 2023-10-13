@@ -7,8 +7,8 @@ import re
 import yaml
 from ebi_eva_common_pyutils.config import WritableConfig
 
-from cli import ETC_DIR, SUB_CLI_CONFIG_FILE, __version__
-from cli.report import generate_html_report
+from eva_sub_cli import ETC_DIR, SUB_CLI_CONFIG_FILE, __version__
+from eva_sub_cli.report import generate_html_report
 from ebi_eva_common_pyutils.logger import logging_config
 
 VALIDATION_RESULTS = 'validation_results'

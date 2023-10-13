@@ -7,9 +7,9 @@ from ebi_eva_common_pyutils.config import WritableConfig
 from ebi_eva_common_pyutils.logger import AppLogger
 from retry import retry
 
-from cli import SUB_CLI_CONFIG_FILE, __version__
-from cli.auth import get_auth
-from cli.reporter import READY_FOR_SUBMISSION_TO_EVA
+from eva_sub_cli import SUB_CLI_CONFIG_FILE, __version__
+from eva_sub_cli.auth import get_auth
+from eva_sub_cli.reporter import READY_FOR_SUBMISSION_TO_EVA
 
 SUB_CLI_CONFIG_KEY_SUBMISSION_ID = "submission_id"
 SUB_CLI_CONFIG_KEY_SUBMISSION_UPLOAD_URL = "submission_upload_url"

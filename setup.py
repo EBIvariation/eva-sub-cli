@@ -6,12 +6,12 @@ base_dir = abspath(dirname(__file__))
 requirements_txt = join(base_dir, 'requirements.txt')
 requirements = [l.strip() for l in open(requirements_txt) if l and not l.startswith('#')]
 
-version = open(join(base_dir, 'cli', 'VERSION')).read().strip()
+version = open(join(base_dir, 'eva_sub_cli', 'VERSION')).read().strip()
 
 setup(
-    name='eva-sub-cli',
-    packages=['cli'],
-    package_data={'eva_sub_cli': ['nextflow/*', 'etc/*']},
+    name='eva_sub_cli',
+    packages=['eva_sub_cli'],
+    package_data={'eva_sub_cli': ['nextflow/*', 'etc/*', 'VERSION']},
     version=version,
     license='Apache',
     description='EBI EVA - validation and submission command line tool',
@@ -26,7 +26,7 @@ setup(
         'Programming Language :: Python :: 3'
     ],
     scripts=[
-        join(dirname(__file__), 'cli', s)
+        join(dirname(__file__), 'eva_sub_cli', s)
         for s in ('xlsx2json.py', 'samples_checker.py', 'eva_sub_cli.py')
     ]
 )

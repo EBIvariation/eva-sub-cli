@@ -2,8 +2,8 @@ import json
 import unittest
 from unittest.mock import MagicMock, patch
 
-from cli import LSRI_CLIENT_ID
-from cli.auth import WebinAuth, LSRIAuth
+from eva_sub_cli import LSRI_CLIENT_ID
+from eva_sub_cli.auth import WebinAuth, LSRIAuth
 
 
 class TestWebinAuth(unittest.TestCase):
@@ -18,7 +18,7 @@ class TestWebinAuth(unittest.TestCase):
 
         # Call the submit_with_webin_auth method
         with patch.object(WebinAuth, '_get_webin_username_password', return_value=("mock_username", "mock_password")), \
-             patch("cli.auth.requests.post", return_value=mock_auth_response) as mock_post:
+             patch("eva_sub_cli.auth.requests.post", return_value=mock_auth_response) as mock_post:
             token = self.auth.token
 
         # Check if the ENA_AUTH_URL was called with the correct parameters
@@ -34,7 +34,7 @@ class TestLSRIAuth(unittest.TestCase):
     def setUp(self):
         self.auth = LSRIAuth()
 
-    @patch("cli.auth.requests.post")
+    @patch("eva_sub_cli.auth.requests.post")
     def test_auth_with_lsri_auth(self, mock_post):
         # Mock the response for OAuth device flow initiation
         mock_device_response = MagicMock()

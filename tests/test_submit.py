@@ -7,9 +7,9 @@ from unittest.mock import MagicMock, patch, Mock
 import yaml
 from ebi_eva_common_pyutils.config import WritableConfig
 
-from cli.eva_sub_cli import SUB_CLI_CONFIG_FILE
-from cli.reporter import READY_FOR_SUBMISSION_TO_EVA
-from cli.submit import StudySubmitter, SUB_CLI_CONFIG_KEY_SUBMISSION_ID, SUB_CLI_CONFIG_KEY_SUBMISSION_UPLOAD_URL
+from eva_sub_cli.eva_sub_cli import SUB_CLI_CONFIG_FILE
+from eva_sub_cli.reporter import READY_FOR_SUBMISSION_TO_EVA
+from eva_sub_cli.submit import StudySubmitter, SUB_CLI_CONFIG_KEY_SUBMISSION_ID, SUB_CLI_CONFIG_KEY_SUBMISSION_UPLOAD_URL
 
 
 class TestSubmit(unittest.TestCase):
@@ -19,7 +19,7 @@ class TestSubmit(unittest.TestCase):
 
     def setUp(self) -> None:
         self.token = 'a token'
-        with patch('cli.submit.get_auth', return_value=Mock(token=self.token)):
+        with patch('eva_sub_cli.submit.get_auth', return_value=Mock(token=self.token)):
             vcf_files = [os.path.join(self.resource_dir, 'vcf_files', 'example2.vcf.gz')]
             metadata_file = os.path.join(self.resource_dir, 'EVA_Submission_template.V1.1.4.xlsx')
             self.submitter = StudySubmitter(submission_dir=self.test_sub_dir, vcf_files=vcf_files,
@@ -39,7 +39,7 @@ class TestSubmit(unittest.TestCase):
                                                 'uploadUrl': 'directory to use for upload'})
 
         # Set the side_effect attribute to return different responses
-        with patch('cli.submit.requests.post', return_value=mock_submit_response) as mock_post, \
+        with patch('eva_sub_cli.submit.requests.post', return_value=mock_submit_response) as mock_post, \
                 patch.object(StudySubmitter, 'upload_submission'), \
                 patch.object(StudySubmitter, 'verify_submission_dir'), \
                 patch.object(StudySubmitter, 'update_config_with_submission_id_and_upload_url'), \
@@ -62,7 +62,7 @@ class TestSubmit(unittest.TestCase):
         sub_config.set(READY_FOR_SUBMISSION_TO_EVA, value=True)
         sub_config.write()
 
-        with patch('cli.submit.requests.post', return_value=mock_submit_response) as mock_post, \
+        with patch('eva_sub_cli.submit.requests.post', return_value=mock_submit_response) as mock_post, \
                 patch.object(StudySubmitter, 'upload_submission'):
             with self.submitter as submitter:
                 submitter.submit()
@@ -89,7 +89,7 @@ class TestSubmit(unittest.TestCase):
         assert self.submitter.sub_config['test_key'] == 'test_value'
 
     def test_sub_config_passed_as_param(self):
-        with patch('cli.submit.get_auth', return_value=Mock(token=self.token)):
+        with patch('eva_sub_cli.submit.get_auth', return_value=Mock(token=self.token)):
             sub_config = WritableConfig(self.config_file)
             with StudySubmitter(self.test_sub_dir, vcf_files=None, metadata_file=None, submission_config=sub_config) as submitter:
                 submitter.verify_submission_dir(self.test_sub_dir)
@@ -112,7 +112,7 @@ class TestSubmit(unittest.TestCase):
 
     def test_upload_file(self):
         test_url = 'http://example.com/'
-        with patch('cli.submit.requests.put') as mock_put:
+        with patch('eva_sub_cli.submit.requests.put') as mock_put:
             file_to_upload = os.path.join(self.resource_dir, 'EVA_Submission_template.V1.1.4.xlsx')
             self.submitter.upload_file(submission_upload_url=test_url, input_file=file_to_upload)
             assert mock_put.mock_calls[0][1][0] == test_url + os.path.basename(file_to_upload)

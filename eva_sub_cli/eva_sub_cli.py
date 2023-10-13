@@ -6,10 +6,10 @@ from argparse import ArgumentParser
 from ebi_eva_common_pyutils.config import WritableConfig
 from ebi_eva_common_pyutils.logger import logging_config
 
-from cli import SUB_CLI_CONFIG_FILE, __version__
-from cli.docker_validator import DockerValidator, docker_path, container_image
-from cli.reporter import READY_FOR_SUBMISSION_TO_EVA
-from cli.submit import StudySubmitter
+from eva_sub_cli import SUB_CLI_CONFIG_FILE, __version__
+from eva_sub_cli.docker_validator import DockerValidator, docker_path, container_image
+from eva_sub_cli.reporter import READY_FOR_SUBMISSION_TO_EVA
+from eva_sub_cli.submit import StudySubmitter
 
 VALIDATION_OUTPUT_DIR = "validation_output"
 VALIDATE = 'validate'
