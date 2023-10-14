@@ -27,6 +27,7 @@ def get_docker_validator(vcf_files_mapping, output_dir, metadata_json, metadata_
     return DockerValidator(vcf_files_mapping, validation_output_dir, metadata_json, metadata_xlsx,
                            container, docker, sub_config)
 
+
 def get_vcf_files(mapping_file):
     vcf_files = []
     with open(mapping_file) as open_file:
@@ -34,6 +35,7 @@ def get_vcf_files(mapping_file):
         for row in reader:
             vcf_files.append(row['vcf'])
     return vcf_files
+
 
 if __name__ == "__main__":
     argparser = ArgumentParser(description='EVA Submission CLI - validate and submit data to EVA')

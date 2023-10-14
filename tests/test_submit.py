@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch, Mock
 import yaml
 from ebi_eva_common_pyutils.config import WritableConfig
 
-from eva_sub_cli.eva_sub_cli import SUB_CLI_CONFIG_FILE
+from eva_sub_cli import SUB_CLI_CONFIG_FILE
 from eva_sub_cli.reporter import READY_FOR_SUBMISSION_TO_EVA
 from eva_sub_cli.submit import StudySubmitter, SUB_CLI_CONFIG_KEY_SUBMISSION_ID, SUB_CLI_CONFIG_KEY_SUBMISSION_UPLOAD_URL
 

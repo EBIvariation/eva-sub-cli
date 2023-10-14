@@ -25,8 +25,5 @@ setup(
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python :: 3'
     ],
-    scripts=[
-        join(dirname(__file__), 'eva_sub_cli', s)
-        for s in ('xlsx2json.py', 'samples_checker.py', 'eva_sub_cli.py')
-    ]
+    scripts=glob.glob(join(dirname(__file__), 'bin', '*.py'))
 )

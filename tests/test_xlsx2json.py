@@ -5,7 +5,7 @@ from unittest import TestCase
 import jsonschema
 
 from eva_sub_cli import ETC_DIR
-from eva_sub_cli.xlsx2json import XlsxParser, create_xls_template_from_yaml
+from bin.xlsx2json import XlsxParser, create_xls_template_from_yaml
 
 
 class TestXlsReader(TestCase):

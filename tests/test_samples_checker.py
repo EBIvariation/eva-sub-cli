@@ -3,7 +3,7 @@ from unittest import TestCase
 
 import yaml
 
-from eva_sub_cli.samples_checker import check_sample_name_concordance
+from bin.samples_checker import check_sample_name_concordance
 
 
 class TestSampleChecker(TestCase):
