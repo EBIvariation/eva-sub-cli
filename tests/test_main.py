@@ -22,6 +22,8 @@ class TestMain(unittest.TestCase):
     metadata_xlsx = os.path.join(test_sub_dir, 'sub_metadata.xlsx')
 
     def setUp(self) -> None:
+        if os.path.exists(self.test_sub_dir):
+            shutil.rmtree(self.test_sub_dir)
         os.makedirs(self.test_sub_dir)
 
     def tearDown(self) -> None:
@@ -109,6 +111,43 @@ class TestMain(unittest.TestCase):
             assert os.path.exists(self.mapping_file)
             m_docker_validator.assert_any_call(
                 self.mapping_file, self.test_sub_dir, self.metadata_json, self.metadata_xlsx,
+                submission_config=m_config.return_value
+            )
+            m_docker_validator().validate_and_report.assert_called_once_with()
+
+
+    def test_orchestrate_with_metadata_json(self):
+        shutil.copy(os.path.join(self.resource_dir, 'EVA_Submission_test.json'), self.metadata_json)
+
+        with patch('eva_sub_cli.main.WritableConfig') as m_config, \
+                patch('eva_sub_cli.main.DockerValidator') as m_docker_validator:
+            orchestrate_process(
+                self.test_sub_dir, None, None, self.metadata_json, None,
+                tasks=[VALIDATE], executor=DOCKER, resume=False
+            )
+            # Mapping file was created from the metadata_json
+            assert os.path.exists(self.mapping_file)
+            m_docker_validator.assert_any_call(
+                self.mapping_file, self.test_sub_dir, self.metadata_json, None,
+                submission_config=m_config.return_value
+            )
+            m_docker_validator().validate_and_report.assert_called_once_with()
+
+
+
+    def test_orchestrate_with_metadata_xlsx(self):
+        shutil.copy(os.path.join(self.resource_dir, 'EVA_Submission_test.xlsx'), self.metadata_xlsx)
+
+        with patch('eva_sub_cli.main.WritableConfig') as m_config, \
+                patch('eva_sub_cli.main.DockerValidator') as m_docker_validator:
+            orchestrate_process(
+                self.test_sub_dir, None, None, None, self.metadata_xlsx,
+                tasks=[VALIDATE], executor=DOCKER, resume=False
+            )
+            # Mapping file was created from the metadata_xlsx
+            assert os.path.exists(self.mapping_file)
+            m_docker_validator.assert_any_call(
+                self.mapping_file, self.test_sub_dir, None, self.metadata_xlsx,
                 submission_config=m_config.return_value
             )
             m_docker_validator().validate_and_report.assert_called_once_with()

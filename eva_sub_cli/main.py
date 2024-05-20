@@ -58,7 +58,7 @@ def create_vcf_files_mapping_from_metadata_json(csv_writer, metadata_json):
     for file in json_metadata['files']:
         assembly_fasta = analysis_alias_dict[file['analysisAlias']]['assemblyFasta']
         assembly_report = analysis_alias_dict[file['analysisAlias']]['assemblyReport']
-        csv_writer.writerow([os.path.abspath(file['fileName']), os.path.abspath(assembly_fasta), os.path.abspath(assembly_report)])
+        csv_writer.writerow([os.path.abspath(file['fileName']), os.path.abspath(assembly_fasta), os.path.abspath(assembly_report) if assembly_report else ''])
 
 
 def create_vcf_files_mapping_from_metadata_xlsx(csv_writer, metadata_xlsx):
