@@ -26,6 +26,8 @@ class TestMain(unittest.TestCase):
         if os.path.exists(self.test_sub_dir):
             shutil.rmtree(self.test_sub_dir)
         os.makedirs(self.test_sub_dir)
+        shutil.copy(os.path.join(self.resource_dir, 'EVA_Submission_test.json'), self.metadata_json)
+
 
     def tearDown(self) -> None:
         shutil.rmtree(self.test_sub_dir)
@@ -110,6 +112,11 @@ class TestMain(unittest.TestCase):
             )
             # Mapping file was created from the vcf and assembly files
             assert os.path.exists(self.mapping_file)
+            with open(self.mapping_file) as open_file:
+                reader = csv.DictReader(open_file, delimiter=',')
+                for row in reader:
+                    assert row['vcf'].__contains__('vcf_file')
+                    assert row['report'] == None
             m_docker_validator.assert_any_call(
                 self.mapping_file, self.test_sub_dir, self.metadata_json, self.metadata_xlsx,
                 submission_config=m_config.return_value
@@ -118,8 +125,6 @@ class TestMain(unittest.TestCase):
 
 
     def test_orchestrate_with_metadata_json_without_asm_report(self):
-        shutil.copy(os.path.join(self.resource_dir, 'EVA_Submission_test.json'), self.metadata_json)
-
         with patch('eva_sub_cli.main.WritableConfig') as m_config, \
                 patch('eva_sub_cli.main.DockerValidator') as m_docker_validator:
             orchestrate_process(
@@ -197,8 +202,24 @@ class TestMain(unittest.TestCase):
             )
             # Mapping file was created from the metadata_xlsx
             assert os.path.exists(self.mapping_file)
+            with open(self.mapping_file) as open_file:
+                reader = csv.DictReader(open_file, delimiter=',')
+                for row in reader:
+                    assert row['vcf'].__contains__('example')
+                    assert row['report'] == None
             m_docker_validator.assert_any_call(
                 self.mapping_file, self.test_sub_dir, None, self.metadata_xlsx,
                 submission_config=m_config.return_value
             )
             m_docker_validator().validate_and_report.assert_called_once_with()
+
+
+    def test_metadata_file_does_not_exist_error(self):
+        with self.assertRaises(Exception) as context:
+            orchestrate_process(
+                    self.test_sub_dir, None, None, None, self.metadata_xlsx,
+                    tasks=[VALIDATE], executor=DOCKER, resume=False
+            )
+        self.assertRegex(str(context.exception),r"The provided metadata file .*/resources/test_sub_dir/sub_metadata.xlsx does not exist")
+
+

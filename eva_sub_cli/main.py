@@ -45,9 +45,6 @@ def create_vcf_files_mapping(submission_dir, vcf_files, assembly_fasta, metadata
 
 
 def create_vcf_files_mapping_from_metadata_json(csv_writer, metadata_json):
-    if not os.path.exists(os.path.abspath(metadata_json)):
-        raise Exception(f'The provided metadata_json file {metadata_json} does not exist')
-
     with open(metadata_json) as file:
         json_metadata = json.load(file)
     analysis_alias_dict = defaultdict(dict)
@@ -62,9 +59,6 @@ def create_vcf_files_mapping_from_metadata_json(csv_writer, metadata_json):
 
 
 def create_vcf_files_mapping_from_metadata_xlsx(csv_writer, metadata_xlsx):
-    if not os.path.exists(os.path.abspath(metadata_xlsx)):
-        raise Exception(f'The provided metadata_xlsx file {metadata_xlsx} does not exist')
-
     workbook = load_workbook(metadata_xlsx)
 
     analysis_alias_sheet = workbook['Analysis']
@@ -95,6 +89,10 @@ def orchestrate_process(submission_dir, vcf_files, assembly_fasta, metadata_json
     # load config
     config_file_path = os.path.join(submission_dir, SUB_CLI_CONFIG_FILE)
     sub_config = WritableConfig(config_file_path, version=__version__)
+
+    metadata_file = metadata_json or metadata_xlsx
+    if not os.path.exists(os.path.abspath(metadata_file)):
+        raise Exception(f'The provided metadata file {metadata_file} does not exist')
 
     # Get the provided VCF and assembly
     vcf_files_mapping = create_vcf_files_mapping(submission_dir, vcf_files, assembly_fasta, metadata_json, metadata_xlsx)
