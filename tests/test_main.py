@@ -1,3 +1,4 @@
+import csv
 import os
 import shutil
 import unittest
@@ -116,7 +117,7 @@ class TestMain(unittest.TestCase):
             m_docker_validator().validate_and_report.assert_called_once_with()
 
 
-    def test_orchestrate_with_metadata_json(self):
+    def test_orchestrate_with_metadata_json_without_asm_report(self):
         shutil.copy(os.path.join(self.resource_dir, 'EVA_Submission_test.json'), self.metadata_json)
 
         with patch('eva_sub_cli.main.WritableConfig') as m_config, \
@@ -127,6 +128,56 @@ class TestMain(unittest.TestCase):
             )
             # Mapping file was created from the metadata_json
             assert os.path.exists(self.mapping_file)
+            with open(self.mapping_file) as open_file:
+                reader = csv.DictReader(open_file, delimiter=',')
+                for row in reader:
+                    assert row['vcf'].__contains__('example')
+                    assert row['report'] == ''
+            m_docker_validator.assert_any_call(
+                self.mapping_file, self.test_sub_dir, self.metadata_json, None,
+                submission_config=m_config.return_value
+            )
+            m_docker_validator().validate_and_report.assert_called_once_with()
+
+    def test_orchestrate_with_metadata_json_with_asm_report(self):
+        shutil.copy(os.path.join(self.resource_dir, 'EVA_Submission_test_with_asm_report.json'), self.metadata_json)
+
+        with patch('eva_sub_cli.main.WritableConfig') as m_config, \
+                patch('eva_sub_cli.main.DockerValidator') as m_docker_validator:
+            orchestrate_process(
+                self.test_sub_dir, None, None, self.metadata_json, None,
+                tasks=[VALIDATE], executor=DOCKER, resume=False
+            )
+            # Mapping file was created from the metadata_json
+            assert os.path.exists(self.mapping_file)
+            with open(self.mapping_file) as open_file:
+                reader = csv.DictReader(open_file, delimiter=',')
+                for row in reader:
+                    assert row['vcf'].__contains__('example')
+                    assert row['report'].__contains__('GCA_000001405.27_report.txt')
+            m_docker_validator.assert_any_call(
+                self.mapping_file, self.test_sub_dir, self.metadata_json, None,
+                submission_config=m_config.return_value
+            )
+            m_docker_validator().validate_and_report.assert_called_once_with()
+
+
+    def test_orchestrate_vcf_files_takes_precedence_over_metadata(self):
+        shutil.copy(os.path.join(self.resource_dir, 'EVA_Submission_test_with_asm_report.json'), self.metadata_json)
+
+        with patch('eva_sub_cli.main.WritableConfig') as m_config, \
+                patch('eva_sub_cli.main.DockerValidator') as m_docker_validator:
+            orchestrate_process(
+                self.test_sub_dir, self.vcf_files, self.assembly_fasta, self.metadata_json, None,
+                tasks=[VALIDATE], executor=DOCKER, resume=False
+            )
+            # Mapping file was created from the metadata_json
+            assert os.path.exists(self.mapping_file)
+            with open(self.mapping_file) as open_file:
+                reader = csv.DictReader(open_file, delimiter=',')
+                for row in reader:
+                    assert row['vcf'].__contains__('vcf_file')
+                    assert row['report'] == None
             m_docker_validator.assert_any_call(
                 self.mapping_file, self.test_sub_dir, self.metadata_json, None,
                 submission_config=m_config.return_value
