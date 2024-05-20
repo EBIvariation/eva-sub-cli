@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 import csv
+import json
 import os
+from collections import defaultdict
+
 from ebi_eva_common_pyutils.config import WritableConfig
+from openpyxl.reader.excel import load_workbook
 
 from eva_sub_cli import SUB_CLI_CONFIG_FILE, __version__
 from eva_sub_cli.validators.docker_validator import DockerValidator
@@ -24,28 +28,76 @@ def get_vcf_files(mapping_file):
     return vcf_files
 
 
-def create_vcf_files_mapping(submission_dir, vcf_files, assembly_fasta):
+def create_vcf_files_mapping(submission_dir, vcf_files, assembly_fasta, metadata_json, metadata_xlsx):
     mapping_file = os.path.join(submission_dir, 'vcf_mapping_file.csv')
     with open(mapping_file, 'w') as open_file:
         writer = csv.writer(open_file, delimiter=',')
         writer.writerow(['vcf', 'fasta', 'report'])
-        for vcf_file in vcf_files:
-            writer.writerow([os.path.abspath(vcf_file), os.path.abspath(assembly_fasta)])
+        if vcf_files and assembly_fasta:
+            for vcf_file in vcf_files:
+                writer.writerow([os.path.abspath(vcf_file), os.path.abspath(assembly_fasta)])
+        elif metadata_json:
+            create_vcf_files_mapping_from_metadata_json(writer, metadata_json)
+        elif metadata_xlsx:
+            create_vcf_files_mapping_from_metadata_xlsx(writer, metadata_xlsx)
+
     return mapping_file
 
 
-def orchestrate_process(submission_dir, vcf_files_mapping, vcf_files, assembly_fasta, metadata_json, metadata_xlsx,
+def create_vcf_files_mapping_from_metadata_json(csv_writer, metadata_json):
+    if not os.path.exists(os.path.abspath(metadata_json)):
+        raise Exception(f'The provided metadata_json file {metadata_json} does not exist')
+
+    with open(metadata_json) as file:
+        json_metadata = json.load(file)
+    analysis_alias_dict = defaultdict(dict)
+    for analysis in json_metadata['analysis']:
+        analysis_alias_dict[analysis['analysisAlias']]['assemblyFasta'] = analysis['assemblyFasta']
+        analysis_alias_dict[analysis['analysisAlias']]['assemblyReport'] = analysis['assemblyReport'] if 'assemblyReport' in analysis else ''
+
+    for file in json_metadata['files']:
+        assembly_fasta = analysis_alias_dict[file['analysisAlias']]['assemblyFasta']
+        assembly_report = analysis_alias_dict[file['analysisAlias']]['assemblyReport']
+        csv_writer.writerow([os.path.abspath(file['fileName']), os.path.abspath(assembly_fasta), os.path.abspath(assembly_report)])
+
+
+def create_vcf_files_mapping_from_metadata_xlsx(csv_writer, metadata_xlsx):
+    if not os.path.exists(os.path.abspath(metadata_xlsx)):
+        raise Exception(f'The provided metadata_xlsx file {metadata_xlsx} does not exist')
+
+    workbook = load_workbook(metadata_xlsx)
+
+    analysis_alias_sheet = workbook['Analysis']
+    analysis_headers = {}
+    for cell in analysis_alias_sheet[1]:
+        analysis_headers[cell.value] = cell.column - 1
+
+    analysis_alias_dict = {}
+    for row in analysis_alias_sheet.iter_rows(min_row=2, values_only=True):
+        analysis_alias = row[analysis_headers['Analysis Alias']]
+        assembly_fasta = row[analysis_headers['Assembly Fasta']]
+        analysis_alias_dict[analysis_alias] = assembly_fasta
+
+    files_sheet = workbook['Files']
+    files_headers = {}
+    for cell in files_sheet[1]:
+        files_headers[cell.value] = cell.column - 1
+
+    for row in files_sheet.iter_rows(min_row=2, values_only=True):
+        file_name = row[files_headers['File Name']]
+        analysis_alias = row[files_headers['Analysis Alias']]
+        assembly_fasta = analysis_alias_dict[analysis_alias]
+        csv_writer.writerow([os.path.abspath(file_name), os.path.abspath(assembly_fasta)])
+
+
+def orchestrate_process(submission_dir, vcf_files, assembly_fasta, metadata_json, metadata_xlsx,
                         tasks, executor, resume, username=None, password=None, **kwargs):
     # load config
     config_file_path = os.path.join(submission_dir, SUB_CLI_CONFIG_FILE)
     sub_config = WritableConfig(config_file_path, version=__version__)
 
-    # Get the provided metadata
-    metadata_file = metadata_json or metadata_xlsx
-
     # Get the provided VCF and assembly
-    if vcf_files and assembly_fasta:
-        vcf_files_mapping = create_vcf_files_mapping(submission_dir, vcf_files, assembly_fasta)
+    vcf_files_mapping = create_vcf_files_mapping(submission_dir, vcf_files, assembly_fasta, metadata_json, metadata_xlsx)
     vcf_files = get_vcf_files(vcf_files_mapping)
 
     # Validation is mandatory so if submit is requested then VALIDATE must have run before or be requested as well

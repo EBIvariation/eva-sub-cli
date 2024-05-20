@@ -166,6 +166,14 @@
             "type": "string",
             "description": "Reference against which the analysis was performed. ENA or NCBI accession (starting with GCA) accepted."
           },
+           "assemblyFasta": {
+            "type": "string",
+            "description": "The assembly in fasta format that was used to derive the VCF"
+          },
+           "assemblyReport": {
+            "type": "string",
+            "description": "The assembly report associated with the assembly as found in NCBI assemblies"
+          },
           "platform": {
             "description": "Platform used to generate the raw data.",
             "type": "string",
