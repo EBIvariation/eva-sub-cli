@@ -168,11 +168,11 @@
           },
            "assemblyFasta": {
             "type": "string",
-            "description": "The assembly in fasta format that was used to derive the VCF"
+            "description": "The path to the assembly in fasta format that was used to create the VCF. (This is a local path)"
           },
            "assemblyReport": {
             "type": "string",
-            "description": "The assembly report associated with the assembly as found in NCBI assemblies"
+            "description": "The path to the assembly report associated with the assembly as found in NCBI assemblies. (This is a local path)"
           },
           "platform": {
             "description": "Platform used to generate the raw data.",

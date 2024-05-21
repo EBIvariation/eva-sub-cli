@@ -69,7 +69,7 @@ def create_vcf_files_mapping_from_metadata_xlsx(csv_writer, metadata_xlsx):
     analysis_alias_dict = {}
     for row in analysis_alias_sheet.iter_rows(min_row=2, values_only=True):
         analysis_alias = row[analysis_headers['Analysis Alias']]
-        assembly_fasta = row[analysis_headers['Assembly Fasta']]
+        assembly_fasta = row[analysis_headers['Assembly Fasta Path']]
         analysis_alias_dict[analysis_alias] = assembly_fasta
 
     files_sheet = workbook['Files']
@@ -92,7 +92,7 @@ def orchestrate_process(submission_dir, vcf_files, assembly_fasta, metadata_json
 
     metadata_file = metadata_json or metadata_xlsx
     if not os.path.exists(os.path.abspath(metadata_file)):
-        raise Exception(f'The provided metadata file {metadata_file} does not exist')
+        raise FileNotFoundError(f'The provided metadata file {metadata_file} does not exist')
 
     # Get the provided VCF and assembly
     vcf_files_mapping = create_vcf_files_mapping(submission_dir, vcf_files, assembly_fasta, metadata_json, metadata_xlsx)

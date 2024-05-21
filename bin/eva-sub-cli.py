@@ -81,5 +81,8 @@ if __name__ == "__main__":
     logging_config.add_stdout_handler()
     logging_config.add_file_handler(os.path.join(args.submission_dir, 'eva_submission.log'), logging.DEBUG)
 
-    # Pass on all the arguments
-    main.orchestrate_process(**args.__dict__)
+    try:
+        # Pass on all the arguments
+        main.orchestrate_process(**args.__dict__)
+    except FileNotFoundError as fne:
+        print(fne)
