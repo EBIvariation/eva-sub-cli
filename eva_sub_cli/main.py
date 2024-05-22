@@ -49,13 +49,13 @@ def create_vcf_files_mapping_from_metadata_json(csv_writer, metadata_json):
         json_metadata = json.load(file)
     analysis_alias_dict = defaultdict(dict)
     for analysis in json_metadata['analysis']:
-        analysis_alias_dict[analysis['analysisAlias']]['assemblyFasta'] = analysis['assemblyFasta']
+        analysis_alias_dict[analysis['analysisAlias']]['referenceFasta'] = analysis['referenceFasta']
         analysis_alias_dict[analysis['analysisAlias']]['assemblyReport'] = analysis['assemblyReport'] if 'assemblyReport' in analysis else ''
 
     for file in json_metadata['files']:
-        assembly_fasta = analysis_alias_dict[file['analysisAlias']]['assemblyFasta']
+        reference_fasta = analysis_alias_dict[file['analysisAlias']]['referenceFasta']
         assembly_report = analysis_alias_dict[file['analysisAlias']]['assemblyReport']
-        csv_writer.writerow([os.path.abspath(file['fileName']), os.path.abspath(assembly_fasta), os.path.abspath(assembly_report) if assembly_report else ''])
+        csv_writer.writerow([os.path.abspath(file['fileName']), os.path.abspath(reference_fasta), os.path.abspath(assembly_report) if assembly_report else ''])
 
 
 def create_vcf_files_mapping_from_metadata_xlsx(csv_writer, metadata_xlsx):
@@ -69,8 +69,8 @@ def create_vcf_files_mapping_from_metadata_xlsx(csv_writer, metadata_xlsx):
     analysis_alias_dict = {}
     for row in analysis_alias_sheet.iter_rows(min_row=2, values_only=True):
         analysis_alias = row[analysis_headers['Analysis Alias']]
-        assembly_fasta = row[analysis_headers['Assembly Fasta Path']]
-        analysis_alias_dict[analysis_alias] = assembly_fasta
+        reference_fasta = row[analysis_headers['Reference Fasta Path']]
+        analysis_alias_dict[analysis_alias] = reference_fasta
 
     files_sheet = workbook['Files']
     files_headers = {}
@@ -80,8 +80,8 @@ def create_vcf_files_mapping_from_metadata_xlsx(csv_writer, metadata_xlsx):
     for row in files_sheet.iter_rows(min_row=2, values_only=True):
         file_name = row[files_headers['File Name']]
         analysis_alias = row[files_headers['Analysis Alias']]
-        assembly_fasta = analysis_alias_dict[analysis_alias]
-        csv_writer.writerow([os.path.abspath(file_name), os.path.abspath(assembly_fasta)])
+        reference_fasta = analysis_alias_dict[analysis_alias]
+        csv_writer.writerow([os.path.abspath(file_name), os.path.abspath(reference_fasta)])
 
 
 def orchestrate_process(submission_dir, vcf_files, assembly_fasta, metadata_json, metadata_xlsx,

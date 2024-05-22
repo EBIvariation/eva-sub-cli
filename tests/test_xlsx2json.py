@@ -109,7 +109,7 @@ class TestXlsReader(TestCase):
                     "description": "An example analysis for demonstration purposes",
                     "experimentType": "Whole genome sequencing",
                     "referenceGenome": "GCA_000001405.27",
-                    "assemblyFasta": "GCA_000001405.27_fasta.fa",
+                    "referenceFasta": "GCA_000001405.27_fasta.fa",
                     "platform": "BGISEQ-500"
                 },
                 {
@@ -118,7 +118,7 @@ class TestXlsReader(TestCase):
                     "description": "An example analysis for demonstration purposes",
                     "experimentType": "Whole genome sequencing",
                     "referenceGenome": "GCA_000001405.27",
-                    "assemblyFasta": "GCA_000001405.27_fasta.fa",
+                    "referenceFasta": "GCA_000001405.27_fasta.fa",
                     "platform": "BGISEQ-500"
                 },
                 {
@@ -127,7 +127,7 @@ class TestXlsReader(TestCase):
                     "description": "An example analysis for demonstration purposes",
                     "experimentType": "Whole genome sequencing",
                     "referenceGenome": "GCA_000001405.27",
-                    "assemblyFasta": "GCA_000001405.27_fasta.fa",
+                    "referenceFasta": "GCA_000001405.27_fasta.fa",
                     "platform": "BGISEQ-500"
                 }
             ],

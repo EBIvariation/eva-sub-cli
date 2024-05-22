@@ -53,7 +53,7 @@ Analysis:
     Experiment Type: experimentType
     Reference: referenceGenome
   optional:
-    Assembly Fasta Path: assemblyFasta
+    Reference Fasta Path: referenceFasta
     Platform: platform
     Software: software
     Pipeline Description: pipelineDescriptions

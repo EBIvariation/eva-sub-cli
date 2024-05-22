@@ -166,13 +166,13 @@
             "type": "string",
             "description": "Reference against which the analysis was performed. ENA or NCBI accession (starting with GCA) accepted."
           },
-           "assemblyFasta": {
+           "referenceFasta": {
             "type": "string",
-            "description": "The path to the assembly in fasta format that was used to create the VCF. (This is a local path)"
+            "description": "The path to the reference in fasta format that was used to create the VCF. (This is a local path)"
           },
            "assemblyReport": {
             "type": "string",
-            "description": "The path to the assembly report associated with the assembly as found in NCBI assemblies. (This is a local path)"
+            "description": "The path to the assembly report associated with the assembly as found in NCBI assemblies. (This is a local path and only applicable for GCAs)"
           },
           "platform": {
             "description": "Platform used to generate the raw data.",
