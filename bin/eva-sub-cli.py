@@ -16,8 +16,8 @@ from eva_sub_cli.file_utils import is_submission_dir_writable
 
 
 def validate_command_line_arguments(args, argparser):
-    if (args.vcf_files and not args.assembly_fasta) or (not args.vcf_files and args.assembly_fasta):
-        print("When using --vcf_files and --assembly_fasta, both need to be specified")
+    if (args.vcf_files and not args.reference_fasta) or (not args.vcf_files and args.reference_fasta):
+        print("When using --vcf_files and --reference_fasta, both need to be specified")
         argparser.print_usage()
         sys.exit(1)
 
@@ -51,7 +51,7 @@ if __name__ == "__main__":
         "for different VCF files then use --vcf_file_mapping"
     )
     vcf_group.add_argument('--vcf_files', nargs='+', help="One or several vcf files to validate")
-    vcf_group.add_argument('--assembly_fasta',
+    vcf_group.add_argument('--reference_fasta',
                            help="The fasta file containing the reference genome from which the variants were derived")
 
     metadata_group = argparser.add_argument_group('Metadata', 'Specify the metadata in a spreadsheet or in a JSON file')

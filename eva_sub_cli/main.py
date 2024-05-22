@@ -28,14 +28,14 @@ def get_vcf_files(mapping_file):
     return vcf_files
 
 
-def create_vcf_files_mapping(submission_dir, vcf_files, assembly_fasta, metadata_json, metadata_xlsx):
+def create_vcf_files_mapping(submission_dir, vcf_files, reference_fasta, metadata_json, metadata_xlsx):
     mapping_file = os.path.join(submission_dir, 'vcf_mapping_file.csv')
     with open(mapping_file, 'w') as open_file:
         writer = csv.writer(open_file, delimiter=',')
         writer.writerow(['vcf', 'fasta', 'report'])
-        if vcf_files and assembly_fasta:
+        if vcf_files and reference_fasta:
             for vcf_file in vcf_files:
-                writer.writerow([os.path.abspath(vcf_file), os.path.abspath(assembly_fasta)])
+                writer.writerow([os.path.abspath(vcf_file), os.path.abspath(reference_fasta)])
         elif metadata_json:
             create_vcf_files_mapping_from_metadata_json(writer, metadata_json)
         elif metadata_xlsx:
@@ -84,7 +84,7 @@ def create_vcf_files_mapping_from_metadata_xlsx(csv_writer, metadata_xlsx):
         csv_writer.writerow([os.path.abspath(file_name), os.path.abspath(reference_fasta)])
 
 
-def orchestrate_process(submission_dir, vcf_files, assembly_fasta, metadata_json, metadata_xlsx,
+def orchestrate_process(submission_dir, vcf_files, reference_fasta, metadata_json, metadata_xlsx,
                         tasks, executor, resume, username=None, password=None, **kwargs):
     # load config
     config_file_path = os.path.join(submission_dir, SUB_CLI_CONFIG_FILE)
@@ -95,7 +95,7 @@ def orchestrate_process(submission_dir, vcf_files, assembly_fasta, metadata_json
         raise FileNotFoundError(f'The provided metadata file {metadata_file} does not exist')
 
     # Get the provided VCF and assembly
-    vcf_files_mapping = create_vcf_files_mapping(submission_dir, vcf_files, assembly_fasta, metadata_json, metadata_xlsx)
+    vcf_files_mapping = create_vcf_files_mapping(submission_dir, vcf_files, reference_fasta, metadata_json, metadata_xlsx)
     vcf_files = get_vcf_files(vcf_files_mapping)
 
     # Validation is mandatory so if submit is requested then VALIDATE must have run before or be requested as well

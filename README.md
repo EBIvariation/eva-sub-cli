@@ -55,18 +55,18 @@ Then git clone the repo or install the newest release as described above.
 
 ## Input files for the validation and submission tool
 
-There are two ways of specifying the VCF files and associated assembly
+There are two ways of specifying the VCF files and associated reference genome
 
-### Using  `--vcf_files` and `--assembly_fasta`
+### Using  `--vcf_files` and `--reference_fasta`
 
-This allows you to provide multiple VCF files to validate and a single associated genome file.
-The VCF files and the associated genome file must use the same chromosome naming convention 
+This allows you to provide multiple VCF files to validate and a single associated reference genome file.
+The VCF files and the associated reference genome file must use the same chromosome naming convention 
 
 ### Using metadata file by providing `--metadata_json` or `--metadata_xlsx`
 
 The path to the VCF files are provided in the Files section of the metadata and their corresponding fasta sequence is provided in the analysis section. 
 This allows us to support different assemblies for each VCF file. 
-Please check the below sections `The metadata spreadsheet` and `The metadata JSON` for the format and options in metadata files.
+Please check the below sections `The metadata spreadsheet` and `The metadata JSON` for the format and options available in metadata files.
 
 ### The metadata spreadsheet 
 
@@ -92,7 +92,7 @@ To validate and submit run the following command
 
 ```shell
 eva-sub-cli.py --metadata_xlsx metadata_spreadsheet.xlsx \
-               --vcf_files vcf_file1.vcf vcf_file2.vcf --assembly_fasta assembly.fa --submission_dir submission_dir
+               --vcf_files vcf_file1.vcf vcf_file2.vcf --reference_fasta assembly.fa --submission_dir submission_dir
 ```
 
 ### Validate only
@@ -100,21 +100,17 @@ eva-sub-cli.py --metadata_xlsx metadata_spreadsheet.xlsx \
 To validate and not submit run the following command
 
 ```shell
-eva-sub-cli.py --metadata_xlsx metadata_spreadsheet.xlsx \
-               --vcf_files_mapping vcf_mapping.csv --submission_dir submission_dir 
-               --tasks VALIDATE
+eva-sub-cli.py --metadata_xlsx metadata_spreadsheet.xlsx --submission_dir submission_dir --tasks VALIDATE
 ```
 ### Submit only
 
 All submission must have been validated. You cannot run the submission without validation. Once validated running 
 
 ```shell
-eva-sub-cli.py --metadata_xlsx metadata_spreadsheet.xlsx \
-               --vcf_files_mapping vcf_mapping.csv --submission_dir submission_dir
+eva-sub-cli.py --metadata_xlsx metadata_spreadsheet.xlsx --submission_dir submission_dir
 ```
 or 
 ```shell
-eva-sub-cli.py --metadata_xlsx metadata_spreadsheet.xlsx \
-               --vcf_files_mapping vcf_mapping.csv --submission_dir submission_dir --tasks SUBMIT
+eva-sub-cli.py --metadata_xlsx metadata_spreadsheet.xlsx --submission_dir submission_dir --tasks SUBMIT
 ```
 Will only submit the data and not validate.

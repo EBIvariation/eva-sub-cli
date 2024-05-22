@@ -18,7 +18,7 @@ class TestMain(unittest.TestCase):
 
     mapping_file = os.path.join(test_sub_dir, 'vcf_mapping_file.csv')
     vcf_files = [os.path.join(test_sub_dir, 'vcf_file1.vcf'), os.path.join(test_sub_dir, 'vcf_file2.vcf')]
-    assembly_fasta = os.path.join(test_sub_dir, 'genome.fa')
+    reference_fasta = os.path.join(test_sub_dir, 'genome.fa')
     metadata_json = os.path.join(test_sub_dir, 'sub_metadata.json')
     metadata_xlsx = os.path.join(test_sub_dir, 'sub_metadata.xlsx')
 
@@ -107,7 +107,7 @@ class TestMain(unittest.TestCase):
         with patch('eva_sub_cli.main.WritableConfig') as m_config, \
                 patch('eva_sub_cli.main.DockerValidator') as m_docker_validator:
             orchestrate_process(
-                self.test_sub_dir, self.vcf_files, self.assembly_fasta, self.metadata_json, self.metadata_xlsx,
+                self.test_sub_dir, self.vcf_files, self.reference_fasta, self.metadata_json, self.metadata_xlsx,
                 tasks=[VALIDATE], executor=DOCKER, resume=False
             )
             # Mapping file was created from the vcf and assembly files
@@ -173,7 +173,7 @@ class TestMain(unittest.TestCase):
         with patch('eva_sub_cli.main.WritableConfig') as m_config, \
                 patch('eva_sub_cli.main.DockerValidator') as m_docker_validator:
             orchestrate_process(
-                self.test_sub_dir, self.vcf_files, self.assembly_fasta, self.metadata_json, None,
+                self.test_sub_dir, self.vcf_files, self.reference_fasta, self.metadata_json, None,
                 tasks=[VALIDATE], executor=DOCKER, resume=False
             )
             # Mapping file was created from the metadata_json
