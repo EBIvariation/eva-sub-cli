@@ -1,18 +1,19 @@
 
 {% macro fasta_check_report(validation_results, file_name) -%}
     {% set results_for_fasta = validation_results['fasta_check'][file_name] %}
-
+    {% set expand_icon = "" %}
     <!-- All INSDC check results -->
     {% if results_for_fasta.get('all_insdc') %}
         {% set icon = "&#10004;" %}
         {% set row_class = "report-section pass" %}
         {% set text = "All sequences are INSDC accessioned" %}
     {% else %}
+        {% set expand_icon = "&#9654;" %}
         {% set icon = "&#10060;" %}
         {% set row_class = "report-section fail collapsible" %}
         {% set text = "Some sequences are not INSDC accessioned" %}
     {% endif %}
-    <div class='{{ row_class }}'>{{ icon }} {{ text }} </div>
+    <div class='{{ row_class }}'><span class="icon">{{ expand_icon }}</span> {{ icon }} {{ text }} </div>
     {% if not results_for_fasta.get('all_insdc') %}
         <div class="error-list">
             <div class="error-description">First 10 sequences not in INSDC. <strong>Full report:</strong> {{ results_for_fasta.get('report_path', '') }}</div>
@@ -35,22 +36,25 @@
         {% if 'metadata_assembly_compatible' in results_for_fasta %}
             <!-- found assembly in metadata, so definitely know the analysis -->
             {% set analysis_text = results_for_fasta.get('associated_analyses')|join(", ") %}
+            {% set expand_icon = "" %}
             {% if results_for_fasta.get('metadata_assembly_compatible') %}
                 {% set icon = "&#10004;" %}
                 {% set row_class = "report-section pass" %}
                 {% set text = analysis_text + ": Assembly accession in metadata is compatible" %}
             {% else %}
+                {% set expand_icon = "&#9654;" %}
                 {% set icon = "&#10060;" %}
                 {% set row_class = "report-section fail collapsible" %}
                 {% set text = analysis_text + ": Assembly accession in metadata is not compatible" %}
             {% endif %}
         {% else %}
             <!-- has possible assemblies but no metadata assembly -->
+            {% set expand_icon = "&#9654;" %}
             {% set icon = "&#10060;" %}
             {% set row_class = "report-section fail collapsible" %}
             {% set text = "No assembly accession found in metadata" %}
         {% endif %}
-        <div class='{{ row_class }}'>{{ icon }} {{ text }} </div>
+        <div class='{{ row_class }}'><span class="icon">{{ expand_icon }}</span> {{ icon }} {{ text }} </div>
         {% if 'metadata_assembly_compatible' not in results_for_fasta or not results_for_fasta['metadata_assembly_compatible'] %}
             <div class="error-list">
                 <div class="error-description"><strong>Full report:</strong> {{ results_for_fasta.get('report_path', '') }}</div>

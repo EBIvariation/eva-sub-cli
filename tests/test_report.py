@@ -150,9 +150,16 @@ validation_results = {
 class TestReport(TestCase):
     resource_dir = os.path.join(os.path.dirname(__file__), 'resources')
     expected_report = os.path.join(resource_dir, 'validation_reports', 'expected_report.html')
-
+    test_project_name = "My cool project"
+    test_validation_date = datetime.datetime(2023, 8, 31, 12, 34, 56)
+    test_submission_dir = "/test/submission/dir"
+    test_vcf_fasta_analysis_mapping = []
+    test_vcf_fasta_analysis_mapping.append({'vcf_file': 'input_fail.vcf', 'fasta_file': 'input_fail.fa', 'analysis': 'A'})
+    test_vcf_fasta_analysis_mapping.append({'vcf_file': 'input_pass.vcf', 'fasta_file': 'input_pass.fa', 'analysis': 'B'})
+    test_vcf_fasta_analysis_mapping.append({'vcf_file': 'input_test.vcf', 'fasta_file': 'input_test.fa', 'analysis': 'could not be linked'})
     def test_generate_html_report(self):
-        report = generate_html_report(validation_results, datetime.datetime(2023, 8, 31, 12, 34, 56), "My cool project")
+        report = generate_html_report(validation_results, self.test_validation_date, self.test_submission_dir,
+                                      self.test_vcf_fasta_analysis_mapping, self.test_project_name)
         with open('report.html', 'w') as open_file:
             open_file.write(report)
 

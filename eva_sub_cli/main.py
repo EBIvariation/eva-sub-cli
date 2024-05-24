@@ -85,7 +85,7 @@ def create_vcf_files_mapping_from_metadata_xlsx(csv_writer, metadata_xlsx):
 
 
 def orchestrate_process(submission_dir, vcf_files, reference_fasta, metadata_json, metadata_xlsx,
-                        tasks, executor, resume, username=None, password=None, **kwargs):
+                        tasks, executor, username=None, password=None, **kwargs):
     # load config
     config_file_path = os.path.join(submission_dir, SUB_CLI_CONFIG_FILE)
     sub_config = WritableConfig(config_file_path, version=__version__)
@@ -120,4 +120,4 @@ def orchestrate_process(submission_dir, vcf_files, reference_fasta, metadata_jso
 
     if SUBMIT in tasks:
         with StudySubmitter(submission_dir, submission_config=sub_config, username=username, password=password) as submitter:
-            submitter.submit(resume=resume)
+            submitter.submit()

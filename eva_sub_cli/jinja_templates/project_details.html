@@ -1,0 +1,35 @@
+{% macro project_details_report(project_title, validation_date, submission_dir, vcf_fasta_analysis_mapping) -%}
+    <div class="report-section info">
+          {% if project_title %}
+             <p><b>Project Title:</b> {{ project_title }}</p>
+         {% else %}
+             <p><b>Project Title:</b></p>
+         {% endif %}
+        <p><b>Validation Date:</b> {{ validation_date }}</p>
+        <p><b>Submission Directory:</b> {{ submission_dir }}</p>
+    </div>
+
+    {% if vcf_fasta_analysis_mapping %}
+        {% set row_class = "report-section info collapsible" %}
+        {% set expand_icon = "&#9654;" %}
+        <div class='{{ row_class }}'><span class="icon">{{ expand_icon }}</span> Files mapping</div>
+            <div class="no-show">
+                <table>
+                    <tr>
+                        <th><strong>VCF File</strong></th>
+                        <th><strong>Fasta File</strong></th>
+                        <th><strong>Analysis</strong></th>
+                    </tr>
+                    {% for mapping in vcf_fasta_analysis_mapping %}
+                    <tr>
+                        <td>{{ mapping.vcf_file }}</td>
+                        <td>{{ mapping.fasta_file }}</td>
+                        <td>{{ mapping.analysis }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+    {% endif %}
+
+{%- endmacro %}

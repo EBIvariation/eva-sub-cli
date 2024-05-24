@@ -3,13 +3,16 @@
     {% set results = validation_results.get('sample_check', {}) %}
     {% for analysis, results_for_analysis in results.get('results_per_analysis', {}).items() %}
         {% if results_for_analysis.get('difference') %}
+            {% set expand_icon = "&#9654;" %}
             {% set icon = "&#10060;" %}
             {% set row_class = "report-section fail collapsible" %}
+            {% set text = "Sample names in metadata do not matches with those in VCF files" %}
         {% else %}
             {% set icon = "&#10004;" %}
             {% set row_class = "report-section pass" %}
+            {% set text = "Sample names in metadata matches with those in VCF files" %}
         {% endif %}
-        <div class='{{ row_class }}'>{{ icon }} {{ analysis }}: Sample names concordance check </div>
+        <div class='{{ row_class }}'><span class="icon">{{ expand_icon }}</span> {{ icon }} {{ analysis }}: {{ text }} </div>
         {% if results_for_analysis.get('difference') %}
             <div class="error-list">
                 <div class="error-description">First 10 errors per category are below. <strong>Full report:</strong> {{ results.get('report_path', '') }}</div>

@@ -6,7 +6,6 @@ import json
 import logging
 import os
 import re
-import shutil
 from functools import lru_cache, cached_property
 
 import yaml
@@ -39,6 +38,7 @@ class Validator(AppLogger):
                  submission_config: WritableConfig = None):
         # validator write to the validation output directory
         # If the submission_config is not set it will also be written to the VALIDATION_OUTPUT_DIR
+        self.submission_dir = submission_dir
         self.output_dir = os.path.join(submission_dir, VALIDATION_OUTPUT_DIR)
         self.mapping_file = mapping_file
         vcf_files, fasta_files = self._find_vcf_and_fasta_files()
@@ -522,8 +522,40 @@ class Validator(AppLogger):
                 with open(self.metadata_json_post_validation, 'w') as open_file:
                     json.dump(json_data, open_file)
 
+    def get_vcf_fasta_analysis_mapping(self):
+        vcf_fasta_analysis_mapping = []
+        with open(self.mapping_file) as open_file:
+            reader = csv.DictReader(open_file, delimiter=',')
+            for row in reader:
+                vcf_fasta_analysis_mapping.append({'vcf_file': row['vcf'], 'fasta_file': row['fasta']})
+
+        if self.metadata_json_post_validation:
+            with open(self.metadata_json_post_validation) as open_file:
+                try:
+                    vcf_analysis_dict = {}
+                    json_data = json.load(open_file)
+                    if json_data.get('files', []):
+                        for file in json_data.get('files', []):
+                            if file.get('fileName', []) and file.get('analysisAlias', []):
+                                vcf_analysis_dict[file.get('fileName')] = file.get('analysisAlias')
+
+                    for vcf_fasta_mapping in vcf_fasta_analysis_mapping:
+                        vcf_file = vcf_fasta_mapping.get('vcf_file')
+                        if vcf_file in vcf_analysis_dict:
+                            vcf_fasta_mapping.update({'analysis': vcf_analysis_dict.get(vcf_file)})
+                        else:
+                            vcf_fasta_mapping.update({'analysis': 'Could not be linked'})
+
+                    return vcf_fasta_analysis_mapping
+                except Exception as e:
+                    self.error('Error building Validation Report : Error getting info from metadata file' + str(e))
+        else:
+            self.error('Error building validation report : Metadata file not present')
+
+
     def create_reports(self):
-        report_html = generate_html_report(self.results, self.validation_date, self.project_title)
+        report_html = generate_html_report(self.results, self.validation_date, self.submission_dir,
+                                           self.get_vcf_fasta_analysis_mapping(), self.project_title)
         file_path = os.path.join(self.output_dir, 'report.html')
         with open(file_path, "w") as f:
             f.write(report_html)
