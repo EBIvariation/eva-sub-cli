@@ -10,7 +10,7 @@
         {% set icon = "&#10004;" %}
         {% set row_class = "report-section pass" %}
     {% endif %}
-    <div class='{{ row_class }}'><span class="icon">{{ expand_icon }}</span> {{ icon }} Metadata validation check </div>
+    <div class='{{ row_class }}'><span class="expand_icon">{{ expand_icon }}</span> {{ icon }} Metadata validation check </div>
     {% if spreadsheet_errors %}
         <div class="error-list">
             <div class="error-description"><strong>Full report:</strong> {{ results.get('spreadsheet_report_path', '') }}</div>

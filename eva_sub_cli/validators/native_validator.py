@@ -10,10 +10,10 @@ logger = logging_config.get_logger(__name__)
 
 class NativeValidator(Validator):
 
-    def __init__(self, mapping_file, submission_dir, metadata_json=None, metadata_xlsx=None,
+    def __init__(self, mapping_file, submission_dir, project_title, metadata_json=None, metadata_xlsx=None,
                  vcf_validator_path='vcf_validator', assembly_checker_path='vcf_assembly_checker',
                  biovalidator_path='biovalidator', submission_config=None):
-        super().__init__(mapping_file, submission_dir, metadata_json=metadata_json, metadata_xlsx=metadata_xlsx,
+        super().__init__(mapping_file, submission_dir, project_title, metadata_json=metadata_json, metadata_xlsx=metadata_xlsx,
                          submission_config=submission_config)
         self.vcf_validator_path = vcf_validator_path
         self.assembly_checker_path = assembly_checker_path

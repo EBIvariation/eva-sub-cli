@@ -26,7 +26,7 @@
         {% set icon = "&#10004;" %}
         {% set row_class = "report-section pass" %}
     {% endif %}
-    <div class='{{ row_class }}'><span class="icon">{{ expand_icon }}</span> {{ icon }} VCF check: {{ critical_count }} critical errors, {{ error_count }} non-critical errors </div>
+    <div class='{{ row_class }}'><span class="expand_icon">{{ expand_icon }}</span> {{ icon }} VCF check: {{ critical_count }} critical errors, {{ error_count }} non-critical errors </div>
     {% set critical_list = vcf_check_result.get("critical_list") %}
     {% set error_list = vcf_check_result.get("error_list") %}
 
@@ -65,7 +65,7 @@
         {% set icon = "&#10004;" %}
         {% set row_class = "report-section pass" %}
     {% endif %}
-    <div class='{{ row_class }}'><span class="icon">{{ expand_icon }}</span> {{ icon }} Assembly check: {{ nb_match }}/{{ nb_total }} ({{ match_percentage|round(2) }}%)</div>
+    <div class='{{ row_class }}'><span class="expand_icon">{{ expand_icon }}</span> {{ icon }} Assembly check: {{ nb_match }}/{{ nb_total }} ({{ match_percentage|round(2) }}%)</div>
     {% set mismatch_list = assembly_check_result.get("mismatch_list") %}
     {% set error_list = assembly_check_result.get("error_list") %}
     {% if mismatch_list or error_list %}

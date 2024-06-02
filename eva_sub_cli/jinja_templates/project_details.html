@@ -3,7 +3,7 @@
           {% if project_title %}
              <p><b>Project Title:</b> {{ project_title }}</p>
          {% else %}
-             <p><b>Project Title:</b></p>
+             <p><b>Project Title:</b> Not Found</p>
          {% endif %}
         <p><b>Validation Date:</b> {{ validation_date }}</p>
         <p><b>Submission Directory:</b> {{ submission_dir }}</p>
@@ -12,7 +12,7 @@
     {% if vcf_fasta_analysis_mapping %}
         {% set row_class = "report-section info collapsible" %}
         {% set expand_icon = "&#9654;" %}
-        <div class='{{ row_class }}'><span class="icon">{{ expand_icon }}</span> Files mapping</div>
+        <div class='{{ row_class }}'><span class="expand_icon">{{ expand_icon }}</span> Files mapping</div>
             <div class="no-show">
                 <table>
                     <tr>

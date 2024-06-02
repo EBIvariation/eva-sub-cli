@@ -13,7 +13,7 @@
         {% set row_class = "report-section fail collapsible" %}
         {% set text = "Some sequences are not INSDC accessioned" %}
     {% endif %}
-    <div class='{{ row_class }}'><span class="icon">{{ expand_icon }}</span> {{ icon }} {{ text }} </div>
+    <div class='{{ row_class }}'><span class="expand_icon">{{ expand_icon }}</span> {{ icon }} {{ text }} </div>
     {% if not results_for_fasta.get('all_insdc') %}
         <div class="error-list">
             <div class="error-description">First 10 sequences not in INSDC. <strong>Full report:</strong> {{ results_for_fasta.get('report_path', '') }}</div>
@@ -54,7 +54,7 @@
             {% set row_class = "report-section fail collapsible" %}
             {% set text = "No assembly accession found in metadata" %}
         {% endif %}
-        <div class='{{ row_class }}'><span class="icon">{{ expand_icon }}</span> {{ icon }} {{ text }} </div>
+        <div class='{{ row_class }}'><span class="expand_icon">{{ expand_icon }}</span> {{ icon }} {{ text }} </div>
         {% if 'metadata_assembly_compatible' not in results_for_fasta or not results_for_fasta['metadata_assembly_compatible'] %}
             <div class="error-list">
                 <div class="error-description"><strong>Full report:</strong> {{ results_for_fasta.get('report_path', '') }}</div>

@@ -19,9 +19,9 @@ container_validation_output_dir = 'vcf_validation_output'
 
 class DockerValidator(Validator):
 
-    def __init__(self, mapping_file, submission_dir, metadata_json=None,
+    def __init__(self, mapping_file, submission_dir, project_title, metadata_json=None,
                  metadata_xlsx=None, container_name=None, docker_path='docker', submission_config=None):
-        super().__init__(mapping_file, submission_dir,
+        super().__init__(mapping_file, submission_dir, project_title,
                          metadata_json=metadata_json, metadata_xlsx=metadata_xlsx,
                          submission_config=submission_config)
         self.docker_path = docker_path
