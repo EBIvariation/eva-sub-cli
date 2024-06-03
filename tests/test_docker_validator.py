@@ -11,7 +11,7 @@ from tests.test_utils import create_mapping_file
 
 class TestDockerValidator(TestCase):
     resources_folder = os.path.join(os.path.dirname(__file__), 'resources')
-
+    project_title = 'Example Project'
     vcf_files = os.path.join(resources_folder, 'vcf_files')
     fasta_files = os.path.join(resources_folder, 'fasta_files')
     assembly_reports = os.path.join(resources_folder, 'assembly_reports')
@@ -49,6 +49,7 @@ class TestDockerValidator(TestCase):
         self.validator = DockerValidator(
             mapping_file=self.mapping_file,
             submission_dir=self.submission_dir,
+            project_title=self.project_title,
             metadata_json=self.metadata_json,
             container_name='eva-sub-cli-test'
         )
@@ -60,6 +61,7 @@ class TestDockerValidator(TestCase):
         self.validator_from_excel = DockerValidator(
             mapping_file=self.mapping_file,
             submission_dir=self.submission_dir,
+            project_title=self.project_title,
             metadata_xlsx=self.metadata_xlsx,
             container_name='eva-sub-cli-test'
         )
