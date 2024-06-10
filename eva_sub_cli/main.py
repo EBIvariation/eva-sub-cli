@@ -4,20 +4,24 @@ import json
 import os
 from collections import defaultdict
 
+import requests
 from ebi_eva_common_pyutils.config import WritableConfig
+from ebi_eva_common_pyutils.logger import logging_config
 from openpyxl.reader.excel import load_workbook
 
 from eva_sub_cli import SUB_CLI_CONFIG_FILE, __version__
+from eva_sub_cli.api_utils import get_submission_status
+from eva_sub_cli.submit import StudySubmitter, SUB_CLI_CONFIG_KEY_SUBMISSION_ID
 from eva_sub_cli.validators.docker_validator import DockerValidator
 from eva_sub_cli.validators.native_validator import NativeValidator
 from eva_sub_cli.validators.validator import READY_FOR_SUBMISSION_TO_EVA
-from eva_sub_cli.submit import StudySubmitter
 
 VALIDATE = 'validate'
 SUBMIT = 'submit'
 DOCKER = 'docker'
 NATIVE = 'native'
 
+logger = logging_config.get_logger(__name__)
 
 def get_vcf_files(mapping_file):
     vcf_files = []
@@ -110,6 +114,28 @@ def get_project_and_vcf_fasta_mapping_from_metadata_xlsx(metadata_xlsx, mapping_
     return project_title, vcf_fasta_report_mapping
 
 
+def check_validation_required(tasks, sub_config):
+    # Validation is mandatory so if submit is requested then VALIDATE must have run before or be requested as well
+    if SUBMIT in tasks:
+        if not sub_config.get(READY_FOR_SUBMISSION_TO_EVA, False):
+            return True
+        else:
+            submission_id = sub_config.get(SUB_CLI_CONFIG_KEY_SUBMISSION_ID, None)
+            if submission_id:
+                try:
+                    submission_status = get_submission_status(submission_id)
+                    if submission_status == 'FAILED':
+                        return True
+                    else:
+                        return False
+                except requests.HTTPError as ex:
+                    logger.error(f'Error occurred while getting status of the submission with ID {submission_id}: {ex.response.status_code} {ex.response.text}')
+                    raise
+            else:
+                logger.info(f'submission id not found. This might be the first time user is submitting')
+                return False
+
+
 def orchestrate_process(submission_dir, vcf_files, reference_fasta, metadata_json, metadata_xlsx,
                         tasks, executor, username=None, password=None, **kwargs):
     # load config
@@ -124,10 +150,8 @@ def orchestrate_process(submission_dir, vcf_files, reference_fasta, metadata_jso
     project_title, vcf_files_mapping = get_project_title_and_create_vcf_files_mapping(submission_dir, vcf_files, reference_fasta, metadata_json, metadata_xlsx)
     vcf_files = get_vcf_files(vcf_files_mapping)
 
-    # Validation is mandatory so if submit is requested then VALIDATE must have run before or be requested as well
-    if SUBMIT in tasks and not sub_config.get(READY_FOR_SUBMISSION_TO_EVA, False):
-        if VALIDATE not in tasks:
-            tasks.append(VALIDATE)
+    if VALIDATE not in tasks and check_validation_required(tasks, sub_config):
+        tasks.append(VALIDATE)
 
     if VALIDATE in tasks:
         if executor == DOCKER:
