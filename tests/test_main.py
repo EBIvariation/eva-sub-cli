@@ -7,7 +7,8 @@ from unittest.mock import patch
 from ebi_eva_common_pyutils.config import WritableConfig
 
 from eva_sub_cli import SUB_CLI_CONFIG_FILE
-from eva_sub_cli.main import orchestrate_process, VALIDATE, SUBMIT, DOCKER
+from eva_sub_cli.main import orchestrate_process, VALIDATE, SUBMIT, DOCKER, check_validation_required
+from eva_sub_cli.submit import SUB_CLI_CONFIG_KEY_SUBMISSION_ID
 from eva_sub_cli.validators.validator import READY_FOR_SUBMISSION_TO_EVA
 
 
@@ -32,6 +33,25 @@ class TestMain(unittest.TestCase):
 
     def tearDown(self) -> None:
         shutil.rmtree(self.test_sub_dir)
+
+    def test_check_validation_required(self):
+        tasks = ['submit']
+
+        sub_config = {READY_FOR_SUBMISSION_TO_EVA: False}
+        self.assertTrue(check_validation_required(tasks, sub_config))
+
+        sub_config = {READY_FOR_SUBMISSION_TO_EVA: True}
+        self.assertFalse(check_validation_required(tasks, sub_config))
+
+        with patch('eva_sub_cli.main.get_submission_status') as get_submission_status_mock:
+            sub_config = {READY_FOR_SUBMISSION_TO_EVA: True,
+                          SUB_CLI_CONFIG_KEY_SUBMISSION_ID: 'test123'}
+
+            get_submission_status_mock.return_value = 'OPEN'
+            self.assertFalse(check_validation_required(tasks, sub_config))
+
+            get_submission_status_mock.return_value = 'FAILED'
+            self.assertTrue(check_validation_required(tasks, sub_config))
 
     def test_orchestrate_validate(self):
         with patch('eva_sub_cli.main.get_vcf_files') as m_get_vcf,  \
