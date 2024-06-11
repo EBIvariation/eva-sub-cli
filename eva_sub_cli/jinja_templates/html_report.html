@@ -117,6 +117,18 @@
             }
         });
     }
+
+    function toggleSampleAllErrorsList(id) {
+        var element = document.getElementById(id);
+        var link = document.querySelector(`a[onclick="toggleSampleAllErrorsList('${id}'); return false;"]`);
+        if (element.style.display === "none" || element.style.display === "") {
+            element.style.display = "block";
+            link.innerHTML = "Hide All Errors for Category";
+        } else {
+            element.style.display = "none";
+            link.innerHTML = "Show All Errors for Category";
+        }
+    }
 </script>
 </body>
 </html>

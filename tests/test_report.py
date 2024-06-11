@@ -59,9 +59,21 @@ validation_results = {
         'results_per_analysis': {
             'Analysis A': {
                 'difference': True,
-                'more_metadata_submitted_files': ['Sample1'],
+                'more_metadata_submitted_files': [' SampleA1', 'SampleA2 ','SampleA3', 'SampleA4', 'SampleA5', 'SampleA6', 'SampleA7','SampleA8', 'SampleA9', 'SampleA10'],
                 'more_per_submitted_files_metadata': {},
-                'more_submitted_files_metadata': ['1Sample']
+                'more_submitted_files_metadata': ['A1Sample ', ' A2Sample', 'A3Sample', 'A4Sample', 'A5Sample', 'A6Sample', 'A7Sample', 'A8Sample', 'A9Sample', 'A10Sample']
+            },
+            'Analysis B': {
+                'difference': False,
+                'more_metadata_submitted_files': [],
+                'more_per_submitted_files_metadata': {},
+                'more_submitted_files_metadata': []
+            },
+            'Analysis C': {
+                'difference': True,
+                'more_metadata_submitted_files': ['SampleC1', 'SampleC2', 'SampleC3', 'SampleC4'],
+                'more_per_submitted_files_metadata': {},
+                'more_submitted_files_metadata': ['C1Sample', 'C2Sample', 'C3Sample', 'C4Sample']
             }
         }
     },

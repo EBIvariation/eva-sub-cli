@@ -20,7 +20,7 @@ SAMPLE = 'Sample'
 ANALYSIS_ALIAS_KEY = 'Analysis Alias'
 SAMPLE_NAME_IN_VCF_KEY = 'Sample Name in VCF'
 SAMPLE_ACCESSION_KEY = 'Sample Accession'
-SAMPLE_NAME_KEY = 'Sample Name'
+SAMPLE_NAME_KEY = 'BioSample Name'
 SCIENTIFIC_NAME_KEY = 'Scientific Name'
 SPECIES = 'species'
 

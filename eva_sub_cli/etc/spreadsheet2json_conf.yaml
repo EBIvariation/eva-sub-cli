@@ -71,7 +71,7 @@ Sample:
     Sample Name in VCF: sampleInVCF
   optional:
     Sample Accession: bioSampleAccession
-    Sample Name: bioSampleName
+    BioSample Name: bioSampleName
     Title: title
     Description: description
     Unique Name: uniqueName
@@ -114,7 +114,7 @@ Sample:
     serovar: serovar
   cast:
     Sample ID: string
-    Sample Name: string
+    BioSample Name: string
 
 
 Files:

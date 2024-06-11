@@ -12,23 +12,44 @@
             {% set row_class = "report-section pass" %}
             {% set text = "Sample names in metadata match with those in VCF files" %}
         {% endif %}
-        <div class='{{ row_class }}'><span class="expand_icon">{{ expand_icon }}</span> {{ icon }} {{ analysis }}: {{ text }} </div>
+        <div class='{{ row_class }}'><span class="expand_icon">{{ expand_icon }}</span> {{ icon }} <b>{{ analysis }}</b>: {{ text }} </div>
         {% if results_for_analysis.get('difference') %}
             <div class="error-list">
-                <div class="error-description">First 10 errors per category are below. <strong>Full report:</strong> {{ results.get('report_path', '') }}</div>
                 <table>
                     <tr>
-                        <th>Category</th><th>Error</th>
+                        <th>Category</th><th>First 5 Errors For Category</th><th>Link To View All Errors</th>
                     </tr>
                     <tr>
                         <td><strong>Samples described in the metadata but not in the VCF files</strong></td>
-                        <td>{{ results_for_analysis.get('more_metadata_submitted_files')[:10]|join(", ") }}</td>
+                        <td>{{ results_for_analysis.get('more_metadata_submitted_files')[:5]|join(", ") }}</td>
+                        <td> <a href="#" onclick="toggleSampleAllErrorsList('metadata-{{ loop.index0 }}'); return false;">Show All Errors For Category</a></td>
                     </tr>
                     <tr>
                         <td><strong>Samples in the VCF files but not described in the metadata</strong></td>
-                        <td>{{ results_for_analysis.get('more_submitted_files_metadata')[:10]|join(", ") }}</td>
+                        <td>{{ results_for_analysis.get('more_submitted_files_metadata')[:5]|join(", ") }}</td>
+                        <td> <a href="#" onclick="toggleSampleAllErrorsList('vcf-{{ loop.index0 }}'); return false;">Show All Errors For Category</a></td>
                     </tr>
                 </table>
+
+                <div id="metadata-{{ loop.index0 }}" class="description no-show">
+                    <div class="error-description"><strong>All Errors For Category - Samples described in the metadata but not in the VCF files:</strong></div>
+                    <ul>
+                        {% for error in results_for_analysis.get('more_metadata_submitted_files') %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                    <a href="#" onclick="toggleSampleAllErrorsList('metadata-{{ loop.index0 }}'); return false;">Hide</a>
+                </div>
+
+                <div id="vcf-{{ loop.index0 }}" class="description no-show">
+                    <div class="error-description"><strong>All Errors For Category - Samples in the VCF files but not described in the metadata:</strong></div>
+                    <ul>
+                        {% for error in results_for_analysis.get('more_submitted_files_metadata') %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                    <a href="#" onclick="toggleSampleAllErrorsList('vcf-{{ loop.index0 }}'); return false;">Hide</a>
+                </div>
             </div>
         {% endif %}
     {% endfor %}
