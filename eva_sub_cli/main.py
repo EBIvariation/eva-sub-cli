@@ -10,7 +10,9 @@ from ebi_eva_common_pyutils.logger import logging_config
 from openpyxl.reader.excel import load_workbook
 
 from eva_sub_cli import SUB_CLI_CONFIG_FILE, __version__
-from eva_sub_cli.api_utils import get_submission_status
+from eva_sub_cli.exceptions.submission_not_found_exception import SubmissionNotFoundException
+from eva_sub_cli.exceptions.submission_status_exception import SubmissionStatusException
+from eva_sub_cli.submission_ws import SubmissionWSClient
 from eva_sub_cli.submit import StudySubmitter, SUB_CLI_CONFIG_KEY_SUBMISSION_ID
 from eva_sub_cli.validators.docker_validator import DockerValidator
 from eva_sub_cli.validators.native_validator import NativeValidator
@@ -119,21 +121,25 @@ def check_validation_required(tasks, sub_config):
     if SUBMIT in tasks:
         if not sub_config.get(READY_FOR_SUBMISSION_TO_EVA, False):
             return True
-        else:
-            submission_id = sub_config.get(SUB_CLI_CONFIG_KEY_SUBMISSION_ID, None)
-            if submission_id:
-                try:
-                    submission_status = get_submission_status(submission_id)
-                    if submission_status == 'FAILED':
-                        return True
-                    else:
-                        return False
-                except requests.HTTPError as ex:
-                    logger.error(f'Error occurred while getting status of the submission with ID {submission_id}: {ex.response.status_code} {ex.response.text}')
-                    raise
-            else:
-                logger.info(f'submission id not found. This might be the first time user is submitting')
-                return False
+        submission_id = sub_config.get(SUB_CLI_CONFIG_KEY_SUBMISSION_ID, None)
+        if submission_id:
+            try:
+                submission_status = SubmissionWSClient().get_submission_status(submission_id)
+                if submission_status == 'FAILED':
+                    return True
+                else:
+                    return False
+            except requests.HTTPError as ex:
+                if ex.response.status_code == 404:
+                    logger.error(
+                        f'Submission with id {submission_id} could not be found: statuc code: {ex.response.status_code} response: {ex.response.text}')
+                    raise SubmissionNotFoundException(f'Submission with id {submission_id} could not be found')
+                else:
+                    logger.error(f'Error occurred while getting status of the submission with Id {submission_id}: status code: {ex.response.status_code} response: {ex.response.text}')
+                    raise SubmissionStatusException(f'Error occurred while getting status of the submission with Id {submission_id}')
+
+        logger.info(f'submission id not found in config. This might be the first time user is submitting')
+        return False
 
 
 def orchestrate_process(submission_dir, vcf_files, reference_fasta, metadata_json, metadata_xlsx,

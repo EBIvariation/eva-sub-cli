@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 import sys
 
+from eva_sub_cli.exceptions.submission_not_found_exception import SubmissionNotFoundException
+from eva_sub_cli.exceptions.submission_status_exception import SubmissionStatusException
+
 if not sys.warnoptions:
     import warnings
     warnings.simplefilter("ignore")
@@ -83,3 +86,7 @@ if __name__ == "__main__":
         main.orchestrate_process(**args.__dict__)
     except FileNotFoundError as fne:
         print(fne)
+    except SubmissionNotFoundException as snfe:
+        print(f'{snfe}. Retry with correct submission id. If the problem persists, please contact EVA Helpdesk')
+    except SubmissionStatusException as sse:
+        print(f'{sse}. Please try again later. If the problem persists, please contact EVA Helpdesk')

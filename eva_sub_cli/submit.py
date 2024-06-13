@@ -7,8 +7,8 @@ from ebi_eva_common_pyutils.config import WritableConfig
 from ebi_eva_common_pyutils.logger import AppLogger
 from retry import retry
 
-from eva_sub_cli import SUB_CLI_CONFIG_FILE, __version__, api_utils
-from eva_sub_cli.auth import get_auth
+from eva_sub_cli import SUB_CLI_CONFIG_FILE, __version__
+from eva_sub_cli.submission_ws import SubmissionWSClient
 from eva_sub_cli.validators.validator import READY_FOR_SUBMISSION_TO_EVA
 
 SUB_CLI_CONFIG_KEY_SUBMISSION_ID = "submission_id"
@@ -17,10 +17,8 @@ SUB_CLI_CONFIG_KEY_COMPLETE = "submission_complete"
 
 
 class StudySubmitter(AppLogger):
-    def __init__(self, submission_dir, submission_ws_url=None,
-                 submission_config: WritableConfig = None, username=None, password=None):
-        self.auth = get_auth(username, password)
-        self.submission_ws_url = submission_ws_url
+    def __init__(self, submission_dir, submission_config: WritableConfig = None, username=None, password=None):
+        self.submission_ws_client = SubmissionWSClient(username, password)
         self.submission_dir = submission_dir
         if submission_config:
             self.sub_config = submission_config
@@ -71,21 +69,13 @@ class StudySubmitter(AppLogger):
         self.debug(f'Upload of {base_name} completed')
 
     def _initiate_submission(self):
-        response = requests.post(api_utils.get_submission_initiate_url(self.submission_ws_url),
-                                 headers={'Accept': 'application/hal+json',
-                                          'Authorization': 'Bearer ' + self.auth.token})
-        response.raise_for_status()
-        response_json = response.json()
+        response_json = self.submission_ws_client.initiate_submission()
         self.debug(f'Submission ID {response_json["submissionId"]} received!!')
         # update config with submission id and upload url
         self.update_config_with_submission_id_and_upload_url(response_json["submissionId"], response_json["uploadUrl"])
 
     def _complete_submission(self):
-        response = requests.put(
-            api_utils.get_submission_uploaded_url(self.sub_config.get(SUB_CLI_CONFIG_KEY_SUBMISSION_ID), self.submission_ws_url),
-            headers={'Accept': 'application/hal+json', 'Authorization': 'Bearer ' + self.auth.token}, data=self.metadata_json
-        )
-        response.raise_for_status()
+        self.submission_ws_client.mark_submission_uploaded(self.sub_config.get(SUB_CLI_CONFIG_KEY_SUBMISSION_ID), self.metadata_json)
         self.debug("Submission ID {} Complete".format(self.sub_config.get(SUB_CLI_CONFIG_KEY_SUBMISSION_ID)))
         # update config with completion of the submission
         self.sub_config.set(SUB_CLI_CONFIG_KEY_COMPLETE, value=True)

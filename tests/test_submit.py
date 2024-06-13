@@ -8,8 +8,8 @@ import yaml
 from ebi_eva_common_pyutils.config import WritableConfig
 
 from eva_sub_cli import SUB_CLI_CONFIG_FILE
-from eva_sub_cli.api_utils import SUBMISSION_WS_URL
 from eva_sub_cli.file_utils import is_submission_dir_writable
+from eva_sub_cli.submission_ws import SubmissionWSClient
 from eva_sub_cli.validators.validator import READY_FOR_SUBMISSION_TO_EVA
 from eva_sub_cli.submit import StudySubmitter, SUB_CLI_CONFIG_KEY_SUBMISSION_ID, \
     SUB_CLI_CONFIG_KEY_SUBMISSION_UPLOAD_URL
@@ -22,14 +22,13 @@ class TestSubmit(unittest.TestCase):
 
     def setUp(self) -> None:
         self.token = 'a token'
-        with patch('eva_sub_cli.submit.get_auth', return_value=Mock(token=self.token)):
-            vcf_files = [os.path.join(self.resource_dir, 'vcf_files', 'example2.vcf.gz')]
-            metadata_json_file = os.path.join(self.resource_dir, 'EVA_Submission_test.json')
-            self.submitter = StudySubmitter(submission_dir=self.test_sub_dir)
-            self.submitter.sub_config.set('metadata_json', value=metadata_json_file)
-            self.submitter.sub_config.set('vcf_files', value=vcf_files)
-            with open(metadata_json_file) as open_file:
-                self.metadata_json = json.load(open_file)
+        vcf_files = [os.path.join(self.resource_dir, 'vcf_files', 'example2.vcf.gz')]
+        metadata_json_file = os.path.join(self.resource_dir, 'EVA_Submission_test.json')
+        self.submitter = StudySubmitter(submission_dir=self.test_sub_dir)
+        self.submitter.sub_config.set('metadata_json', value=metadata_json_file)
+        self.submitter.sub_config.set('vcf_files', value=vcf_files)
+        with open(metadata_json_file) as open_file:
+            self.metadata_json = json.load(open_file)
 
         shutil.rmtree(self.test_sub_dir, ignore_errors=True)
 
@@ -45,24 +44,27 @@ class TestSubmit(unittest.TestCase):
         mock_uploaded_response = MagicMock()
         mock_uploaded_response.status_code = 200
 
+        test_submission_ws_client = SubmissionWSClient()
 
-        # Set the side_effect attribute to return different responses
-        with patch('eva_sub_cli.submit.requests.post', return_value=mock_initiate_response) as mock_post, \
-                patch('eva_sub_cli.submit.requests.put', return_value=mock_uploaded_response) as mock_put, \
-                patch.object(StudySubmitter, '_upload_submission'), \
-                patch.object(self.submitter, 'submission_dir', self.test_sub_dir):
+        with patch.object(test_submission_ws_client, 'auth') as mocked_auth:
+            with patch.object(self.submitter, 'submission_ws_client', test_submission_ws_client), \
+                    patch('eva_sub_cli.submission_ws.requests.post', return_value=mock_initiate_response) as mock_post, \
+                    patch('eva_sub_cli.submission_ws.requests.put', return_value=mock_uploaded_response) as mock_put, \
+                    patch.object(StudySubmitter, '_upload_submission'), \
+                    patch.object(self.submitter, 'submission_dir', self.test_sub_dir):
+                mocked_auth.token = self.token
+                self.submitter.sub_config.set(READY_FOR_SUBMISSION_TO_EVA, value=True)
+                self.submitter.submit()
 
-            self.submitter.sub_config.set(READY_FOR_SUBMISSION_TO_EVA, value=True)
-            self.submitter.submit()
-        mock_post.assert_called_once_with(
-            os.path.join(SUBMISSION_WS_URL, 'submission/initiate'),
-            headers={'Accept': 'application/hal+json', 'Authorization': 'Bearer a token'}
-        )
-        mock_put.assert_called_once_with(
-            os.path.join(SUBMISSION_WS_URL, 'submission/mock_submission_id/uploaded'),
-            headers={'Accept': 'application/hal+json', 'Authorization': 'Bearer a token'},
-            data=self.metadata_json)
-        print(mock_put.mock_calls)
+                mock_post.assert_called_once_with(
+                    os.path.join(test_submission_ws_client.SUBMISSION_WS_URL, 'submission/initiate'),
+                    headers={'Accept': 'application/hal+json', 'Authorization': 'Bearer a token'})
+
+                mock_put.assert_called_once_with(
+                    os.path.join(test_submission_ws_client.SUBMISSION_WS_URL, 'submission/mock_submission_id/uploaded'),
+                    headers={'Accept': 'application/hal+json', 'Authorization': 'Bearer a token'},
+                    data=self.metadata_json)
+                print(mock_put.mock_calls)
 
     def test_submit_with_config(self):
         mock_initiate_response = MagicMock()
@@ -79,11 +81,16 @@ class TestSubmit(unittest.TestCase):
         sub_config.set(READY_FOR_SUBMISSION_TO_EVA, value=True)
         sub_config.write()
 
-        with patch('eva_sub_cli.submit.requests.post', return_value=mock_initiate_response) as mock_post, \
-                patch('eva_sub_cli.submit.requests.put', return_value=mock_uploaded_response) as mock_put, \
-                patch.object(StudySubmitter, '_upload_submission'):
-            with self.submitter as submitter:
-                submitter.submit()
+        test_submission_ws_client = SubmissionWSClient()
+
+        with patch.object(test_submission_ws_client, 'auth') as mocked_auth:
+            with patch.object(self.submitter, 'submission_ws_client', test_submission_ws_client), \
+                    patch('eva_sub_cli.submission_ws.requests.post', return_value=mock_initiate_response) as mock_post, \
+                    patch('eva_sub_cli.submission_ws.requests.put', return_value=mock_uploaded_response) as mock_put, \
+                    patch.object(StudySubmitter, '_upload_submission'):
+                mocked_auth.token = self.token
+                with self.submitter as submitter:
+                    submitter.submit()
 
         assert os.path.exists(self.test_sub_dir)
         assert os.path.exists(self.config_file)
@@ -103,14 +110,13 @@ class TestSubmit(unittest.TestCase):
         assert self.submitter.sub_config['test_key'] == 'test_value'
 
     def test_sub_config_passed_as_param(self):
-        with patch('eva_sub_cli.submit.get_auth', return_value=Mock(token=self.token)):
-            assert is_submission_dir_writable(self.test_sub_dir)
-            sub_config = WritableConfig(self.config_file)
-            with StudySubmitter(self.test_sub_dir, submission_config=sub_config) as submitter:
-                submitter.sub_config.set('test_key', value='test_value')
+        assert is_submission_dir_writable(self.test_sub_dir)
+        sub_config = WritableConfig(self.config_file)
+        with StudySubmitter(self.test_sub_dir, submission_config=sub_config) as submitter:
+            submitter.sub_config.set('test_key', value='test_value')
 
-            assert os.path.exists(self.config_file)
-            assert submitter.sub_config['test_key'] == 'test_value'
+        assert os.path.exists(self.config_file)
+        assert submitter.sub_config['test_key'] == 'test_value'
 
     def test_upload_submission(self):
         mock_submit_response = MagicMock()
