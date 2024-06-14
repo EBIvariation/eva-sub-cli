@@ -71,9 +71,9 @@ validation_results = {
             },
             'Analysis C': {
                 'difference': True,
-                'more_metadata_submitted_files': ['SampleC1', 'SampleC2', 'SampleC3', 'SampleC4'],
+                'more_metadata_submitted_files': ['SampleC1 ', ' SampleC2', 'SampleC3', 'SampleC4'],
                 'more_per_submitted_files_metadata': {},
-                'more_submitted_files_metadata': ['C1Sample', 'C2Sample', 'C3Sample', 'C4Sample']
+                'more_submitted_files_metadata': ['C1Sample ', ' C2Sample', 'C3Sample', 'C4Sample']
             }
         }
     },

@@ -1,6 +1,10 @@
 
 {% macro sample_name_check_report(validation_results) -%}
     {% set results = validation_results.get('sample_check', {}) %}
+    {% macro format_error(error) %}
+        {{ error | replace(' ', '•') }}
+    {% endmacro %}
+
     {% for analysis, results_for_analysis in results.get('results_per_analysis', {}).items() %}
         {% if results_for_analysis.get('difference') %}
             {% set expand_icon = "&#9654;" %}
@@ -33,21 +37,21 @@
 
                 <div id="metadata-{{ loop.index0 }}" class="description no-show">
                     <div class="error-description"><strong>All Errors For Category - Samples described in the metadata but not in the VCF files:</strong></div>
-                    <ul>
+                    <ol>
                         {% for error in results_for_analysis.get('more_metadata_submitted_files') %}
-                            <li>{{ error }}</li>
+                            <li>{{ format_error(error) }}</li>
                         {% endfor %}
-                    </ul>
+                    </ol>
                     <a href="#" onclick="toggleSampleAllErrorsList('metadata-{{ loop.index0 }}'); return false;">Hide</a>
                 </div>
 
                 <div id="vcf-{{ loop.index0 }}" class="description no-show">
                     <div class="error-description"><strong>All Errors For Category - Samples in the VCF files but not described in the metadata:</strong></div>
-                    <ul>
+                    <ol>
                         {% for error in results_for_analysis.get('more_submitted_files_metadata') %}
-                            <li>{{ error }}</li>
+                            <li>{{ format_error(error) }}</li>
                         {% endfor %}
-                    </ul>
+                    </ol>
                     <a href="#" onclick="toggleSampleAllErrorsList('vcf-{{ loop.index0 }}'); return false;">Hide</a>
                 </div>
             </div>
