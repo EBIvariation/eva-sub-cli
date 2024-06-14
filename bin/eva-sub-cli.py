@@ -87,6 +87,6 @@ if __name__ == "__main__":
     except FileNotFoundError as fne:
         print(fne)
     except SubmissionNotFoundException as snfe:
-        print(f'{snfe}. Retry with correct submission id. If the problem persists, please contact EVA Helpdesk')
+        print(f'{snfe}. Please contact EVA Helpdesk')
     except SubmissionStatusException as sse:
         print(f'{sse}. Please try again later. If the problem persists, please contact EVA Helpdesk')

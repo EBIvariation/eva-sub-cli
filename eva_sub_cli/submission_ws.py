@@ -25,8 +25,8 @@ class SubmissionWSClient(AppLogger):
 
     @property
     def _submission_ws_url(self):
-        """Retrieve the base URL for the submission web services. In order of preference from the user of this class,
-        the environment variable or the hardcoded value."""
+        """Retrieve the base URL for the submission web services.
+        In order of preference from the environment variable or the hardcoded value."""
         if os.environ.get(SUBMISSION_WS_VAR):
             return os.environ.get(SUBMISSION_WS_VAR)
         else:
