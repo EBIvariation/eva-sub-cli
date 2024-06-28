@@ -1,5 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
+  "$async": true,
   "version": "1.0.0",
   "$id": "EVA_metadata_schema",
   "author": "EVA",

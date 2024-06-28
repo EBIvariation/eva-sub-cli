@@ -5,6 +5,10 @@
 2023-06-29T10:03:44.451Z [info] Returning referenced schema from cache: eva-biosamples.json
 2023-06-29T10:03:44.799Z [info] Returning referenced schema from network : https://www.ebi.ac.uk/biosamples/schemas/certification/biosamples-minimal.json
 2023-06-29T10:03:44.953Z [info] Returning referenced schema from network : https://www.ebi.ac.uk/biosamples/schemas/certification/plant-miappe.json
+2024-06-27T12:51:22.538Z [debug] Looking for taxonomy [ABC12345] with ENA taxonomy validator.
+2024-06-27T12:51:22.577Z [warn] Failed to resolve taxonomy. Term not present: [ABC12345]
+2024-06-27T12:51:22.538Z [debug] Looking for taxonomy [ABC67890] with ENA taxonomy validator.
+2024-06-27T12:51:22.577Z [warn] Failed to resolve taxonomy. Term not present: [ABC67890]
 2023-06-29T10:03:45.008Z [info] Validation failed with errors: data should have required property 'files', data/project should have required property 'title', data/project should have required property 'description', data/project should have required property 'taxId', data/project should have required property 'centre', data/analysis/0 should have required property 'analysisTitle', data/analysis/0 should have required property 'description', data/analysis/0 should have required property 'experimentType', data/analysis/0 should have required property 'referenceGenome', data/sample/0 should have required property 'bioSampleAccession', data/sample/0 should have required property 'bioSampleObject', data/sample/0 should match exactly one schema in oneOf
 [1m[31m[40m Validation failed with following error(s):
  [0m

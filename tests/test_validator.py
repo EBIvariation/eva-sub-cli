@@ -121,6 +121,8 @@ class TestValidator(TestCase):
         self.validator.results['metadata_check'] = {}
         self.validator._parse_biovalidator_validation_results()
         assert self.validator.results['metadata_check']['json_errors'] == [
+            {'property': '/sample/taxId', 'description': "Taxonomy ABC12345 not found in ENA"},
+            {'property': '/sample/taxId', 'description': "Taxonomy ABC67890 not found in ENA"},
             {'property': '.files', 'description': "should have required property 'files'"},
             {'property': '/project.title', 'description': "should have required property 'title'"},
             {'property': '/project/taxId', 'description': "must have required property 'taxId'"},
@@ -135,6 +137,8 @@ class TestValidator(TestCase):
     def test_convert_biovalidator_validation_to_spreadsheet(self):
         self.validator.results['metadata_check'] = {
             'json_errors': [
+                {'property': '/sample/taxId', 'description': "Taxonomy ABC12345 not found in ENA"},
+                {'property': '/sample/taxId', 'description': "Taxonomy ABC67890 not found in ENA"},
                 {'property': '.files', 'description': "should have required property 'files'"},
                 {'property': '/project.title', 'description': "should have required property 'title'"},
                 {'property': '/project/taxId', 'description': "must have required property 'taxId'"},
@@ -153,6 +157,10 @@ class TestValidator(TestCase):
         self.validator._convert_biovalidator_validation_to_spreadsheet()
 
         assert self.validator.results['metadata_check']['spreadsheet_errors'] == [
+            {'sheet': 'Sample', 'row': '', 'column': 'Tax Id',
+             'description': 'In sheet "Sample", column "Tax Id", Taxonomy ABC12345 not found in ENA'},
+            {'sheet': 'Sample', 'row': '', 'column': 'Tax Id',
+             'description': 'In sheet "Sample", column "Tax Id", Taxonomy ABC67890 not found in ENA'},
             {'sheet': 'Files', 'row': '', 'column': '', 'description': 'Sheet "Files" is missing'},
             {'sheet': 'Project', 'row': '', 'column': 'Project Title',
              'description': 'In sheet "Project", column "Project Title" is not populated'},
