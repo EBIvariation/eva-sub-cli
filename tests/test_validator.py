@@ -59,6 +59,8 @@ class TestValidator(TestCase):
             },
             'metadata_check': {
                 'json_errors': [
+                    {'property': '/sample/taxId', 'description': 'Taxonomy ABC12345 not found in ENA'},
+                    {'property': '/sample/taxId', 'description': 'Taxonomy ABC67890 not found in ENA'},
                     {'property': '.files', 'description': "should have required property 'files'"},
                     {'property': '/project.title', 'description': "should have required property 'title'"},
                     {'property': '/project/taxId', 'description': "must have required property 'taxId'"},
@@ -73,6 +75,10 @@ class TestValidator(TestCase):
                     # NB. Wouldn't normally get conversion error + validation errors together, but it is supported.
                     {'sheet': 'Project', 'row': '', 'column': 'Tax ID',
                      'description': 'Worksheet Project is missing required header Tax ID'},
+                    {'sheet': 'Sample', 'row': '', 'column': 'Tax Id',
+                     'description': 'In sheet "Sample", column "Tax Id", Taxonomy ABC12345 not found in ENA'},
+                    {'sheet': 'Sample', 'row': '', 'column': 'Tax Id',
+                     'description': 'In sheet "Sample", column "Tax Id", Taxonomy ABC67890 not found in ENA'},
                     {'sheet': 'Files', 'row': '', 'column': '', 'description': 'Sheet "Files" is missing'},
                     {'sheet': 'Project', 'row': '', 'column': 'Project Title',
                      'description': 'In sheet "Project", column "Project Title" is not populated'},
