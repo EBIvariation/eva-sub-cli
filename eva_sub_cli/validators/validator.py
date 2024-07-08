@@ -396,6 +396,9 @@ class Validator(AppLogger):
                     break  # EOF
                 elif not line:
                     continue  # Empty line
+                if "Failed to resolve taxonomy. Term not present:" in line:
+                    value = re.findall(r"\[(.*?)\]", line)[-1]
+                    errors.append({'property': '/sample/taxId', 'description': f'Taxonomy {value} not found in ENA'})
                 if not collect:
                     if line.startswith('Validation failed with following error(s):'):
                         collect = True
@@ -434,7 +437,10 @@ class Validator(AppLogger):
             if row_json is None and attribute_json is None:
                 new_description = f'Sheet "{sheet}" is missing'
             elif row_json is None:
-                new_description = f'In sheet "{sheet}", column "{column}" is not populated'
+                if sheet == 'Sample' and 'not found in ENA' in error['description']:
+                    new_description = f'In sheet "{sheet}", column "{column}", {error["description"]}'
+                else:
+                    new_description = f'In sheet "{sheet}", column "{column}" is not populated'
             elif attribute_json and column:
                 new_description = f'In sheet "{sheet}", row "{row}", column "{column}" is not populated'
             else:

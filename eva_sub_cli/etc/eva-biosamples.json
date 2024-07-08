@@ -19,7 +19,10 @@
       "type": "string"
     },
     "accession": {
-      "type": "string"
+      "type": "string",
+      "isValidIdentifier": {
+        "prefix": "biosample"
+      }
     },
     "characteristics": {
       "type": "object",
@@ -132,7 +135,8 @@
           "items": {
             "properties": {
               "text": {
-                "$ref": "#/definitions/nonEmptyString"
+                "$ref": "#/definitions/nonEmptyString",
+                "isValidTaxonomy": true
               }
             },
             "required": [

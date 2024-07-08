@@ -156,6 +156,10 @@ validation_results = {
         ],
         'json_report_path': '/path/to/metadata/report',
         'spreadsheet_errors': [
+            {'sheet': 'Sample', 'row': '', 'column': 'Tax Id',
+             'description': 'In sheet "Sample", column "Tax Id", Taxonomy ABC12345 not found in ENA'},
+            {'sheet': 'Sample', 'row': '', 'column': 'Tax Id',
+             'description': 'In sheet "Sample", column "Tax Id", Taxonomy ABC67890 not found in ENA'},
             {'sheet': 'Files', 'row': '', 'column': '', 'description': 'Sheet "Files" is missing'},
             {'sheet': 'Project', 'row': '', 'column': 'Project Title', 'description': 'In sheet "Project", column "Project Title" is not populated'},
             {'sheet': 'Project', 'row': '', 'column': 'Description', 'description': 'In sheet "Project", column "Description" is not populated'},
