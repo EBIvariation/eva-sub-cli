@@ -363,7 +363,7 @@ class Validator(AppLogger):
         self._parse_semantic_metadata_results()
         self._convert_biovalidator_validation_to_spreadsheet()
         self._write_spreadsheet_validation_results()
-        self._collect_md5sum_to_metadata()
+        self._collect_file_info_to_metadata()
 
     def _load_spreadsheet_conversion_errors(self):
         errors_file = resolve_single_file_path(os.path.join(self.output_dir, 'other_validations',
@@ -513,7 +513,7 @@ class Validator(AppLogger):
             if attributes_dict[attribute] == json_attribute:
                 return attribute
 
-    def _collect_md5sum_to_metadata(self):
+    def _collect_file_info_to_metadata(self):
         md5sum_file = resolve_single_file_path(os.path.join(self.output_dir, 'other_validations', 'file_info.txt'))
         file_path_2_md5 = {}
         file_name_2_md5 = {}
@@ -534,7 +534,6 @@ class Validator(AppLogger):
             with open(self.metadata_json_post_validation) as open_file:
                 try:
                     json_data = json.load(open_file)
-                    analysis_aliases = [a.get('analysisAlias') for a in json_data.get('analysis', [])]
                     file_rows = []
                     files_from_metadata = json_data.get('files', [])
                     if files_from_metadata:
