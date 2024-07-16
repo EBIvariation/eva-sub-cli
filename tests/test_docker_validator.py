@@ -130,7 +130,7 @@ class TestDockerValidator(TestCase):
             json_data = json.load(open_file)
             assert json_data.get('files') == [
                 {'analysisAlias': 'AA', 'fileName': 'input_passed.vcf', 'fileType': 'vcf',
-                 'md5': '96a80c9368cc3c37095c86fbe6044fb2'}
+                 'md5': '96a80c9368cc3c37095c86fbe6044fb2', 'fileSize': 103}
             ]
 
         # Check metadata errors

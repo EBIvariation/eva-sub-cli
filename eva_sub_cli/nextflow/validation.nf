@@ -78,8 +78,8 @@ workflow {
     check_vcf_valid(vcf_channel)
     check_vcf_reference(vcf_channel)
 
-    generate_md5_digests(vcf_files)
-    collect_md5(generate_md5_digests.out.md5_digest.collect())
+    generate_file_size_and_md5_digests(vcf_files)
+    collect_file_size_and_md5(generate_file_size_and_md5_digests.out.file_size_and_digest_info.collect())
 
 
     // Metadata conversion
@@ -151,34 +151,38 @@ process check_vcf_reference {
     """
 }
 
-process generate_md5_digests {
+process generate_file_size_and_md5_digests {
     input:
     path(vcf_file)
 
     output:
-    path "${vcf_file}.md5", emit: md5_digest
+    path "${vcf_file}_file_size_and_digest_info.txt", emit: file_size_and_digest_info
 
     script:
     // Capture the realpath of the vcf to be able to resolve the file based on path instead of name
     """
-    md5sum  `readlink $vcf_file` > ${vcf_file}.md5
+    md5sum $vcf_file > ${vcf_file}.md5
+    md5sum=\$(cut -d ' ' -f 1 ${vcf_file}.md5)
+    vcf_realpath=\$(readlink -f $vcf_file)
+    file_size=\$(stat -c%s $vcf_file)
+    echo "\$md5sum \$file_size \$vcf_realpath" > ${vcf_file}_file_size_and_digest_info.txt
     """
 }
 
-process collect_md5 {
+process collect_file_size_and_md5 {
     publishDir output_dir,
             overwrite: true,
             mode: "copy"
 
     input:
-    path(file_digests)
+    path(file_size_and_digests)
 
     output:
-    path "md5sums.txt", emit: md5_digest_log
+    path "file_info.txt", emit: file_info_log
 
     script:
     """
-    cat $file_digests > md5sums.txt
+    cat $file_size_and_digests > file_info.txt
     """
 }
 

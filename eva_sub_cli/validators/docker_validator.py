@@ -12,7 +12,7 @@ from eva_sub_cli.validators.validator import Validator
 logger = logging_config.get_logger(__name__)
 
 container_image = 'ebivariation/eva-sub-cli'
-container_tag = 'v0.0.1.dev10'
+container_tag = 'v0.0.1.dev11'
 container_validation_dir = '/opt/vcf_validation'
 container_validation_output_dir = 'vcf_validation_output'
 

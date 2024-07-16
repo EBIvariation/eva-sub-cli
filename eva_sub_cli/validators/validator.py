@@ -514,17 +514,22 @@ class Validator(AppLogger):
                 return attribute
 
     def _collect_md5sum_to_metadata(self):
-        md5sum_file = resolve_single_file_path(os.path.join(self.output_dir, 'other_validations', 'md5sums.txt'))
+        md5sum_file = resolve_single_file_path(os.path.join(self.output_dir, 'other_validations', 'file_info.txt'))
         file_path_2_md5 = {}
         file_name_2_md5 = {}
+        file_path_2_file_size = {}
+        file_name_2_file_size = {}
         if md5sum_file:
             with open(md5sum_file) as open_file:
                 for line in open_file:
                     sp_line = line.split(' ')
                     md5sum = sp_line[0]
-                    vcf_file = line.strip()[len(md5sum):].lstrip()  # Remove the md5: the rest is the file path
+                    file_size = int(sp_line[1])
+                    vcf_file = sp_line[2].strip()
                     file_path_2_md5[vcf_file] = md5sum
                     file_name_2_md5[os.path.basename(vcf_file)] = md5sum
+                    file_path_2_file_size[vcf_file] = file_size
+                    file_name_2_file_size[os.path.basename(vcf_file)] = file_size
         if self.metadata_json_post_validation:
             with open(self.metadata_json_post_validation) as open_file:
                 try:
@@ -538,6 +543,8 @@ class Validator(AppLogger):
                                 file_path = self._validation_file_path_for(file_dict.get('fileName'))
                                 file_dict['md5'] = file_path_2_md5.get(file_path) or \
                                                    file_name_2_md5.get(file_dict.get('fileName')) or ''
+                                file_dict['fileSize'] = file_path_2_file_size.get(file_path) or \
+                                                   file_name_2_file_size.get(file_dict.get('fileName')) or ''
                             file_rows.append(file_dict)
                     else:
                         self.error('No file found in metadata and multiple analysis alias exist: '

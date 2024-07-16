@@ -346,6 +346,10 @@
             "type": "string",
             "description": "File name"
           },
+          "fileSize": {
+            "type": "number",
+            "description": "Size of file in bytes"
+          },
           "md5": {
             "type": "string",
             "description": "MD5 hash of the file"
