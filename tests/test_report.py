@@ -327,7 +327,7 @@ class TestReport(TestCase):
     def test_generate_html_report_metadata_xlsx(self):
         report = generate_html_report(validation_results_xlsx, self.test_validation_date, self.test_submission_dir,
                                       self.test_vcf_fasta_analysis_mapping, self.test_project_name)
-        with open('report.html', 'w') as open_file:
+        with open('metadata_xlsx_report.html', 'w') as open_file:
             open_file.write(report)
 
         with open(self.expected_report_metadata_xlsx) as open_html:
@@ -337,13 +337,13 @@ class TestReport(TestCase):
             assert report == expected_report_text
 
         # Remove output file if assert passes
-        if os.path.exists('report.html'):
-            os.remove('report.html')
+        if os.path.exists('metadata_xlsx_report.html'):
+            os.remove('metadata_xlsx_report.html')
 
     def test_generate_html_report_metadata_json(self):
         report = generate_html_report(validation_results_json, self.test_validation_date, self.test_submission_dir,
                                       self.test_vcf_fasta_analysis_mapping, self.test_project_name)
-        with open('report.html', 'w') as open_file:
+        with open('metadata_json_report.html', 'w') as open_file:
             open_file.write(report)
 
         with open(self.expected_report_metadata_json) as open_html:
@@ -353,5 +353,5 @@ class TestReport(TestCase):
             assert report == expected_report_text
 
         # Remove output file if assert passes
-        if os.path.exists('report.html'):
-            os.remove('report.html')
+        if os.path.exists('metadata_json_report.html'):
+            os.remove('metadata_json_report.html')
