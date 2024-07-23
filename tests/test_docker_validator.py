@@ -133,11 +133,6 @@ class TestDockerValidator(TestCase):
                  'md5': '96a80c9368cc3c37095c86fbe6044fb2', 'fileSize': 103}
             ]
 
-        # Check metadata errors
-        with open(os.path.join(self.validator.output_dir, 'other_validations', 'metadata_validation.txt')) as open_file:
-            metadata_val_lines = {l.strip() for l in open_file.readlines()}
-            assert 'must match pattern "^PRJ(EB|NA)\\d+$"' in metadata_val_lines
-
     def test_validate_from_excel(self):
         self.validator_from_excel.validate()
         self.assertTrue(os.path.isfile(self.validator_from_excel._sample_check_yaml))

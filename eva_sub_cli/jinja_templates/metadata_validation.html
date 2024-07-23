@@ -2,7 +2,10 @@
 {% macro metadata_validation_report(validation_results) -%}
     {% set results = validation_results.get('metadata_check', {}) %}
     {% set spreadsheet_errors = results.get('spreadsheet_errors', []) %}
-    {% if spreadsheet_errors %}
+    {% set json_errors = results.get('json_errors', []) %}
+
+    {% set has_errors = spreadsheet_errors or json_errors %}
+    {% if has_errors %}
         {% set expand_icon = "&#9654;" %}
         {% set icon = "&#10060;" %}
         {% set row_class = "report-section fail collapsible" %}
@@ -23,6 +26,23 @@
                         <td><strong>{{ error.get('sheet') }}</strong></td>
                         <td><strong>{{ error.get('row') }}</strong></td>
                         <td><strong>{{ error.get('column') }}</strong></td>
+                        <td> {{ error.get('description') }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    {% endif %}
+
+    {% if json_errors %}
+        <div class="error-list">
+            <div class="error-description"><strong>Full report:</strong> {{ results.get('json_report_path', '') }}</div>
+            <table>
+                <tr>
+                    <th>Json Property</th><th>Error Description</th>
+                </tr>
+                {% for error in json_errors %}
+                    <tr>
+                        <td><strong>{{ error.get('property') }}</strong></td>
                         <td> {{ error.get('description') }}</td>
                     </tr>
                 {% endfor %}

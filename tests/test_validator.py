@@ -12,6 +12,7 @@ class TestValidator(TestCase):
     assembly_reports = os.path.join(resource_dir, 'assembly_reports')
     output_dir = os.path.join(resource_dir, 'validation_reports')
     mapping_file = os.path.join(output_dir, 'vcf_files_mapping.csv')
+    metadata_xlsx_file = os.path.join(output_dir, 'EVA_Submission_test.xlsx')
 
     def setUp(self) -> None:
         # create vcf mapping file
@@ -20,7 +21,8 @@ class TestValidator(TestCase):
                             [os.path.join(self.vcf_files, 'input_passed.vcf')],
                             [os.path.join(self.fasta_files, 'input_passed.fa')],
                             [os.path.join(self.assembly_reports, 'input_passed.txt')])
-        self.validator = Validator(self.mapping_file, self.output_dir)
+        self.validator = Validator(self.mapping_file, self.output_dir, metadata_xlsx=self.metadata_xlsx_file)
+        self.validator_json = Validator(self.mapping_file, self.output_dir)
 
     def tearDown(self) -> None:
         files_from_tests = [
@@ -32,7 +34,7 @@ class TestValidator(TestCase):
             if os.path.exists(f):
                 os.remove(f)
 
-    def test__collect_validation_workflow_results(self):
+    def test__collect_validation_workflow_results_with_metadata_xlsx(self):
         expected_results = {
             'vcf_check': {
                 'input_passed.vcf': {'valid': True, 'error_list': [], 'error_count': 0, 'warning_count': 0, 'critical_count': 0, 'critical_list': []}
@@ -115,6 +117,73 @@ class TestValidator(TestCase):
             del file['report_path']
 
         assert self.validator.results == expected_results
+
+    def test__collect_validation_workflow_results_with_metadata_json(self):
+        expected_results = {
+            'vcf_check': {
+                'input_passed.vcf': {'valid': True, 'error_list': [], 'error_count': 0, 'warning_count': 0,
+                                     'critical_count': 0, 'critical_list': []}
+            },
+            'assembly_check': {
+                'input_passed.vcf': {'error_list': [], 'mismatch_list': [], 'nb_mismatch': 0, 'nb_error': 0,
+                                     'match': 247, 'total': 247}
+            },
+            'sample_check': {
+                'overall_differences': False,
+                'results_per_analysis': {
+                    'AA': {
+                        'difference': False,
+                        'more_metadata_submitted_files': [],
+                        'more_per_submitted_files_metadata': {},
+                        'more_submitted_files_metadata': []
+                    }
+                }
+            },
+            'fasta_check': {
+                'input_passed.fa': {'all_insdc': False, 'sequences': [
+                    {'sequence_name': 1, 'insdc': True, 'sequence_md5': '6681ac2f62509cfc220d78751b8dc524'},
+                    {'sequence_name': 2, 'insdc': False, 'sequence_md5': 'd2b3f22704d944f92a6bc45b6603ea2d'}
+                ]},
+            },
+            'metadata_check': {
+                'json_errors': [
+                    {'property': '/files', 'description': "should have required property 'files'"},
+                    {'property': '/project/title', 'description': "should have required property 'title'"},
+                    {'property': '/project/taxId', 'description': "must have required property 'taxId'"},
+                    {'property': '/project/holdDate', 'description': 'must match format "date"'},
+                    {'property': '/analysis/0/description',
+                     'description': "should have required property 'description'"},
+                    {'property': '/analysis/0/referenceGenome',
+                     'description': "should have required property 'referenceGenome'"},
+                    {'property': '/sample/0/bioSampleAccession',
+                     'description': "should have required property 'bioSampleAccession'"},
+                    {'property': '/sample/0/bioSampleObject',
+                     'description': "should have required property 'bioSampleObject'"},
+                    {'property': '/sample/0', 'description': 'should match exactly one schema in oneOf'},
+                    {'property': '/project/childProjects/1', 'description': 'PRJEBNA does not exist or is private'},
+                    {'property': '/sample/2/bioSampleObject/characteristics/taxId',
+                     'description': '1234 is not a valid taxonomy code'},
+                    {'property': '/sample/analysisAlias', 'description': 'alias1 present in Analysis not in Samples'},
+                    {'property': '/sample/analysisAlias',
+                     'description': 'alias_1,alias_2 present in Samples not in Analysis'},
+                ],
+                'spreadsheet_errors': [
+                    {'sheet': 'Project', 'row': '', 'column': 'Tax ID',
+                     'description': 'Worksheet Project is missing required header Tax ID'}
+                ]
+            }
+        }
+
+        self.validator_json._collect_validation_workflow_results()
+        # Drop report paths from comparison (test will fail if missing)
+        del self.validator_json.results['metadata_check']['json_report_path']
+        del self.validator_json.results['sample_check']['report_path']
+        for file in self.validator_json.results['vcf_check'].values():
+            del file['report_path']
+        for file in self.validator_json.results['assembly_check'].values():
+            del file['report_path']
+
+        assert self.validator_json.results == expected_results
 
     def test_create_report(self):
         self.validator._collect_validation_workflow_results()
