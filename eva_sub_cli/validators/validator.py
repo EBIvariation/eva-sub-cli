@@ -364,7 +364,7 @@ class Validator(AppLogger):
         if self.metadata_xlsx:
             self._convert_biovalidator_validation_to_spreadsheet()
             self._write_spreadsheet_validation_results()
-        self._collect_md5sum_to_metadata()
+        self._collect_file_info_to_metadata()
 
     def _load_spreadsheet_conversion_errors(self):
         errors_file = resolve_single_file_path(os.path.join(self.output_dir, 'other_validations',
