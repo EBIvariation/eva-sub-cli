@@ -1,3 +1,4 @@
+import re
 import json
 from copy import deepcopy
 
@@ -22,7 +23,7 @@ BIOSAMPLE_ACCESSION_KEY = 'bioSampleAccession'
 CHARACTERISTICS_KEY = 'characteristics'
 TAX_ID_KEY = 'taxId'
 ANALYSIS_ALIAS_KEY = 'analysisAlias'
-
+ANALYSIS_RUNS_KEY = 'runAccessions'
 
 def cast_list(l, type_to_cast=str):
     for e in l:
@@ -47,6 +48,7 @@ class SemanticMetadataChecker(AppLogger):
         self.check_all_project_accessions()
         self.check_all_taxonomy_codes()
         self.check_existing_biosamples()
+        self.check_all_analysis_run_accessions
         self.check_analysis_alias_coherence()
 
     def check_all_project_accessions(self):
@@ -69,12 +71,27 @@ class SemanticMetadataChecker(AppLogger):
                 self.check_taxonomy_code(sample[BIOSAMPLE_OBJECT_KEY][CHARACTERISTICS_KEY][TAX_ID_KEY][0]['text'],
                                          f'/{SAMPLE_KEY}/{idx}/{BIOSAMPLE_OBJECT_KEY}/{CHARACTERISTICS_KEY}/{TAX_ID_KEY}')
 
+    def check_all_analysis_run_accessions(self):
+        """Check that the Run accession are valid and exist in ENA"""
+        for idx, analysis in enumerate(self.metadata[ANALYSIS_KEY]):
+            json_path = f'/{ANALYSIS_KEY}/{idx}/{ANALYSIS_RUNS_KEY}'
+            if analysis[ANALYSIS_RUNS_KEY]:
+                for run_acc in analysis[ANALYSIS_RUNS_KEY]:
+                    match = re.match('(E|D|S)RR[0-9]{6,}', run_acc)
+                    if not match:
+                        self.add_error(json_path, f'Invalid run accession format for {run_acc}')
+                    else:
+                        self.check_accession_in_ena(run_acc, 'Run', json_path)
+
     @retry(tries=4, delay=2, backoff=1.2, jitter=(1, 3))
-    def check_project_accession(self, project_acc, json_path):
+    def check_accession_in_ena(self, ena_accession, accession_type, json_path):
         try:
-            download_xml_from_ena(f'https://www.ebi.ac.uk/ena/browser/api/xml/{project_acc}')
+            res = download_xml_from_ena(f'https://www.ebi.ac.uk/ena/browser/api/xml/{ena_accession}')
         except Exception:
-            self.add_error(json_path, f'{project_acc} does not exist or is private')
+            self.add_error(json_path, f'{accession_type} {ena_accession} does not exist in ENA or is private')
+
+    def check_project_accession(self, project_acc, json_path):
+        self.check_accession_in_ena(project_acc, 'Project', json_path)
 
     @retry(tries=4, delay=2, backoff=1.2, jitter=(1, 3))
     def check_taxonomy_code(self, taxonomy_code, json_path):

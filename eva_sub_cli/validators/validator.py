@@ -451,6 +451,9 @@ class Validator(AppLogger):
             self.results['metadata_check']['spreadsheet_errors'] = []
         for error in self.results['metadata_check'].get('json_errors', {}):
             sheet_json, row_json, attribute_json = self._parse_metadata_property(error['property'])
+            # There should only be one Project but adding the row back means it's easier for users to find
+            if sheet_json == 'project' and row_json is None:
+                row_json = 0
             sheet = self._convert_metadata_sheet(sheet_json, xls2json_conf)
             row = self._convert_metadata_row(sheet, row_json, xls2json_conf)
             column = self._convert_metadata_attribute(sheet, attribute_json, xls2json_conf)
@@ -460,12 +463,12 @@ class Validator(AppLogger):
                 if 'have required' not in error['description']:
                     new_description = error['description']
                 else:
-                    new_description = f'In sheet "{sheet}", column "{column}" is not populated'
+                    new_description = f'Column "{column}" is not populated'
             elif attribute_json and column:
                 if 'have required' not in error['description']:
                     new_description = error['description']
                 else:
-                    new_description = f'In sheet "{sheet}", row "{row}", column "{column}" is not populated'
+                    new_description = f'Column "{column}" is not populated'
             else:
                 new_description = error["description"].replace(sheet_json, sheet)
             if column is None:

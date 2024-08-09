@@ -129,6 +129,14 @@ class XlsxParser:
         if type_name and value is not None:
             if type_name == 'string':
                 return str(value)
+            if type_name == 'boolean':
+                return str(value).lower() in ['true', '1', 't', 'y', 'yes']
+            if type_name == 'list':
+                # split and remove empty values
+                return [XlsxParser.trim_value(v)
+                        for v in value.split(',') if v]
+            if type_name == 'date':
+                return XlsxParser.serialize(value)
         return value
 
     @staticmethod

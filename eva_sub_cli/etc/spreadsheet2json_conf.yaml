@@ -35,7 +35,7 @@ Project:
     Tax ID: taxId
   optional:
     Publication(s): publications
-    Parent Project(s): parentProject
+    Parent Project: parentProject
     Child Project(s): childProjects
     Peer Project(s): peerProjects
     Link(s): links
@@ -44,6 +44,12 @@ Project:
     Strain: strain
     Breed: breed
     Broker: broker
+  cast:
+    Publication(s): list
+    Child Project(s): list
+    Peer Project(s): list
+    Link(s): list
+    Hold Date: date
 
 Analysis:
   required:
@@ -63,6 +69,13 @@ Analysis:
     Date: date
     Link(s): links
     Run Accession(s): runAccessions
+  cast:
+    Run Accession(s): list
+    Imputation: boolean
+    Phasing: boolean
+    Date: date
+
+
 
 Sample:
   header_row: 3
@@ -115,6 +128,7 @@ Sample:
   cast:
     Sample ID: string
     BioSample Name: string
+    collection_date: date
 
 
 Files:

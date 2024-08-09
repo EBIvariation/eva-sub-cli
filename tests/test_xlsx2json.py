@@ -106,7 +106,9 @@ class TestXlsReader(TestCase):
                 "description": "An example project for demonstration purposes",
                 "centre": "University of Example",
                 "taxId": 9606,
-                "holdDate": "2023-12-31T00:00:00"
+                "holdDate": "2023-12-31",
+                'parentProject': 'PRJEB00001',
+                'childProjects': ['PRJEB00002', 'PRJEB00003']
             },
             "analysis": [
                 {
@@ -116,7 +118,8 @@ class TestXlsReader(TestCase):
                     "experimentType": "Whole genome sequencing",
                     "referenceGenome": "GCA_000001405.27",
                     "referenceFasta": "GCA_000001405.27_fasta.fa",
-                    "platform": "BGISEQ-500"
+                    "platform": "BGISEQ-500",
+                    "imputation": True,
                 },
                 {
                     "analysisTitle": "Variant Detection 2",
@@ -125,7 +128,8 @@ class TestXlsReader(TestCase):
                     "experimentType": "Whole genome sequencing",
                     "referenceGenome": "GCA_000001405.27",
                     "referenceFasta": "GCA_000001405.27_fasta.fa",
-                    "platform": "BGISEQ-500"
+                    "platform": "BGISEQ-500",
+                    'phasing': True,
                 },
                 {
                     "analysisTitle": "Variant Detection 3",
@@ -179,6 +183,9 @@ class TestXlsReader(TestCase):
                             ],
                             "species": [
                                 {"text": "Lemur catta"}
+                            ],
+                            'collectionDate': [
+                                {'text': '2021-03-12'}
                             ]
                         }
                     }

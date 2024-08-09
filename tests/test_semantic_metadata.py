@@ -43,7 +43,7 @@ class TestSemanticMetadata(TestCase):
             m_ena_download.side_effect = [True, True, Exception('problem downloading')]
             checker.check_all_project_accessions()
             self.assertEqual(checker.errors, [
-                {'property': '/project/childProjects/1', 'description': 'PRJEBNA does not exist or is private'}
+                {'property': '/project/childProjects/1', 'description': 'Project PRJEBNA does not exist in ENA or is private'}
             ])
 
     def test_check_all_taxonomy_codes(self):
@@ -152,3 +152,22 @@ class TestSemanticMetadata(TestCase):
             {'property': '/sample/analysisAlias', 'description': 'alias1 present in Analysis not in Samples'},
             {'property': '/sample/analysisAlias', 'description': 'alias_1,alias_2 present in Samples not in Analysis'}
         ])
+
+    def test_check_all_analysis_run_accessions(self):
+        metadata = {
+            "analysis": [
+                {'runAccessions': ['SRR000001', 'SRR000002']}
+            ]
+        }
+        checker = SemanticMetadataChecker(metadata)
+        checker.check_all_analysis_run_accessions()
+        assert checker.errors == []
+
+        metadata["analysis"].append({'runAccessions': ['SRR00000A']})
+        metadata["analysis"].append({'runAccessions': ['SRR00000000001']})
+
+        checker.check_all_analysis_run_accessions()
+        assert checker.errors == [
+            {'property': '/analysis/1/runAccessions', 'description': 'Invalid run accession format for SRR00000A'},
+            {'property': '/analysis/2/runAccessions', 'description': 'Run SRR00000000001 does not exist in ENA or is private'}]
+

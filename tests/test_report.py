@@ -143,15 +143,15 @@ validation_results_xlsx = {
     'metadata_check': {
         'spreadsheet_errors': [
             {'sheet': 'Files', 'row': '', 'column': '', 'description': 'Sheet "Files" is missing'},
-            {'sheet': 'Project', 'row': '', 'column': 'Project Title', 'description': 'In sheet "Project", column "Project Title" is not populated'},
-            {'sheet': 'Project', 'row': '', 'column': 'Description', 'description': 'In sheet "Project", column "Description" is not populated'},
-            {'sheet': 'Project', 'row': '', 'column': 'Tax ID', 'description': 'In sheet "Project", column "Tax ID" is not populated'},
-            {'sheet': 'Project', 'row': '', 'column': 'Center', 'description': 'In sheet "Project", column "Center" is not populated'},
-            {'sheet': 'Analysis', 'row': 2, 'column': 'Analysis Title', 'description': 'In sheet "Analysis", row "2", column "Analysis Title" is not populated'},
-            {'sheet': 'Analysis', 'row': 2, 'column': 'Description', 'description': 'In sheet "Analysis", row "2", column "Description" is not populated'},
-            {'sheet': 'Analysis', 'row': 2, 'column': 'Experiment Type', 'description': 'In sheet "Analysis", row "2", column "Experiment Type" is not populated'},
-            {'sheet': 'Analysis', 'row': 2, 'column': 'Reference', 'description': 'In sheet "Analysis", row "2", column "Reference" is not populated'},
-            {'sheet': 'Sample', 'row': 3, 'column': 'Sample Accession', 'description': 'In sheet "Sample", row "3", column "Sample Accession" is not populated'}
+            {'sheet': 'Project', 'row': 2, 'column': 'Project Title', 'description': 'Column "Project Title" is not populated'},
+            {'sheet': 'Project', 'row': 2, 'column': 'Description', 'description': 'Column "Description" is not populated'},
+            {'sheet': 'Project', 'row': 2, 'column': 'Tax ID', 'description': 'Column "Tax ID" is not populated'},
+            {'sheet': 'Project', 'row': 2, 'column': 'Center', 'description': 'Column "Center" is not populated'},
+            {'sheet': 'Analysis', 'row': 2, 'column': 'Analysis Title', 'description': 'Column "Analysis Title" is not populated'},
+            {'sheet': 'Analysis', 'row': 2, 'column': 'Description', 'description': 'Column "Description" is not populated'},
+            {'sheet': 'Analysis', 'row': 2, 'column': 'Experiment Type', 'description': 'Column "Experiment Type" is not populated'},
+            {'sheet': 'Analysis', 'row': 2, 'column': 'Reference', 'description': 'Column "Reference" is not populated'},
+            {'sheet': 'Sample', 'row': 3, 'column': 'Sample Accession', 'description': 'Column "Sample Accession" is not populated'}
         ],
         'spreadsheet_report_path': '/path/to/metadata/metadata_spreadsheet_validation.txt',
     }
