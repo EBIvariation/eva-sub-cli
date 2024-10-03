@@ -91,15 +91,22 @@ def vcf_check_errors_is_critical(error):
     (derived from ploidy 1).
     Sample #102, field AD does not match the meta specification Number=R (expected 3 value(s)). AD=..
     """
-    non_critical_format_fields = ['PL', 'AD', 'AC']
+    non_critical_format_fields = ['PL', 'AD', 'AC', 'GQ']
     non_critical_info_fields = ['AC']
     regexes = {
-        r'^INFO (\w+) does not match the specification Number': non_critical_format_fields,
-        r'^Sample #\d+, field (\w+) does not match the meta specification Number=': non_critical_info_fields
+        r'^INFO (\w+) does not match the specification Number': non_critical_info_fields,
+        r'^INFO (\w+) metadata Number is not ': non_critical_info_fields,
+        r'^Line \d+: Sample #\d+, field (\w+) does not match the meta specification Number=': non_critical_format_fields,
+        r'^Line \d+: FORMAT (\w+) metadata Type is not ': non_critical_format_fields,
+        r'^Line \d+: FORMAT (\w+) metadata Number is not ': non_critical_format_fields,
+        r'^Line \d+: INFO SVLEN must be equal to "length of ALT - length of REF" for non-symbolic alternate alleles. SVLEN=': None
     }
     for regex in regexes:
         match = re.match(regex, error)
         if match:
+            if regexes[regex] is None:
+                # No list of value to match against
+                return False
             field_affected = match.group(1)
             if field_affected in regexes[regex]:
                 return False

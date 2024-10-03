@@ -10,13 +10,25 @@ class TestValidationParsers(TestCase):
 
     def test_vcf_check_errors_is_critical(self):
         errors = [
-            'INFO AC does not match the specification Number=A (expected 1 value(s)). AC=100,37.',
-            'Sample #10, field PL does not match the meta specification Number=G (expected 2 value(s)). PL=.. It must derive its number of values from the ploidy of GT (if present), or assume diploidy. Contains 1 value(s), expected 2 (derived from ploidy 1).',
-            'Sample #102, field AD does not match the meta specification Number=R (expected 3 value(s)). AD=..'
+            ('INFO AC does not match the specification Number=A (expected 1 value(s)). AC=100,37.', False),
+            ('Line 124385: Sample #10, field PL does not match the meta specification Number=G (expected 2 value(s)). '
+             'PL=.. It must derive its number of values from the ploidy of GT (if present), or assume diploidy. '
+             'Contains 1 value(s), expected 2 (derived from ploidy 1).', False),
+            ('Line 124384: Sample #102, field AD does not match the meta specification Number=R (expected 3 value(s)). AD=..', False),
+            ('Line 8: SAMPLE metadata Genomes is not a valid string (maybe it contains quotes?).', True),
+            ('Line 6: FORMAT GQ metadata Type is not Integer.', False),
+            ('Line 7: FORMAT PL metadata Number is not G.', False),
+            ('Line 10: INFO AF metadata Number is not A.', True),
+            ('Line 4039: FORMAT GQ metadata Type is not Integer.', False),
+            ('Line 1525: Duplicated variant NA:5:C>T found.', True),
+            ('Line 8: Metadata ID contains a character different from alphanumeric, dot, underscore and dash.', True),
+            ('Line 14: FORMAT metadata Number is not a number, A, G or dot.', True),
+            ('Line 13: Contig is not sorted by position. Contig 1 position 5600263 found after 12313283.', True),
+            ('Line 1067: INFO SVLEN must be equal to "length of ALT - length of REF" for non-symbolic alternate '
+             'alleles. SVLEN=31, expected value=33.', False),
         ]
-        expected_return = [False, True, True]
-        for i, error in enumerate(errors):
-            assert vcf_check_errors_is_critical(error) == expected_return[i]
+        for error, is_critical in errors:
+            assert vcf_check_errors_is_critical(error) == is_critical, error
 
     def test_parse_assembly_check_log(self):
         assembly_check_log = os.path.join(self.resource_dir, 'assembly_check', 'invalid.vcf.assembly_check.log')
