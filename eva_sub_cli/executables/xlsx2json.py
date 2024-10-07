@@ -47,6 +47,7 @@ class XlsxParser:
         :param conf_filename: configuration file path
         :type conf_filename: basestring
         """
+        self.errors = []
         with open(conf_filename, 'r') as conf_file:
             self.xlsx_conf = yaml.safe_load(conf_file)
         try:
@@ -60,7 +61,6 @@ class XlsxParser:
         self.row_offset = {}
         self.headers = {}
         self.file_loaded = True
-        self.errors = []
         self.valid_worksheets()
 
     @property
