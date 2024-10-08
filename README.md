@@ -48,33 +48,39 @@ Install each of these and ensure they are included in your PATH. Then install th
 
 The ["Getting Started" guide](Getting_Started_with_eva_sub_cli.md) serves as an introduction for users of the eva-sub-cli tool. It includes instructions on how to prepare your data and metadata, ensuring that users are equipped with the necessary information to successfully submit variant data. This guide is essential for new users, offering practical advice and tips for a smooth onboarding experience with the eva-sub-cli tool.
 
-## eva-sub-cli tool: Options and parameters guide
+## Options and parameters guide
 
-The eva-sub-cli tool provides several options/parameters that you can use to tailor its functionality to your needs. Understanding these parameters is crucial for configuring the tool correctly. Below is an overview of the key parameters and options:
+The eva-sub-cli tool provides several options and parameters that you can use to tailor its functionality to your needs.
+You can view all the available parameters with the command `eva-sub-cli.py -h` and view detailed explanations for the
+input file requirements in the ["Getting Started" guide](Getting_Started_with_eva_sub_cli.md).
+Below is an overview of the key parameters.
 
-| OPTIONS/PARAMETERS         | DESCRIPTION                                                                                                                                                                                                        |
-|----------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| --version                  | Shows version number of the program and exit                                                                                                                                                                       |
-| --metadata_xlsx            | Excel spreadsheet that describe the project, analysis, samples and files                                                                                                                                           |
-| --metadata_json            | Json file that describe the project, analysis, samples and files                                                                                                                                                   |
-| --vcf_files                | One or several vcf files to validate.This allows you to provide multiple VCF files to validate and a single associated reference genome file. The VCF files and the associated reference genome file must use the same chromosome naming convention                                                                                                                                                                              |
-| --reference_fasta          | The fasta file containing the reference genome from which the variants were derived                                                                                                                                |
-| --submission_dir           | Path to the directory where all processing will be done and submission data is/will be stored                                                                                                                      |
-| --tasks {validate,submit}  | Selecting VALIDATE will run the validation regardless of the outcome of previous runs. Selecting SUBMIT will run validate only if the validation was not performed successfully before and then run the submission |
-| --executor {docker,native} | Select an execution type for running validation (default native)                                                                                                                                                   |
-| --shallow                  | Set the validation to be performed on the first 10000 records of the VCF. Only applies if the number of record exceed 10000                                                                                        |
-| --username                 | Username used for connecting to the ENA webin account                                                                                                                                                              |
-| --password                 | Password used for connecting to the ENA webin account                                                                                                                                                              |
+### Submission directory
 
+This is the directory where all processing will take place, and where configuration and reports will be saved.
+Crucially, the eva-sub-cli tool requires that there be **only one submission per directory**.
+Running multiple submissions from a single directory can result in data loss during validation and submission.
+
+### Metadata file
+
+Metadata can be provided in one of two files.
 
 #### The metadata spreadsheet
 
-The metadata template can be found within the [etc folder](eva_sub_cli/etc/EVA_Submission_template.xlsx). It should be populated following the instruction provided within the template.
+The metadata template can be found within the [etc folder](eva_sub_cli/etc/EVA_Submission_template.xlsx). It should be populated following the instructions provided within the template.
+This is passed using the option `--metadata_xlsx`.
 
 #### The metadata JSON
 
 The metadata can also be provided via a JSON file, which should conform to the schema located [here](eva_sub_cli/etc/eva_schema.json).
+This is passed using the option `--metadata_json`.
 
+### VCF files and Reference FASTA
+
+These can be provided either in the metadata file directly, or on the command line using the `--vcf_files` and `--reference_fata` options.
+Note that if you are using more than one reference FASTA, you **cannot** use the command line options; you must specify which VCF files use which FASTA files in the metadata.
+
+VCF files can be either uncompressed or compressed (bgzipped). FASTA files must be uncompressed.
 
 ## Execution
 
