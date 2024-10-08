@@ -13,7 +13,8 @@ from eva_sub_cli import SUB_CLI_CONFIG_FILE, __version__
 from eva_sub_cli.exceptions.submission_not_found_exception import SubmissionNotFoundException
 from eva_sub_cli.exceptions.submission_status_exception import SubmissionStatusException
 from eva_sub_cli.submission_ws import SubmissionWSClient
-from eva_sub_cli.submit import StudySubmitter, SUB_CLI_CONFIG_KEY_SUBMISSION_ID
+from eva_sub_cli.submit import StudySubmitter, SUB_CLI_CONFIG_KEY_SUBMISSION_ID, \
+    SUB_CLI_CONFIG_KEY_SUBMISSION_UPLOAD_URL
 from eva_sub_cli.validators.docker_validator import DockerValidator
 from eva_sub_cli.validators.native_validator import NativeValidator
 from eva_sub_cli.validators.validator import READY_FOR_SUBMISSION_TO_EVA
@@ -131,11 +132,15 @@ def check_validation_required(tasks, sub_config, username=None, password=None):
     if SUBMIT in tasks:
         if not sub_config.get(READY_FOR_SUBMISSION_TO_EVA, False):
             return True
+        # If we are working with an existing submission check its status to see if it was submitted and failed before.
         submission_id = sub_config.get(SUB_CLI_CONFIG_KEY_SUBMISSION_ID, None)
         if submission_id:
             try:
                 submission_status = SubmissionWSClient(username, password).get_submission_status(submission_id)
                 if submission_status == 'FAILED':
+                    # Reset the submission_id which will force the creation of a new one
+                    sub_config.set(SUB_CLI_CONFIG_KEY_SUBMISSION_ID, value=None)
+                    sub_config.set(SUB_CLI_CONFIG_KEY_SUBMISSION_UPLOAD_URL, value=None)
                     return True
                 else:
                     return False
@@ -151,7 +156,7 @@ def check_validation_required(tasks, sub_config, username=None, password=None):
                     raise SubmissionStatusException(f'Error occurred while getting status of the submission '
                                                     f'with Id {submission_id}')
 
-        logger.info(f'submission id not found in config. This might be the first time user is submitting')
+        logger.debug(f'submission id not found in config. This might be the first time user is submitting')
         return False
 
 

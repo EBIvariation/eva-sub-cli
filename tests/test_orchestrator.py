@@ -11,7 +11,7 @@ from eva_sub_cli import SUB_CLI_CONFIG_FILE
 from eva_sub_cli.exceptions.submission_not_found_exception import SubmissionNotFoundException
 from eva_sub_cli.exceptions.submission_status_exception import SubmissionStatusException
 from eva_sub_cli.orchestrator import orchestrate_process, VALIDATE, SUBMIT, DOCKER, check_validation_required
-from eva_sub_cli.submit import SUB_CLI_CONFIG_KEY_SUBMISSION_ID
+from eva_sub_cli.submit import SUB_CLI_CONFIG_KEY_SUBMISSION_ID, SUB_CLI_CONFIG_KEY_SUBMISSION_UPLOAD_URL
 from eva_sub_cli.validators.validator import READY_FOR_SUBMISSION_TO_EVA
 from tests.test_utils import touch
 
@@ -47,30 +47,36 @@ class TestOrchestrator(unittest.TestCase):
     def test_check_validation_required(self):
         tasks = ['submit']
 
-        sub_config = {READY_FOR_SUBMISSION_TO_EVA: False}
+        sub_config = WritableConfig(self.test_sub_dir, 'config.yaml')
+        sub_config.set(READY_FOR_SUBMISSION_TO_EVA, value=False)
         self.assertTrue(check_validation_required(tasks, sub_config))
 
-        sub_config = {READY_FOR_SUBMISSION_TO_EVA: True}
+        sub_config.set(READY_FOR_SUBMISSION_TO_EVA, value=True)
+
         self.assertFalse(check_validation_required(tasks, sub_config))
 
         with patch('eva_sub_cli.submission_ws.SubmissionWSClient.get_submission_status') as get_submission_status_mock:
-            sub_config = {READY_FOR_SUBMISSION_TO_EVA: True,
-                          SUB_CLI_CONFIG_KEY_SUBMISSION_ID: 'test123'}
+            sub_config.set(READY_FOR_SUBMISSION_TO_EVA, value=True)
+            sub_config.set(SUB_CLI_CONFIG_KEY_SUBMISSION_ID, value='test123')
 
             get_submission_status_mock.return_value = 'OPEN'
             self.assertFalse(check_validation_required(tasks, sub_config))
 
             get_submission_status_mock.return_value = 'FAILED'
             self.assertTrue(check_validation_required(tasks, sub_config))
+            # A FAILD submission status reset the submission ID and submission URL
+            self.assertEqual(sub_config.get(SUB_CLI_CONFIG_KEY_SUBMISSION_ID), None)
+            self.assertEqual(sub_config.get(SUB_CLI_CONFIG_KEY_SUBMISSION_UPLOAD_URL), None)
 
-            mock_response = Mock()
-            mock_response.status_code = 404
+            sub_config.set(READY_FOR_SUBMISSION_TO_EVA, value=True)
+            sub_config.set(SUB_CLI_CONFIG_KEY_SUBMISSION_ID, value='test123')
+
+            mock_response = Mock(status_code=404)
             get_submission_status_mock.side_effect = HTTPError(response=mock_response)
             with self.assertRaises(SubmissionNotFoundException):
                 check_validation_required(tasks, sub_config)
 
-            mock_response = Mock()
-            mock_response.status_code = 500
+            mock_response = Mock(status_code=500)
             get_submission_status_mock.side_effect = HTTPError(response=mock_response)
             with self.assertRaises(SubmissionStatusException):
                 check_validation_required(tasks, sub_config)
@@ -96,7 +102,8 @@ class TestOrchestrator(unittest.TestCase):
                 patch('eva_sub_cli.orchestrator.WritableConfig') as m_config, \
                 patch('eva_sub_cli.orchestrator.get_project_title_and_create_vcf_files_mapping') as m_get_project_title_and_create_vcf_files_mapping, \
                 patch('eva_sub_cli.orchestrator.DockerValidator') as m_docker_validator, \
-                patch('eva_sub_cli.orchestrator.StudySubmitter') as m_submitter:
+                patch('eva_sub_cli.orchestrator.StudySubmitter') as m_submitter, \
+                patch('eva_sub_cli.orchestrator.check_validation_required', return_value=True):
             # Empty config
             config = WritableConfig()
             m_config.return_value = config

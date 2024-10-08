@@ -81,6 +81,13 @@ class StudySubmitter(AppLogger):
         # update config with completion of the submission
         self.sub_config.set(SUB_CLI_CONFIG_KEY_COMPLETE, value=True)
 
+    def is_submission_status_open(self):
+        submission_id = self.sub_config.get(SUB_CLI_CONFIG_KEY_SUBMISSION_ID)
+        if submission_id:
+            status = self.submission_ws_client.get_submission_status(submission_id)
+            return status == 'OPEN'
+        return False
+
     def submit(self):
         if READY_FOR_SUBMISSION_TO_EVA not in self.sub_config or not self.sub_config[READY_FOR_SUBMISSION_TO_EVA]:
             raise Exception(f'There are still validation errors that need to be addressed. '
@@ -88,6 +95,12 @@ class StudySubmitter(AppLogger):
         if not self.sub_config.get(SUB_CLI_CONFIG_KEY_SUBMISSION_UPLOAD_URL):
             self.info(f'Initiate submission')
             self._initiate_submission()
+
+        if not self.is_submission_status_open():
+            self.warning(f'You requested the submission using {self.submission_dir}. '
+                         f'This directory contains an already completed submission. '
+                         f'Please create a new submission directory to resubmit.')
+            return
 
         # upload submission
         self.info(f'Upload data')

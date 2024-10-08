@@ -41,6 +41,7 @@ class TestSubmit(unittest.TestCase):
         mock_initiate_response.status_code = 200
         mock_initiate_response.json.return_value = {"submissionId": "mock_submission_id",
                                                     "uploadUrl": "directory to use for upload"}
+
         mock_uploaded_response = MagicMock()
         mock_uploaded_response.status_code = 200
 
@@ -48,10 +49,10 @@ class TestSubmit(unittest.TestCase):
 
         with patch.object(test_submission_ws_client, 'auth') as mocked_auth:
             with patch.object(self.submitter, 'submission_ws_client', test_submission_ws_client), \
+                    patch.object(test_submission_ws_client, 'get_submission_status', return_value='OPEN'), \
                     patch('eva_sub_cli.submission_ws.requests.post', return_value=mock_initiate_response) as mock_post, \
                     patch('eva_sub_cli.submission_ws.requests.put', return_value=mock_uploaded_response) as mock_put, \
-                    patch.object(StudySubmitter, '_upload_submission'), \
-                    patch.object(self.submitter, 'submission_dir', self.test_sub_dir):
+                    patch.object(StudySubmitter, '_upload_submission'):
                 mocked_auth.token = self.token
                 self.submitter.sub_config.set(READY_FOR_SUBMISSION_TO_EVA, value=True)
                 self.submitter.submit()
@@ -76,6 +77,7 @@ class TestSubmit(unittest.TestCase):
         mock_uploaded_response.status_code = 200
 
         assert is_submission_dir_writable(self.test_sub_dir)
+        assert not os.path.exists(self.config_file)
         sub_config = WritableConfig(self.config_file, version='version1.0')
         sub_config.set(READY_FOR_SUBMISSION_TO_EVA, value=True)
         sub_config.write()
@@ -84,6 +86,7 @@ class TestSubmit(unittest.TestCase):
 
         with patch.object(test_submission_ws_client, 'auth') as mocked_auth:
             with patch.object(self.submitter, 'submission_ws_client', test_submission_ws_client), \
+                    patch.object(test_submission_ws_client, 'get_submission_status', return_value='OPEN'), \
                     patch('eva_sub_cli.submission_ws.requests.post', return_value=mock_initiate_response) as mock_post, \
                     patch('eva_sub_cli.submission_ws.requests.put', return_value=mock_uploaded_response) as mock_put, \
                     patch.object(StudySubmitter, '_upload_submission'):
@@ -99,6 +102,27 @@ class TestSubmit(unittest.TestCase):
             sub_config_data = yaml.safe_load(f)
             assert sub_config_data[SUB_CLI_CONFIG_KEY_SUBMISSION_ID] == "mock_submission_id"
             assert sub_config_data[SUB_CLI_CONFIG_KEY_SUBMISSION_UPLOAD_URL] == "directory to use for upload"
+
+    def test_submit_when_already_completed(self):
+        test_submission_ws_client = SubmissionWSClient()
+
+        with patch.object(self.submitter, 'submission_ws_client', test_submission_ws_client), \
+                patch.object(test_submission_ws_client, 'get_submission_status', return_value='UPLOADED') as mock_get_submission_status, \
+                patch.object(self.submitter, '_initiate_submission') as mock_initiate, \
+                patch.object(self.submitter, '_upload_submission') as mock_upload, \
+                patch.object(self.submitter, '_complete_submission') as mock_complete, \
+                patch.object(self.submitter, 'warning') as mock_warning:
+
+            self.submitter.sub_config.set(READY_FOR_SUBMISSION_TO_EVA, value=True)
+            self.submitter.sub_config.set(SUB_CLI_CONFIG_KEY_SUBMISSION_UPLOAD_URL, value='directory to use for upload')
+            self.submitter.submit()
+            # No call was made to the end point or the upload because the submission status is 'UPLOADED'
+            mock_initiate.assert_not_called()
+            mock_upload.assert_not_called()
+            mock_complete.assert_not_called()
+            mock_warning.assert_called_once_with(
+                f'You requested the submission using {self.test_sub_dir}. This directory contains an already completed '
+                f'submission. Please create a new submission directory to resubmit.')
 
     def test_sub_config_file_creation(self):
         assert is_submission_dir_writable(self.test_sub_dir)
