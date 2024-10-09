@@ -80,7 +80,9 @@ This is passed using the option `--metadata_json`.
 These can be provided either in the metadata file directly, or on the command line using the `--vcf_files` and `--reference_fata` options.
 Note that if you are using more than one reference FASTA, you **cannot** use the command line options; you must specify which VCF files use which FASTA files in the metadata.
 
-VCF files can be either uncompressed or compressed (bgzipped). FASTA files must be uncompressed.
+VCF files can be either uncompressed or compressed using bgzip.
+Other types of compression are not allowed and will result in errors during validation.
+FASTA files must be uncompressed.
 
 ## Execution
 
