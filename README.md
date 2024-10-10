@@ -58,7 +58,7 @@ Below is an overview of the key parameters.
 ### Submission directory
 
 This is the directory where all processing will take place, and where configuration and reports will be saved.
-Crucially, the eva-sub-cli tool requires that there be **only one submission per directory**.
+Crucially, the eva-sub-cli tool requires that there be **only one submission per directory** and that the submission directory not be reused.
 Running multiple submissions from a single directory can result in data loss during validation and submission.
 
 ### Metadata file
