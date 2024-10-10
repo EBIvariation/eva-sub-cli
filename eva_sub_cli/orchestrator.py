@@ -10,6 +10,7 @@ from ebi_eva_common_pyutils.logger import logging_config
 from openpyxl.reader.excel import load_workbook
 
 from eva_sub_cli import SUB_CLI_CONFIG_FILE, __version__
+from eva_sub_cli.exceptions.invalid_file_type_exception import InvalidFileTypeError
 from eva_sub_cli.exceptions.submission_not_found_exception import SubmissionNotFoundException
 from eva_sub_cli.exceptions.submission_status_exception import SubmissionStatusException
 from eva_sub_cli.submission_ws import SubmissionWSClient
@@ -36,7 +37,19 @@ def get_vcf_files(mapping_file):
     return vcf_files
 
 
-def get_project_title_and_create_vcf_files_mapping(submission_dir, vcf_files, reference_fasta, metadata_json, metadata_xlsx):
+def get_project_title_and_create_vcf_files_mapping(submission_dir, vcf_files, reference_fasta,
+                                                   metadata_json, metadata_xlsx):
+    """
+    Get project title and mapping between VCF files and reference FASTA files, from three sources: command line
+        arguments, metadata JSON file, or metadata XLSX file.
+
+    :param submission_dir: Directory where mapping file will be saved
+    :param vcf_files: VCF files from command line, if present
+    :param reference_fasta: Reference FASTA from command line, if present
+    :param metadata_json: Metadata JSON from command line, if present
+    :param metadata_xlsx: Metadata XLSX from command line, if present
+    :return: Project title and path to the mapping file
+    """
     mapping_file = os.path.join(submission_dir, 'vcf_mapping_file.csv')
     with open(mapping_file, 'w') as open_file:
         writer = csv.writer(open_file, delimiter=',')
@@ -45,7 +58,7 @@ def get_project_title_and_create_vcf_files_mapping(submission_dir, vcf_files, re
         vcf_files_mapping = []
         if vcf_files and reference_fasta:
             for vcf_file in vcf_files:
-                vcf_files_mapping.append([os.path.abspath(vcf_file), os.path.abspath(reference_fasta)])
+                vcf_files_mapping.append([os.path.abspath(vcf_file), os.path.abspath(reference_fasta), ''])
             if metadata_json:
                 project_title, _ = get_project_and_vcf_fasta_mapping_from_metadata_json(metadata_json, False)
             elif metadata_xlsx:
@@ -55,10 +68,30 @@ def get_project_title_and_create_vcf_files_mapping(submission_dir, vcf_files, re
         elif metadata_xlsx:
             project_title, vcf_files_mapping = get_project_and_vcf_fasta_mapping_from_metadata_xlsx(metadata_xlsx, True)
 
+        validate_vcf_mapping(vcf_files_mapping)
         for mapping in vcf_files_mapping:
             writer.writerow(mapping)
 
     return project_title, mapping_file
+
+
+def validate_vcf_mapping(vcf_mapping):
+    """
+    Validate that VCF files and FASTA files in the mapping are present and FASTA files are not compressed.
+
+    :param vcf_mapping: iterable of triples (VCF file path, reference FASTA path, optional assembly report path)
+    :return:
+    """
+    for vcf_file, fasta_file, report_file in vcf_mapping:
+        if not (vcf_file and os.path.isfile(vcf_file)):
+            raise FileNotFoundError(f'The variant file {vcf_file} does not exist, please check the file path.')
+        if not (fasta_file and os.path.isfile(fasta_file)):
+            raise FileNotFoundError(f'The reference fasta {fasta_file} does not exist, please check the file path.')
+        if fasta_file.lower().endswith('gz'):
+            raise InvalidFileTypeError(f'The reference fasta {fasta_file} is compressed, please uncompress the file.')
+        if report_file and not os.path.isfile(report_file):
+            raise FileNotFoundError(f'The assembly report file {report_file} does not exist, please check the file '
+                                    f'path.')
 
 
 def get_project_and_vcf_fasta_mapping_from_metadata_json(metadata_json, mapping_req=False):
@@ -118,10 +151,6 @@ def get_project_and_vcf_fasta_mapping_from_metadata_xlsx(metadata_xlsx, mapping_
             file_name = os.path.abspath(row[files_headers['File Name']])
             analysis_alias = row[files_headers['Analysis Alias']]
             reference_fasta = os.path.abspath(analysis_alias_dict[analysis_alias])
-            if not (file_name and os.path.isfile(file_name)):
-                raise FileNotFoundError(f'The variant file {file_name} provided in spreadsheet {metadata_xlsx} does not exist')
-            if not (reference_fasta and os.path.isfile(reference_fasta)):
-                raise FileNotFoundError(f'The reference fasta {reference_fasta} in spreadsheet {metadata_xlsx} does not exist')
             vcf_fasta_report_mapping.append([os.path.abspath(file_name), os.path.abspath(reference_fasta), ''])
 
     return project_title, vcf_fasta_report_mapping

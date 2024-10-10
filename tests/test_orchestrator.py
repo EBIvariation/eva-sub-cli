@@ -8,6 +8,7 @@ from ebi_eva_common_pyutils.config import WritableConfig
 from requests import HTTPError
 
 from eva_sub_cli import SUB_CLI_CONFIG_FILE
+from eva_sub_cli.exceptions.invalid_file_type_exception import InvalidFileTypeError
 from eva_sub_cli.exceptions.submission_not_found_exception import SubmissionNotFoundException
 from eva_sub_cli.exceptions.submission_status_exception import SubmissionStatusException
 from eva_sub_cli.orchestrator import orchestrate_process, VALIDATE, SUBMIT, DOCKER, check_validation_required
@@ -149,16 +150,17 @@ class TestOrchestrator(unittest.TestCase):
 
     def test_orchestrate_with_vcf_files(self):
         with patch('eva_sub_cli.orchestrator.WritableConfig') as m_config, \
-                patch('eva_sub_cli.orchestrator.DockerValidator') as m_docker_validator:
-            orchestrate_process( self.test_sub_dir, self.vcf_files, self.reference_fasta, self.metadata_json,
-                                 self.metadata_xlsx, tasks=[VALIDATE], executor=DOCKER)
+                patch('eva_sub_cli.orchestrator.DockerValidator') as m_docker_validator, \
+                patch('eva_sub_cli.orchestrator.os.path.isfile'):
+            orchestrate_process(self.test_sub_dir, self.vcf_files, self.reference_fasta, self.metadata_json,
+                                self.metadata_xlsx, tasks=[VALIDATE], executor=DOCKER)
             # Mapping file was created from the vcf and assembly files
             assert os.path.exists(self.mapping_file)
             with open(self.mapping_file) as open_file:
                 reader = csv.DictReader(open_file, delimiter=',')
                 for row in reader:
                     assert row['vcf'].__contains__('vcf_file')
-                    assert row['report'] == None
+                    assert row['report'] == ''
             m_docker_validator.assert_any_call(
                 self.mapping_file, self.test_sub_dir, self.project_title, self.metadata_json, self.metadata_xlsx,
                 submission_config=m_config.return_value, shallow_validation=False
@@ -187,7 +189,8 @@ class TestOrchestrator(unittest.TestCase):
         shutil.copy(os.path.join(self.resource_dir, 'EVA_Submission_test_with_asm_report.json'), self.metadata_json)
 
         with patch('eva_sub_cli.orchestrator.WritableConfig') as m_config, \
-                patch('eva_sub_cli.orchestrator.DockerValidator') as m_docker_validator:
+                patch('eva_sub_cli.orchestrator.DockerValidator') as m_docker_validator, \
+                patch('eva_sub_cli.orchestrator.os.path.isfile'):
             orchestrate_process(self.test_sub_dir, None, None, self.metadata_json, None,
                 tasks=[VALIDATE], executor=DOCKER)
             # Mapping file was created from the metadata_json
@@ -207,7 +210,8 @@ class TestOrchestrator(unittest.TestCase):
         shutil.copy(os.path.join(self.resource_dir, 'EVA_Submission_test_with_asm_report.json'), self.metadata_json)
 
         with patch('eva_sub_cli.orchestrator.WritableConfig') as m_config, \
-                patch('eva_sub_cli.orchestrator.DockerValidator') as m_docker_validator:
+                patch('eva_sub_cli.orchestrator.DockerValidator') as m_docker_validator, \
+                patch('eva_sub_cli.orchestrator.os.path.isfile'):
             orchestrate_process(self.test_sub_dir, self.vcf_files, self.reference_fasta, self.metadata_json,
                                 None, tasks=[VALIDATE], executor=DOCKER, resume=False)
             # Mapping file was created from the metadata_json
@@ -216,14 +220,12 @@ class TestOrchestrator(unittest.TestCase):
                 reader = csv.DictReader(open_file, delimiter=',')
                 for row in reader:
                     assert row['vcf'].__contains__('vcf_file')
-                    assert row['report'] == None
+                    assert row['report'] == ''
             m_docker_validator.assert_any_call(
                 self.mapping_file, self.test_sub_dir, self.project_title, self.metadata_json, None,
                 submission_config=m_config.return_value, shallow_validation=False
             )
             m_docker_validator().validate_and_report.assert_called_once_with()
-
-
 
     def test_orchestrate_with_metadata_xlsx(self):
         with patch('eva_sub_cli.orchestrator.WritableConfig') as m_config, \
@@ -244,7 +246,7 @@ class TestOrchestrator(unittest.TestCase):
             m_docker_validator().validate_and_report.assert_called_once_with()
 
     def test_metadata_file_does_not_exist_error(self):
-        with self.assertRaises(Exception) as context:
+        with self.assertRaises(FileNotFoundError) as context:
             orchestrate_process(self.test_sub_dir, None, None, None, 'Non_existing_metadata.xlsx',
                                 tasks=[VALIDATE], executor=DOCKER)
         self.assertRegex(
@@ -252,4 +254,8 @@ class TestOrchestrator(unittest.TestCase):
             r"The provided metadata file .*/resources/test_sub_dir/Non_existing_metadata.xlsx does not exist"
         )
 
-
+    def test_fasta_file_compressed(self):
+        with patch('eva_sub_cli.orchestrator.os.path.isfile'):
+            with self.assertRaises(InvalidFileTypeError):
+                orchestrate_process(self.test_sub_dir, self.vcf_files, self.reference_fasta + '.gz', self.metadata_json,
+                                    self.metadata_xlsx, tasks=[VALIDATE], executor=DOCKER)
