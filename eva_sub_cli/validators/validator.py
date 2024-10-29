@@ -225,9 +225,8 @@ class Validator(AppLogger):
 
             vcf_check_log = self._vcf_check_log(vcf_name)
             vcf_check_text_report = self._vcf_check_text_report(vcf_name)
-            vcf_check_db_report = self._vcf_check_db_report(vcf_name)
 
-            if vcf_check_log and vcf_check_text_report and vcf_check_db_report:
+            if vcf_check_log and vcf_check_text_report:
                 valid, warning_count, error_count, critical_count, error_list, critical_list = parse_vcf_check_report(vcf_check_text_report)
             else:
                 valid, warning_count, error_count, critical_count, error_list, critical_list = (False, 0, 0, 1, [], ['Process failed'])
