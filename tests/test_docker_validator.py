@@ -101,9 +101,9 @@ class TestDockerValidator(TestCase):
         with open(vcf_format_log_file) as vcf_format_log_file:
             vcf_format_logs = vcf_format_log_file.readlines()
             self.assertEqual('[info] According to the VCF specification, the input file is valid\n',
-                             vcf_format_logs[3])
+                             vcf_format_logs[2])
 
-            text_report = vcf_format_logs[2].split(':')[1].strip()
+            text_report = vcf_format_logs[1].split(':')[1].strip()
             with open(os.path.join(validator.output_dir, text_report)) as text_report:
                 text_report_content = text_report.readlines()
                 self.assertEqual('According to the VCF specification, the input file is valid\n',

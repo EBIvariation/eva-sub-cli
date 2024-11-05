@@ -137,7 +137,6 @@ process check_vcf_valid {
     tuple path(vcf), path(fasta), path(report)
 
     output:
-    path "vcf_format/*.errors.*.db", emit: vcf_validation_db
     path "vcf_format/*.errors.*.txt", emit: vcf_validation_txt
     path "vcf_format/*.vcf_format.log", emit: vcf_validation_log
 
@@ -145,7 +144,7 @@ process check_vcf_valid {
     trap 'if [[ \$? == 1 ]]; then exit 0; fi' EXIT
 
     mkdir -p vcf_format
-    $params.executable.vcf_validator -i $vcf -r database,text -o vcf_format --require-evidence > vcf_format/${vcf}.vcf_format.log 2>&1
+    $params.executable.vcf_validator -i $vcf -r text -o vcf_format --require-evidence > vcf_format/${vcf}.vcf_format.log 2>&1
     """
 }
 
