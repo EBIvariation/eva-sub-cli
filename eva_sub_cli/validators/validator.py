@@ -157,7 +157,14 @@ class Validator(AppLogger):
 
     def verify_ready_for_submission_to_eva(self):
         """ Checks if all the validation are passed """
-        return all((value.get('PASS', False) is True for key, value in self.results.items()))
+        return all((
+            all((value.get('PASS', False) is True for key, value in self.results.items() if
+                 key in ['vcf_check', 'assembly_check', 'fasta_check', 'sample_check', 'metadata_check'])),
+            any((
+                self.results['shallow_validation']['requested'] is False,
+                self.results['shallow_validation'].get('required', True) is False
+            ))
+        ))
 
     def _collect_validation_workflow_results(self):
         # Collect information from the output and summarise in the config
