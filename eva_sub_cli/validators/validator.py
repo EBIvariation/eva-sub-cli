@@ -97,7 +97,6 @@ class Validator(AppLogger):
 
     def report(self):
         self.create_reports()
-        self.update_config_with_validation_result()
 
     def _validate(self):
         raise NotImplementedError
@@ -151,14 +150,10 @@ class Validator(AppLogger):
                     missing_files_list.append(row['report'])
         return files_missing, missing_files_list
 
-    def update_config_with_validation_result(self):
-        self.sub_config.set(VALIDATION_RESULTS_KEY, value=self.results)
-        self.sub_config.set(READY_FOR_SUBMISSION_TO_EVA, value=self.verify_ready_for_submission_to_eva())
-
     def verify_ready_for_submission_to_eva(self):
         """ Checks if all the validation are passed """
         return all((
-            all((value.get('PASS', False) is True for key, value in self.results.items() if
+            all((value.get('pass', False) is True for key, value in self.results.items() if
                  key in ['vcf_check', 'assembly_check', 'fasta_check', 'sample_check', 'metadata_check'])),
             any((
                 self.results['shallow_validation']['requested'] is False,
@@ -184,28 +179,31 @@ class Validator(AppLogger):
         # vcf_check result
         vcf_check_result = all((vcf_check.get('critical_count', 1) == 0
                                 for vcf_name, vcf_check in self.results.get('vcf_check', {}).items()))
-        self.results['vcf_check']['PASS'] = vcf_check_result
+        self.results['vcf_check']['pass'] = vcf_check_result
 
         # assembly_check result
         asm_nb_mismatch_result = all((asm_check.get('nb_mismatch', 1) == 0
                                       for vcf_name, asm_check in self.results.get('assembly_check', {}).items()))
         asm_nb_error_result = all((asm_check.get('nb_error', 1) == 0
                                    for vcf_name, asm_check in self.results.get('assembly_check', {}).items()))
-        self.results['assembly_check']['PASS'] = asm_nb_mismatch_result and asm_nb_error_result
+        self.results['assembly_check']['pass'] = asm_nb_mismatch_result and asm_nb_error_result
 
         # fasta_check result
         fasta_check_result = all((fa_file_check.get('all_insdc', False) is True
                                   for fa_file, fa_file_check in self.results.get('fasta_check', {}).items()))
-        self.results['fasta_check']['PASS'] = fasta_check_result
+        self.results['fasta_check']['pass'] = fasta_check_result
 
         # sample check result
-        self.results['sample_check']['PASS'] = self.results.get('sample_check', {}).get('overall_differences',
+        self.results['sample_check']['pass'] = self.results.get('sample_check', {}).get('overall_differences',
                                                                                         True) is False
 
         # metadata check result
-        metadata_xlsx_result = len(self.results.get('metadata_check', {}).get('spreadsheet_errors', [])) == 0
-        metadata_json_result = len(self.results.get('metadata_check', {}).get('json_errors', [])) == 0
-        self.results['metadata_check']['PASS'] = metadata_xlsx_result and metadata_json_result
+        metadata_xlsx_result = len(self.results.get('metadata_check', {}).get('spreadsheet_errors', []) or []) == 0
+        metadata_json_result = len(self.results.get('metadata_check', {}).get('json_errors', []) or []) == 0
+        self.results['metadata_check']['pass'] = metadata_xlsx_result and metadata_json_result
+
+        # update config based on the validation results
+        self.sub_config.set(READY_FOR_SUBMISSION_TO_EVA, value=self.verify_ready_for_submission_to_eva())
 
     def _save_validation_results(self):
         with open(self.validation_result_file, 'w') as val_res_file:
