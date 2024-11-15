@@ -92,7 +92,7 @@ class Validator(AppLogger):
         self._validate()
         self.clean_up_output_dir()
         self._collect_validation_workflow_results()
-        self._asses_validation_results()
+        self._assess_validation_results()
         self._save_validation_results()
 
     def report(self):
@@ -176,7 +176,7 @@ class Validator(AppLogger):
         self._load_fasta_check_results()
         self._collect_metadata_results()
 
-    def _asses_validation_results(self):
+    def _assess_validation_results(self):
         """
             Assess if the validation results are meeting expectations and marks them as "PASS: true" or "PASS: false"
             It assumes all validation have been parsed already.
@@ -211,7 +211,7 @@ class Validator(AppLogger):
         with open(self.validation_result_file, 'w') as val_res_file:
             yaml.safe_dump(self.results, val_res_file)
 
-        self.info(f"saved validation result in {self.validation_result_file}")
+        self.debug(f"saved validation result in {self.validation_result_file}")
 
     @lru_cache
     def _vcf_check_log(self, vcf_name):
