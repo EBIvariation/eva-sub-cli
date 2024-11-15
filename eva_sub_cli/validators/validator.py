@@ -20,7 +20,8 @@ from eva_sub_cli.validators.validation_results_parsers import parse_assembly_che
     parse_vcf_check_report, parse_metadata_property
 
 VALIDATION_OUTPUT_DIR = "validation_output"
-VALIDATION_RESULTS = 'validation_results'
+VALIDATION_RESULTS_KEY = 'validation_results'
+VALIDATION_RESULTS_FILE = 'validation_results.yaml'
 READY_FOR_SUBMISSION_TO_EVA = 'ready_for_submission_to_eva'
 
 logger = logging_config.get_logger(__name__)
@@ -34,6 +35,7 @@ class Validator(AppLogger):
         # If the submission_config is not set it will also be written to the VALIDATION_OUTPUT_DIR
         self.submission_dir = submission_dir
         self.output_dir = os.path.join(submission_dir, VALIDATION_OUTPUT_DIR)
+        self.validation_result_file = os.path.join(submission_dir, VALIDATION_RESULTS_FILE)
         self.mapping_file = mapping_file
         vcf_files, fasta_files = self._find_vcf_and_fasta_files()
         self.vcf_files = vcf_files
@@ -90,6 +92,8 @@ class Validator(AppLogger):
         self._validate()
         self.clean_up_output_dir()
         self._collect_validation_workflow_results()
+        self._asses_validation_results()
+        self._save_validation_results()
 
     def report(self):
         self.create_reports()
@@ -148,30 +152,12 @@ class Validator(AppLogger):
         return files_missing, missing_files_list
 
     def update_config_with_validation_result(self):
-        self.sub_config.set(VALIDATION_RESULTS, value=self.results)
+        self.sub_config.set(VALIDATION_RESULTS_KEY, value=self.results)
         self.sub_config.set(READY_FOR_SUBMISSION_TO_EVA, value=self.verify_ready_for_submission_to_eva())
 
     def verify_ready_for_submission_to_eva(self):
-        """
-        Assess if the validation results are meeting expectations
-        It assumes all validation have been parsed already.
-        """
-        return all((
-            self.results.get('vcf_check', {}).get('critical_count', 1) == 0,
-            self.results.get('assembly_check', {}).get('nb_mismatch', 1) == 0,
-            self.results.get('assembly_check', {}).get('nb_error', 1) == 0,
-            all((
-                fa_file_check.get('all_insdc', False) is True
-                for fa_file, fa_file_check in self.results.get('fasta_check', {}).items()
-            )),
-            self.results.get('sample_check', {}).get('overall_differences', True) is False,
-            len(self.results.get('metadata_check', {}).get('spreadsheet_errors', [])) == 0,
-            len(self.results.get('metadata_check', {}).get('json_errors', [])) == 0,
-            any((
-                self.results['shallow_validation']['requested'] is False,
-                self.results['shallow_validation'].get('required', True) is False
-            ))
-        ))
+        """ Checks if all the validation are passed """
+        return all((value.get('PASS', False) is True for key, value in self.results.items()))
 
     def _collect_validation_workflow_results(self):
         # Collect information from the output and summarise in the config
@@ -182,6 +168,43 @@ class Validator(AppLogger):
         self._load_sample_check_results()
         self._load_fasta_check_results()
         self._collect_metadata_results()
+
+    def _asses_validation_results(self):
+        """
+            Assess if the validation results are meeting expectations and marks them as "PASS: true" or "PASS: false"
+            It assumes all validation have been parsed already.
+        """
+        # vcf_check result
+        vcf_check_result = all((vcf_check.get('critical_count', 1) == 0
+                                for vcf_name, vcf_check in self.results.get('vcf_check', {}).items()))
+        self.results['vcf_check']['PASS'] = vcf_check_result
+
+        # assembly_check result
+        asm_nb_mismatch_result = all((asm_check.get('nb_mismatch', 1) == 0
+                                      for vcf_name, asm_check in self.results.get('assembly_check', {}).items()))
+        asm_nb_error_result = all((asm_check.get('nb_error', 1) == 0
+                                   for vcf_name, asm_check in self.results.get('assembly_check', {}).items()))
+        self.results['assembly_check']['PASS'] = asm_nb_mismatch_result and asm_nb_error_result
+
+        # fasta_check result
+        fasta_check_result = all((fa_file_check.get('all_insdc', False) is True
+                                  for fa_file, fa_file_check in self.results.get('fasta_check', {}).items()))
+        self.results['fasta_check']['PASS'] = fasta_check_result
+
+        # sample check result
+        self.results['sample_check']['PASS'] = self.results.get('sample_check', {}).get('overall_differences',
+                                                                                        True) is False
+
+        # metadata check result
+        metadata_xlsx_result = len(self.results.get('metadata_check', {}).get('spreadsheet_errors', [])) == 0
+        metadata_json_result = len(self.results.get('metadata_check', {}).get('json_errors', [])) == 0
+        self.results['metadata_check']['PASS'] = metadata_xlsx_result and metadata_json_result
+
+    def _save_validation_results(self):
+        with open(self.validation_result_file, 'w') as val_res_file:
+            yaml.safe_dump(self.results, val_res_file)
+
+        self.info(f"saved validation result in {self.validation_result_file}")
 
     @lru_cache
     def _vcf_check_log(self, vcf_name):
