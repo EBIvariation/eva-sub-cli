@@ -79,6 +79,7 @@ def parse_args(cmd_line_args):
 
 
 def main():
+    exit_status = 0
     args = parse_args(sys.argv[1:])
 
     args.submission_dir = os.path.abspath(args.submission_dir)
@@ -91,7 +92,7 @@ def main():
     try:
         # lock the submission directory
 
-        with DirLock(os.path.join(args.submission_dir, '.lock')) as lock:
+        with DirLock(os.path.join(args.submission_dir)) as lock:
             # Create the log file
             logging_config.add_file_handler(os.path.join(args.submission_dir, 'eva_submission.log'), logging.DEBUG)
             # Pass on all the arguments to the orchestrator
@@ -100,9 +101,15 @@ def main():
         print(f'Could not acquire the lock file for {args.submission_dir} because another process is using this '
               f'directory or a previous process did not terminate correctly. '
               f'If the problem persists, remove the lock file manually.')
+        exit_status = 65
     except FileNotFoundError as fne:
         print(fne)
+        exit_status = 66
     except SubmissionNotFoundException as snfe:
         print(f'{snfe}. Please contact EVA Helpdesk')
+        exit_status = 67
     except SubmissionStatusException as sse:
         print(f'{sse}. Please try again later. If the problem persists, please contact EVA Helpdesk')
+        exit_status = 68
+    return exit_status
+
