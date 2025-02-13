@@ -85,7 +85,7 @@ class SemanticMetadataChecker(AppLogger):
                     self.add_error(
                         f'/{ANALYSIS_KEY}/{idx}/{ANALYSIS_ALIAS_KEY}',
                         f'Analysis alias {analysis.get(ANALYSIS_ALIAS_KEY)} is present '
-                        f'{counter.get(counter[analysis.get(ANALYSIS_ALIAS_KEY)])} times in the Analysis Sheet')
+                        f'{counter[analysis.get(ANALYSIS_ALIAS_KEY)]} times in the Analysis Sheet')
 
     def check_all_scientific_names(self):
         """Check that all scientific names are consistent with taxonomy codes."""
