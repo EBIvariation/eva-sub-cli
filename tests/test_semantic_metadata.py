@@ -97,10 +97,10 @@ class TestSemanticMetadata(TestCase):
         self.assertEqual(checker.errors, [
             {
                 'property': '/analysis/0/analysisAlias',
-                'description': 'Analysis alias alias1 is present None times in the Analysis Sheet'
+                'description': 'Analysis alias alias1 is present 2 times in the Analysis Sheet'
             }, {
                 'property': '/analysis/2/analysisAlias',
-                'description': 'Analysis alias alias1 is present None times in the Analysis Sheet'
+                'description': 'Analysis alias alias1 is present 2 times in the Analysis Sheet'
             }
         ]
 )
