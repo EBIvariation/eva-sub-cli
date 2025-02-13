@@ -1,4 +1,5 @@
 import json
+from collections import Counter
 from copy import deepcopy
 
 import yaml
@@ -73,6 +74,18 @@ class SemanticMetadataChecker(AppLogger):
             if BIOSAMPLE_OBJECT_KEY in sample and TAX_ID_KEY in sample[BIOSAMPLE_OBJECT_KEY][CHARACTERISTICS_KEY]:
                 self.check_taxonomy_code(sample[BIOSAMPLE_OBJECT_KEY][CHARACTERISTICS_KEY][TAX_ID_KEY][0]['text'],
                                          f'/{SAMPLE_KEY}/{idx}/{BIOSAMPLE_OBJECT_KEY}/{CHARACTERISTICS_KEY}/{TAX_ID_KEY}')
+
+    def check_uniqueness_analysis_alias(self):
+        analyses = self.metadata[ANALYSIS_KEY]
+        analysis_aliases = [analysis.get(ANALYSIS_ALIAS_KEY) for analysis in analyses]
+        if len(analysis_aliases) != len(set(analysis_aliases)):
+            counter = Counter(analysis_aliases)
+            for idx, analysis in enumerate(analyses):
+                if counter[analysis.get(ANALYSIS_ALIAS_KEY)] > 1:
+                    self.add_error(
+                        f'/{ANALYSIS_KEY}/{idx}/{ANALYSIS_ALIAS_KEY}',
+                        f'Analysis alias {analysis.get(ANALYSIS_ALIAS_KEY)} is present '
+                        f'{counter[analysis.get(ANALYSIS_ALIAS_KEY)]} times in the Analysis Sheet')
 
     def check_all_scientific_names(self):
         """Check that all scientific names are consistent with taxonomy codes."""

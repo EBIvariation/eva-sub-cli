@@ -84,6 +84,26 @@ class TestSemanticMetadata(TestCase):
                     'description': '1234 is not a valid taxonomy code'
                 }
             ])
+    def test_check_uniqueness_analysis_alias(self):
+        metadata = {
+            "analysis": [
+                {"analysisAlias": "alias1"},
+                {"analysisAlias": "alias2"},
+                {"analysisAlias": "alias1"}
+            ]
+        }
+        checker = SemanticMetadataChecker(metadata)
+        checker.check_uniqueness_analysis_alias()
+        self.assertEqual(checker.errors, [
+            {
+                'property': '/analysis/0/analysisAlias',
+                'description': 'Analysis alias alias1 is present 2 times in the Analysis Sheet'
+            }, {
+                'property': '/analysis/2/analysisAlias',
+                'description': 'Analysis alias alias1 is present 2 times in the Analysis Sheet'
+            }
+        ]
+)
 
     def test_check_all_scientific_names(self):
         metadata = {
