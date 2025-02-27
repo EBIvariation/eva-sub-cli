@@ -73,8 +73,10 @@
         Also checks whether the variants' reference alleles match against the reference assembly.
     </div>
     {% for file_name in vcf_files %}
+        {% if file_name!= "pass"%}
         <h3>{{ file_name }}</h3>
         {{ file_validation_report(validation_results, file_name) }}
+        {% endif %}
     {% endfor %}
 </section>
 
@@ -93,8 +95,10 @@
         Also checks if the reference assembly accession in the metadata matches the one determined from the FASTA file.
     </div>
     {% for file_name in fasta_files %}
+        {% if file_name!= "pass"%}
         <h3>{{ file_name }}</h3>
         {{ fasta_check_report(validation_results, file_name) }}
+        {% endif %}
     {% endfor %}
 </section>
 
