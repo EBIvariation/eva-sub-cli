@@ -68,7 +68,7 @@ def parse_args(cmd_line_args):
                                                                    'to submit to the EVA')
     credential_group.add_argument("--username", help="Username for your ENA Webin account")
     credential_group.add_argument("--password", help="Password for your ENA Webin account")
-    argparser.add_argument('--shallow', action='store_true', default=False,
+    argparser.add_argument('--shallow', action='store_true', default=False, dest='shallow_validation',
                            help='Set the validation to be performed on the first 10000 records of the VCF. '
                                 'Only applies if the number of records exceed 10000')
     argparser.add_argument('--debug', action='store_true', default=False,
