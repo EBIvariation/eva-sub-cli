@@ -188,6 +188,7 @@ validation_results_json = {
             "nb_mismatch": 10,
             "total": 36,
         },
+        "pass": False,
     },
     "vcf_check": {
         "input_passed.vcf": {
@@ -206,6 +207,7 @@ validation_results_json = {
             "valid": False,
             "warning_count": 0,
         },
+        "pass": False,
     },
     "sample_check": {
         'report_path': '/path/to/sample/report',
@@ -229,11 +231,13 @@ validation_results_json = {
                 'more_per_submitted_files_metadata': {},
                 'more_submitted_files_metadata': ['C1Sample ', ' C2Sample', 'C3Sample', 'C4Sample']
             }
-        }
+        },
+        "pass": False,
     },
     # NB. obviously this doesn't make sense for the number of analyses in this report, but demonstrates the possible
     # outputs for this check.
     "fasta_check": {
+        "pass": False,
         'not_all_insdc.fa': {
             'report_path': '/path/to/not_all_insdc_check.yml',
             'all_insdc': False,
@@ -294,6 +298,7 @@ validation_results_json = {
         }
     },
     'metadata_check': {
+        "pass": False,
         'json_errors': [
             {'property': '.files', 'description': "should have required property 'files'"},
             {'property': '/project.title', 'description': "should have required property 'title'"},
