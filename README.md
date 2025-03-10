@@ -46,13 +46,13 @@ Install each of these and ensure they are included in your PATH. Then install th
 
 ## Getting started with the eva-sub-cli tool 
 
-The ["Getting Started" guide](Getting_Started_with_eva_sub_cli.md) serves as an introduction for users of the eva-sub-cli tool. It includes instructions on how to prepare your data and metadata, ensuring that users are equipped with the necessary information to successfully submit variant data. This guide is essential for new users, offering practical advice and tips for a smooth onboarding experience with the eva-sub-cli tool.
+The ["Getting Started" guide](docs/Getting_Started_with_eva_sub_cli.md) serves as an introduction for users of the eva-sub-cli tool. It includes instructions on how to prepare your data and metadata, ensuring that users are equipped with the necessary information to successfully submit variant data. This guide is essential for new users, offering practical advice and tips for a smooth onboarding experience with the eva-sub-cli tool.
 
 ## Options and parameters guide
 
 The eva-sub-cli tool provides several options and parameters that you can use to tailor its functionality to your needs.
 You can view all the available parameters with the command `eva-sub-cli.py -h` and view detailed explanations for the
-input file requirements in the ["Getting Started" guide](Getting_Started_with_eva_sub_cli.md).
+input file requirements in the ["Getting Started" guide](docs/Getting_Started_with_eva_sub_cli.md).
 Below is an overview of the key parameters.
 
 ### Submission directory
@@ -132,3 +132,48 @@ This will only submit the data and not validate.
 If you are working with large VCF files and find that validation takes a very long time, you can add the
 argument `--shallow` to the command, which will validate only the first 10,000 lines in each VCF. Note that running
 shallow validation will **not** be sufficient for actual submission.
+
+
+## Leveraging Nextflow to parallelize the validation process  
+
+When running natively (i.e. not using docker), eva-sub-cli will use nextflow to run all the validation steps. When no options are provided nextflow will run as many tasks as there are available CPU on the machine executing it. To modify how many tasks can start and how nextflow will process each one, you can provide a nextflow configuration file in several ways:
+
+From the command line you can use `--nextflow_config <path>` to specify the nextflow config file you want to apply. The configuration can also be picked up from other places directly by nextflow. Please refer to [the nextflow documentation](https://www.nextflow.io/docs/latest/config.html) for more details.
+
+### Basic nextflow configuration.
+
+There are many options to configure nextflow so we will not provide them all. Please refer to [the documentation](https://www.nextflow.io/docs/latest/reference/config.html) for advanced feature 
+Below is a very basic nextflow configuration file that will request 2 cpus for each process, essentially limiting the number of process to half the number of available CPUs 
+```
+process {
+    executor="local"
+    cpus=2
+}
+```
+In this configuration, all the process will be running on the same machine where eva-sub-cli was started.
+```
+(Local machine)
+eva-sub-cli
+  |_ nextflow
+      |_ task1
+      |_ task2
+```
+
+If you have access to High Performance Compute environment, nextflow supports the main resource managers such as [SLURM](https://www.nextflow.io/docs/latest/executor.html#slurm), [SGE](https://www.nextflow.io/docs/latest/executor.html#sge), [LSF](https://www.nextflow.io/docs/latest/executor.html#lsf) and others.
+```
+process {
+    executor="slurm"
+    queue="my_production_queue"
+}
+```
+
+In this configuration, the subtasks will be performed in other machine as specified by your SLURM resource manager.
+```
+(Local machine)
+eva-sub-cli
+  |_ nextflow
+(Other machine)
+task1
+(Other machine)
+task2
+```
