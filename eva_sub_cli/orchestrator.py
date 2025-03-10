@@ -2,15 +2,20 @@
 import csv
 import json
 import os
+import re
 from collections import defaultdict
 
 import requests
 from ebi_eva_common_pyutils.config import WritableConfig
 from ebi_eva_common_pyutils.logger import logging_config
 from openpyxl.reader.excel import load_workbook
+from packaging import version
 
 from eva_sub_cli import SUB_CLI_CONFIG_FILE, __version__
 from eva_sub_cli.exceptions.invalid_file_type_exception import InvalidFileTypeError
+from eva_sub_cli.exceptions.metadata_template_version_exception import MetadataTemplateVersionException
+from eva_sub_cli.exceptions.metadata_template_version_not_found_exception import \
+    MetadataTemplateVersionNotFoundException
 from eva_sub_cli.exceptions.submission_not_found_exception import SubmissionNotFoundException
 from eva_sub_cli.exceptions.submission_status_exception import SubmissionStatusException
 from eva_sub_cli.submission_ws import SubmissionWSClient
@@ -120,6 +125,20 @@ def get_project_and_vcf_fasta_mapping_from_metadata_json(metadata_json, mapping_
     return project_title, vcf_fasta_report_mapping
 
 
+def verify_metadata_xlsx_version(metadata_xlsx, metadata_template_version):
+    workbook = load_workbook(metadata_xlsx)
+    instructions_sheet = workbook['PLEASE READ FIRST']
+    xlsx_sheet_version_value = instructions_sheet[3][0].value
+    match = re.search(r'V(\d+\.\d+\.\d+)', xlsx_sheet_version_value)
+    xlsx_version = match.group(1) if match else None
+    if xlsx_version:
+        if version.parse(xlsx_version) < version.parse(metadata_template_version):
+            raise MetadataTemplateVersionException(
+                f"Metadata template version {xlsx_version} is lower than min required {metadata_template_version}")
+    else:
+        raise MetadataTemplateVersionNotFoundException(f"No Version Found in metadata xlsx sheet {metadata_xlsx}")
+
+
 def get_project_and_vcf_fasta_mapping_from_metadata_xlsx(metadata_xlsx, mapping_req=False):
     workbook = load_workbook(metadata_xlsx)
 
@@ -190,7 +209,8 @@ def check_validation_required(tasks, sub_config, username=None, password=None):
 
 
 def orchestrate_process(submission_dir, vcf_files, reference_fasta, metadata_json, metadata_xlsx,
-                        tasks, executor, username=None, password=None, shallow_validation=False, **kwargs):
+                        tasks, executor, min_metadata_template_version, username=None, password=None,
+                        shallow_validation=False, **kwargs):
     # load config
     config_file_path = os.path.join(submission_dir, SUB_CLI_CONFIG_FILE)
     sub_config = WritableConfig(config_file_path, version=__version__)
@@ -203,6 +223,8 @@ def orchestrate_process(submission_dir, vcf_files, reference_fasta, metadata_jso
         metadata_json = os.path.abspath(metadata_json)
     if metadata_xlsx:
         metadata_xlsx = os.path.abspath(metadata_xlsx)
+        # check metadata xlsx version is greater than min metadata template version
+        verify_metadata_xlsx_version(metadata_xlsx, min_metadata_template_version)
 
     # Get the provided Project Title and VCF files mapping (VCF, Fasta and Report)
     project_title, vcf_files_mapping = get_project_title_and_create_vcf_files_mapping(
@@ -229,5 +251,6 @@ def orchestrate_process(submission_dir, vcf_files, reference_fasta, metadata_jso
             sub_config.set('vcf_files', value=vcf_files)
 
     if SUBMIT in tasks:
-        with StudySubmitter(submission_dir, submission_config=sub_config, username=username, password=password) as submitter:
+        with StudySubmitter(submission_dir, submission_config=sub_config, username=username,
+                            password=password) as submitter:
             submitter.submit()

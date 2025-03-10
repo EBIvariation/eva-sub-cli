@@ -1,11 +1,15 @@
 import sys
 
 import eva_sub_cli
+from eva_sub_cli.exceptions.metadata_template_version_exception import MetadataTemplateVersionException
+from eva_sub_cli.exceptions.metadata_template_version_not_found_exception import \
+    MetadataTemplateVersionNotFoundException
 from eva_sub_cli.exceptions.submission_not_found_exception import SubmissionNotFoundException
 from eva_sub_cli.exceptions.submission_status_exception import SubmissionStatusException
 
 if not sys.warnoptions:
     import warnings
+
     warnings.simplefilter("ignore")
 
 import logging
@@ -16,6 +20,9 @@ from ebi_eva_common_pyutils.logger import logging_config
 from eva_sub_cli import orchestrator
 from eva_sub_cli.orchestrator import VALIDATE, SUBMIT, DOCKER, NATIVE
 from eva_sub_cli.file_utils import is_submission_dir_writable, DirLockError, DirLock
+
+default_metadata_version = '1.1.6'
+default_metadata_version_file_link = f'https://www.ebi.ac.uk/eva/files/EVA_Submission_template.V{default_metadata_version}.xlsx'
 
 
 def validate_command_line_arguments(args, argparser):
@@ -39,7 +46,7 @@ def validate_command_line_arguments(args, argparser):
 def parse_args(cmd_line_args):
     argparser = ArgumentParser(prog='eva-sub-cli',
                                description='EVA Submission CLI - validate and submit data to EVA. '
-                               'For full details, please see https://github.com/EBIvariation/eva-sub-cli')
+                                           'For full details, please see https://github.com/EBIvariation/eva-sub-cli')
     argparser.add_argument('--version', action='version', version=f'%(prog)s {eva_sub_cli.__version__}')
     argparser.add_argument('--submission_dir', required=True, type=str,
                            help='Path to the directory where all processing is done and submission info is stored')
@@ -58,6 +65,8 @@ def parse_args(cmd_line_args):
                                 help="JSON file that describes the project, analysis, samples and files")
     metadata_group.add_argument("--metadata_xlsx",
                                 help="Excel spreadsheet that describes the project, analysis, samples and files")
+    argparser.add_argument("--min_metadata_template_version", default=default_metadata_version,
+                           help="Minimum metadata template version. ex 1.1.6")
     argparser.add_argument('--tasks', nargs='+', choices=[VALIDATE, SUBMIT], default=[SUBMIT], type=str.lower,
                            help='Select a task to perform (default SUBMIT). VALIDATE will run the validation'
                                 ' regardless of the outcome of previous runs. SUBMIT will run validate only if'
@@ -111,5 +120,11 @@ def main():
     except SubmissionStatusException as sse:
         print(f'{sse}. Please try again later. If the problem persists, please contact EVA Helpdesk')
         exit_status = 68
+    except MetadataTemplateVersionException as mte:
+        print(f'{mte}. Please use the latest template file from EVA ({default_metadata_version_file_link})')
+        exit_status = 69
+    except MetadataTemplateVersionNotFoundException as mte:
+        print(f'{mte}. Please use the correct template file from EVA ({default_metadata_version_file_link}) '
+              f'that contains the version information')
+        exit_status = 70
     return exit_status
-
