@@ -92,6 +92,7 @@ class TestOrchestrator(unittest.TestCase):
     def test_orchestrate_validate(self):
         with patch('eva_sub_cli.orchestrator.get_vcf_files') as m_get_vcf, \
                 patch('eva_sub_cli.orchestrator.WritableConfig') as m_config, \
+                patch('eva_sub_cli.orchestrator.DEFAULT_METADATA_XLSX_TEMPLATE_VERSION', new='1.1.6'), \
                 patch(
                     'eva_sub_cli.orchestrator.get_project_title_and_create_vcf_files_mapping') as m_get_project_title_and_create_vcf_files_mapping, \
                 patch('eva_sub_cli.orchestrator.DockerValidator') as m_docker_validator:
@@ -111,6 +112,7 @@ class TestOrchestrator(unittest.TestCase):
     def test_orchestrate_validate_submit(self):
         with patch('eva_sub_cli.orchestrator.get_vcf_files') as m_get_vcf, \
                 patch('eva_sub_cli.orchestrator.WritableConfig') as m_config, \
+                patch('eva_sub_cli.orchestrator.DEFAULT_METADATA_XLSX_TEMPLATE_VERSION', new='1.1.6'), \
                 patch(
                     'eva_sub_cli.orchestrator.get_project_title_and_create_vcf_files_mapping') as m_get_project_title_and_create_vcf_files_mapping, \
                 patch('eva_sub_cli.orchestrator.DockerValidator') as m_docker_validator, \
@@ -140,6 +142,7 @@ class TestOrchestrator(unittest.TestCase):
     def test_orchestrate_submit_no_validate(self):
         with patch('eva_sub_cli.orchestrator.get_vcf_files') as m_get_vcf, \
                 patch('eva_sub_cli.orchestrator.WritableConfig') as m_config, \
+                patch('eva_sub_cli.orchestrator.DEFAULT_METADATA_XLSX_TEMPLATE_VERSION', new='1.1.6'), \
                 patch(
                     'eva_sub_cli.orchestrator.get_project_title_and_create_vcf_files_mapping') as m_get_project_title_and_create_vcf_files_mapping, \
                 patch('eva_sub_cli.orchestrator.DockerValidator') as m_docker_validator, \
@@ -162,6 +165,7 @@ class TestOrchestrator(unittest.TestCase):
 
     def test_orchestrate_with_vcf_files(self):
         with patch('eva_sub_cli.orchestrator.WritableConfig') as m_config, \
+                patch('eva_sub_cli.orchestrator.DEFAULT_METADATA_XLSX_TEMPLATE_VERSION', new='1.1.6'), \
                 patch('eva_sub_cli.orchestrator.DockerValidator') as m_docker_validator, \
                 patch('eva_sub_cli.orchestrator.os.path.isfile'):
             orchestrate_process(self.test_sub_dir, self.vcf_files, self.reference_fasta, self.metadata_json,
@@ -241,6 +245,7 @@ class TestOrchestrator(unittest.TestCase):
 
     def test_orchestrate_with_metadata_xlsx(self):
         with patch('eva_sub_cli.orchestrator.WritableConfig') as m_config, \
+                patch('eva_sub_cli.orchestrator.DEFAULT_METADATA_XLSX_TEMPLATE_VERSION', new='1.1.6'), \
                 patch('eva_sub_cli.orchestrator.DockerValidator') as m_docker_validator:
             orchestrate_process(self.test_sub_dir, None, None, None, self.metadata_xlsx,
                                 tasks=[VALIDATE], executor=DOCKER)
@@ -267,7 +272,8 @@ class TestOrchestrator(unittest.TestCase):
         )
 
     def test_fasta_file_compressed(self):
-        with patch('eva_sub_cli.orchestrator.os.path.isfile'):
+        with patch('eva_sub_cli.orchestrator.DEFAULT_METADATA_XLSX_TEMPLATE_VERSION', new='1.1.6'), \
+                patch('eva_sub_cli.orchestrator.os.path.isfile'):
             with self.assertRaises(InvalidFileTypeError):
                 orchestrate_process(self.test_sub_dir, self.vcf_files, self.reference_fasta + '.gz', self.metadata_json,
                                     self.metadata_xlsx, tasks=[VALIDATE], executor=DOCKER)
