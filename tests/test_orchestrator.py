@@ -10,9 +10,12 @@ from requests import HTTPError
 from eva_sub_cli import SUB_CLI_CONFIG_FILE
 from eva_sub_cli.exceptions.invalid_file_type_exception import InvalidFileTypeError
 from eva_sub_cli.exceptions.metadata_template_version_exception import MetadataTemplateVersionException
+from eva_sub_cli.exceptions.metadata_template_version_not_found_exception import \
+    MetadataTemplateVersionNotFoundException
 from eva_sub_cli.exceptions.submission_not_found_exception import SubmissionNotFoundException
 from eva_sub_cli.exceptions.submission_status_exception import SubmissionStatusException
-from eva_sub_cli.orchestrator import orchestrate_process, VALIDATE, SUBMIT, DOCKER, check_validation_required
+from eva_sub_cli.orchestrator import orchestrate_process, VALIDATE, SUBMIT, DOCKER, check_validation_required, \
+    verify_metadata_xlsx_version
 from eva_sub_cli.submit import SUB_CLI_CONFIG_KEY_SUBMISSION_ID, SUB_CLI_CONFIG_KEY_SUBMISSION_UPLOAD_URL
 from eva_sub_cli.validators.validator import READY_FOR_SUBMISSION_TO_EVA
 from tests.test_utils import touch
@@ -29,6 +32,7 @@ class TestOrchestrator(unittest.TestCase):
     reference_fasta = os.path.join(test_sub_dir, 'genome.fa')
     metadata_json = os.path.join(test_sub_dir, 'sub_metadata.json')
     metadata_xlsx = os.path.join(test_sub_dir, 'sub_metadata.xlsx')
+    metadata_xlsx_version_missing = os.path.join(test_sub_dir, 'sub_metadata_version_missing.xlsx')
 
     def setUp(self) -> None:
         if os.path.exists(self.test_sub_dir):
@@ -36,6 +40,8 @@ class TestOrchestrator(unittest.TestCase):
         os.makedirs(self.test_sub_dir)
         shutil.copy(os.path.join(self.resource_dir, 'EVA_Submission_test.json'), self.metadata_json)
         shutil.copy(os.path.join(self.resource_dir, 'EVA_Submission_test.xlsx'), self.metadata_xlsx)
+        shutil.copy(os.path.join(self.resource_dir, 'EVA_Submission_test_version_missing.xlsx'),
+                    self.metadata_xlsx_version_missing)
         for file_name in ['example1.vcf.gz', 'example2.vcf', 'example3.vcf', 'GCA_000001405.27_fasta.fa']:
             touch(os.path.join(self.test_sub_dir, file_name))
         self.curr_wd = os.getcwd()
@@ -91,8 +97,7 @@ class TestOrchestrator(unittest.TestCase):
                 patch('eva_sub_cli.orchestrator.DockerValidator') as m_docker_validator:
             m_get_project_title_and_create_vcf_files_mapping.return_value = self.project_title, self.mapping_file
             orchestrate_process(self.test_sub_dir, None, None, self.metadata_json,
-                                self.metadata_xlsx, tasks=[VALIDATE], executor=DOCKER,
-                                min_metadata_template_version='1.1.6')
+                                self.metadata_xlsx, tasks=[VALIDATE], executor=DOCKER)
             m_get_project_title_and_create_vcf_files_mapping.assert_called_once_with(self.test_sub_dir, None, None,
                                                                                      self.metadata_json,
                                                                                      self.metadata_xlsx)
@@ -117,8 +122,7 @@ class TestOrchestrator(unittest.TestCase):
             m_get_project_title_and_create_vcf_files_mapping.return_value = self.project_title, self.mapping_file
 
             orchestrate_process(self.test_sub_dir, None, None, self.metadata_json,
-                                self.metadata_xlsx, tasks=[SUBMIT], executor=DOCKER,
-                                min_metadata_template_version='1.1.6')
+                                self.metadata_xlsx, tasks=[SUBMIT], executor=DOCKER)
             m_get_vcf.assert_called_once_with(self.mapping_file)
             # Validate was run because the config show it was not run successfully before
             m_docker_validator.assert_any_call(
@@ -145,8 +149,7 @@ class TestOrchestrator(unittest.TestCase):
             m_get_project_title_and_create_vcf_files_mapping.return_value = self.project_title, self.mapping_file
 
             orchestrate_process(self.test_sub_dir, None, None, self.metadata_json,
-                                self.metadata_xlsx, tasks=[SUBMIT], executor=DOCKER,
-                                min_metadata_template_version='1.1.6')
+                                self.metadata_xlsx, tasks=[SUBMIT], executor=DOCKER)
             m_get_vcf.assert_called_once_with(self.mapping_file)
             # Validate was not run because the config showed it was run successfully before
             assert m_docker_validator.call_count == 0
@@ -162,8 +165,7 @@ class TestOrchestrator(unittest.TestCase):
                 patch('eva_sub_cli.orchestrator.DockerValidator') as m_docker_validator, \
                 patch('eva_sub_cli.orchestrator.os.path.isfile'):
             orchestrate_process(self.test_sub_dir, self.vcf_files, self.reference_fasta, self.metadata_json,
-                                self.metadata_xlsx, tasks=[VALIDATE], executor=DOCKER,
-                                min_metadata_template_version='1.1.6')
+                                self.metadata_xlsx, tasks=[VALIDATE], executor=DOCKER)
             # Mapping file was created from the vcf and assembly files
             assert os.path.exists(self.mapping_file)
             with open(self.mapping_file) as open_file:
@@ -181,7 +183,7 @@ class TestOrchestrator(unittest.TestCase):
         with patch('eva_sub_cli.orchestrator.WritableConfig') as m_config, \
                 patch('eva_sub_cli.orchestrator.DockerValidator') as m_docker_validator:
             orchestrate_process(self.test_sub_dir, None, None, self.metadata_json,
-                                None, tasks=[VALIDATE], executor=DOCKER, min_metadata_template_version='1.1.6')
+                                None, tasks=[VALIDATE], executor=DOCKER)
             # Mapping file was created from the metadata_json
             assert os.path.exists(self.mapping_file)
             with open(self.mapping_file) as open_file:
@@ -202,7 +204,7 @@ class TestOrchestrator(unittest.TestCase):
                 patch('eva_sub_cli.orchestrator.DockerValidator') as m_docker_validator, \
                 patch('eva_sub_cli.orchestrator.os.path.isfile'):
             orchestrate_process(self.test_sub_dir, None, None, self.metadata_json, None,
-                                tasks=[VALIDATE], executor=DOCKER, min_metadata_template_version='1.1.6')
+                                tasks=[VALIDATE], executor=DOCKER)
             # Mapping file was created from the metadata_json
             assert os.path.exists(self.mapping_file)
             with open(self.mapping_file) as open_file:
@@ -223,8 +225,7 @@ class TestOrchestrator(unittest.TestCase):
                 patch('eva_sub_cli.orchestrator.DockerValidator') as m_docker_validator, \
                 patch('eva_sub_cli.orchestrator.os.path.isfile'):
             orchestrate_process(self.test_sub_dir, self.vcf_files, self.reference_fasta, self.metadata_json,
-                                None, tasks=[VALIDATE], executor=DOCKER,
-                                min_metadata_template_version='1.1.6', resume=False)
+                                None, tasks=[VALIDATE], executor=DOCKER, resume=False)
             # Mapping file was created from the metadata_json
             assert os.path.exists(self.mapping_file)
             with open(self.mapping_file) as open_file:
@@ -242,7 +243,7 @@ class TestOrchestrator(unittest.TestCase):
         with patch('eva_sub_cli.orchestrator.WritableConfig') as m_config, \
                 patch('eva_sub_cli.orchestrator.DockerValidator') as m_docker_validator:
             orchestrate_process(self.test_sub_dir, None, None, None, self.metadata_xlsx,
-                                tasks=[VALIDATE], executor=DOCKER, min_metadata_template_version='1.1.6')
+                                tasks=[VALIDATE], executor=DOCKER)
             # Mapping file was created from the metadata_xlsx
             assert os.path.exists(self.mapping_file)
             with open(self.mapping_file) as open_file:
@@ -259,7 +260,7 @@ class TestOrchestrator(unittest.TestCase):
     def test_metadata_file_does_not_exist_error(self):
         with self.assertRaises(FileNotFoundError) as context:
             orchestrate_process(self.test_sub_dir, None, None, None, 'Non_existing_metadata.xlsx',
-                                tasks=[VALIDATE], executor=DOCKER, min_metadata_template_version='1.1.6')
+                                tasks=[VALIDATE], executor=DOCKER)
         self.assertRegex(
             str(context.exception),
             r"The provided metadata file .*/resources/test_sub_dir/Non_existing_metadata.xlsx does not exist"
@@ -269,30 +270,31 @@ class TestOrchestrator(unittest.TestCase):
         with patch('eva_sub_cli.orchestrator.os.path.isfile'):
             with self.assertRaises(InvalidFileTypeError):
                 orchestrate_process(self.test_sub_dir, self.vcf_files, self.reference_fasta + '.gz', self.metadata_json,
-                                    self.metadata_xlsx, tasks=[VALIDATE], executor=DOCKER,
-                                    min_metadata_template_version='1.1.6')
+                                    self.metadata_xlsx, tasks=[VALIDATE], executor=DOCKER)
 
     def test_metadata_xlsx_version_should_pass_as_version_is_equal_to_min_required(self):
-        with patch('eva_sub_cli.orchestrator.os.path.isfile'):
-            with self.assertRaises(InvalidFileTypeError):
-                orchestrate_process(self.test_sub_dir, self.vcf_files, self.reference_fasta + '.gz', self.metadata_json,
-                                    self.metadata_xlsx, tasks=[VALIDATE], executor=DOCKER,
-                                    min_metadata_template_version='1.1.6')
+        verify_metadata_xlsx_version(self.metadata_xlsx, '1.1.6')
 
     def test_metadata_xlsx_version_should_pass_as_version_is_greater_than_min_required(self):
-        with patch('eva_sub_cli.orchestrator.os.path.isfile'):
-            with self.assertRaises(InvalidFileTypeError):
-                orchestrate_process(self.test_sub_dir, self.vcf_files, self.reference_fasta + '.gz', self.metadata_json,
-                                    self.metadata_xlsx, tasks=[VALIDATE], executor=DOCKER,
-                                    min_metadata_template_version='1.1.5')
+        verify_metadata_xlsx_version(self.metadata_xlsx, '1.1.5')
 
     def test_metadata_xlsx_version_should_fail_as_version_is_lower_than_min_required(self):
-        with patch('eva_sub_cli.orchestrator.os.path.isfile'):
-            with self.assertRaises(InvalidFileTypeError):
-                try:
-                    orchestrate_process(self.test_sub_dir, self.vcf_files, self.reference_fasta + '.gz',
-                                        self.metadata_json,
-                                        self.metadata_xlsx, tasks=[VALIDATE], executor=DOCKER,
-                                        min_metadata_template_version='1.1.8')
-                except MetadataTemplateVersionException as mte:
-                    assert mte.message == "Metadata template version 1.1.6 is lower than min required 1.1.8"
+        with patch('eva_sub_cli.orchestrator.get_metadata_xlsx_template_link') as template_link:
+            template_link.return_value = 'https://raw.githubusercontent.com/EBIvariation/eva-sub-cli/v0.4.4/eva-sub-cli/eva_sub_cli/etc/EVA_Submission_template.xlsx'
+            try:
+                verify_metadata_xlsx_version(self.metadata_xlsx, '1.1.8')
+            except MetadataTemplateVersionException as mte:
+                assert mte.message == ("Metadata template version 1.1.6 is lower than min required 1.1.8. "
+                                       "Please download the correct template from EVA github project "
+                                       "https://raw.githubusercontent.com/EBIvariation/eva-sub-cli/v0.4.4/eva-sub-cli/eva_sub_cli/etc/EVA_Submission_template.xlsx")
+
+    def test_metadata_xlsx_version_should_fail_as_version_is_not_found(self):
+        with patch('eva_sub_cli.orchestrator.get_metadata_xlsx_template_link') as template_link:
+            template_link.return_value = 'https://raw.githubusercontent.com/EBIvariation/eva-sub-cli/v0.4.4/eva-sub-cli/eva_sub_cli/etc/EVA_Submission_template.xlsx'
+            try:
+                verify_metadata_xlsx_version(self.metadata_xlsx_version_missing, '1.1.8')
+            except MetadataTemplateVersionNotFoundException as mte:
+                assert mte.message == (
+                    f"No version Information found in metadata xlsx sheet {self.metadata_xlsx_version_missing}. "
+                    f"Please download the correct template from EVA github project "
+                    f"https://raw.githubusercontent.com/EBIvariation/eva-sub-cli/v0.4.4/eva-sub-cli/eva_sub_cli/etc/EVA_Submission_template.xlsx")
