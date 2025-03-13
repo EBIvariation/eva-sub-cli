@@ -1,8 +1,7 @@
 import sys
 
 import eva_sub_cli
-from eva_sub_cli.exceptions.metadata_template_version_exception import MetadataTemplateVersionException
-from eva_sub_cli.exceptions.metadata_template_version_not_found_exception import \
+from eva_sub_cli.exceptions.metadata_template_version_exception import MetadataTemplateVersionException, \
     MetadataTemplateVersionNotFoundException
 from eva_sub_cli.exceptions.submission_not_found_exception import SubmissionNotFoundException
 from eva_sub_cli.exceptions.submission_status_exception import SubmissionStatusException

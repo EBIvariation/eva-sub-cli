@@ -10,12 +10,14 @@ from ebi_eva_common_pyutils.config import WritableConfig
 from ebi_eva_common_pyutils.logger import logging_config
 from openpyxl.reader.excel import load_workbook
 from packaging import version
+from requests import HTTPError
+from retry import retry
 
+import eva_sub_cli
 from eva_sub_cli import DEFAULT_METADATA_XLSX_TEMPLATE_VERSION
 from eva_sub_cli import SUB_CLI_CONFIG_FILE, __version__
 from eva_sub_cli.exceptions.invalid_file_type_exception import InvalidFileTypeError
-from eva_sub_cli.exceptions.metadata_template_version_exception import MetadataTemplateVersionException
-from eva_sub_cli.exceptions.metadata_template_version_not_found_exception import \
+from eva_sub_cli.exceptions.metadata_template_version_exception import MetadataTemplateVersionException, \
     MetadataTemplateVersionNotFoundException
 from eva_sub_cli.exceptions.submission_not_found_exception import SubmissionNotFoundException
 from eva_sub_cli.exceptions.submission_status_exception import SubmissionStatusException
@@ -132,9 +134,7 @@ def get_sub_cli_version():
         from setuptools_scm import get_version
         sub_cli_version_full = get_version(root='..', relative_to=__file__)
     except:
-        # otherwise assume that we're working in a deployed instance which should have the _version file
-        from ._version import version as __version__
-        sub_cli_version_full = __version__
+        sub_cli_version_full = eva_sub_cli.__version__
 
     if version.parse(sub_cli_version_full).is_devrelease:
         major, minor, patch = map(int, version.parse(sub_cli_version_full).base_version.split('.'))
@@ -152,6 +152,7 @@ def get_sub_cli_version():
         return version.parse(sub_cli_version_full).base_version
 
 
+@retry(exceptions=(HTTPError,), tries=3, delay=2, backoff=1.2, jitter=(1, 3))
 def get_sub_cli_github_tags():
     url = f"https://api.github.com/repos/EBIvariation/eva-sub-cli/tags"
     response = requests.get(url)
@@ -159,7 +160,7 @@ def get_sub_cli_github_tags():
         tags = [tag["name"][1:] for tag in response.json()]
         return tags
     else:
-        raise Exception("Failed to get Tags for Sub Cli Version")
+        return []
 
 
 def get_metadata_xlsx_template_link():
@@ -168,14 +169,14 @@ def get_metadata_xlsx_template_link():
     if sub_cli_version in sub_cli_tags:
         return f'https://raw.githubusercontent.com/EBIvariation/eva-sub-cli/v{sub_cli_version}/eva-sub-cli/eva_sub_cli/etc/EVA_Submission_template.xlsx'
     else:
-        return ''
+        return 'https://raw.githubusercontent.com/EBIvariation/eva-sub-cli/main/eva_sub_cli/etc/EVA_Submission_template.xlsx'
 
 
 def verify_metadata_xlsx_version(metadata_xlsx, min_req_version):
     workbook = load_workbook(metadata_xlsx)
     instructions_sheet = workbook['PLEASE READ FIRST']
     xlsx_sheet_version_value = instructions_sheet[3][0].value
-    match = re.search(r'V(\d+\.\d+\.\d+)', '' if xlsx_sheet_version_value is None else xlsx_sheet_version_value)
+    match = re.search(r'(\d+\.\d+\.\d+)', '' if xlsx_sheet_version_value is None else xlsx_sheet_version_value)
     xlsx_version = match.group(1) if match else None
     if xlsx_version:
         if version.parse(xlsx_version) < version.parse(min_req_version):
@@ -184,7 +185,7 @@ def verify_metadata_xlsx_version(metadata_xlsx, min_req_version):
                 f"Please download the correct template from EVA github project {get_metadata_xlsx_template_link()}")
     else:
         raise MetadataTemplateVersionNotFoundException(
-            f"No version Information found in metadata xlsx sheet {metadata_xlsx}. "
+            f"No version information found in metadata xlsx sheet {metadata_xlsx}. "
             f"Please download the correct template from EVA github project {get_metadata_xlsx_template_link()}")
 
 

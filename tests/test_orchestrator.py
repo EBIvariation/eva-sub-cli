@@ -2,20 +2,19 @@ import csv
 import os
 import shutil
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import patch, Mock, MagicMock
 
 from ebi_eva_common_pyutils.config import WritableConfig
 from requests import HTTPError
 
 from eva_sub_cli import SUB_CLI_CONFIG_FILE
 from eva_sub_cli.exceptions.invalid_file_type_exception import InvalidFileTypeError
-from eva_sub_cli.exceptions.metadata_template_version_exception import MetadataTemplateVersionException
-from eva_sub_cli.exceptions.metadata_template_version_not_found_exception import \
+from eva_sub_cli.exceptions.metadata_template_version_exception import MetadataTemplateVersionException, \
     MetadataTemplateVersionNotFoundException
 from eva_sub_cli.exceptions.submission_not_found_exception import SubmissionNotFoundException
 from eva_sub_cli.exceptions.submission_status_exception import SubmissionStatusException
 from eva_sub_cli.orchestrator import orchestrate_process, VALIDATE, SUBMIT, DOCKER, check_validation_required, \
-    verify_metadata_xlsx_version
+    verify_metadata_xlsx_version, get_metadata_xlsx_template_link, get_sub_cli_github_tags
 from eva_sub_cli.submit import SUB_CLI_CONFIG_KEY_SUBMISSION_ID, SUB_CLI_CONFIG_KEY_SUBMISSION_UPLOAD_URL
 from eva_sub_cli.validators.validator import READY_FOR_SUBMISSION_TO_EVA
 from tests.test_utils import touch
@@ -92,7 +91,6 @@ class TestOrchestrator(unittest.TestCase):
     def test_orchestrate_validate(self):
         with patch('eva_sub_cli.orchestrator.get_vcf_files') as m_get_vcf, \
                 patch('eva_sub_cli.orchestrator.WritableConfig') as m_config, \
-                patch('eva_sub_cli.orchestrator.DEFAULT_METADATA_XLSX_TEMPLATE_VERSION', new='1.1.6'), \
                 patch(
                     'eva_sub_cli.orchestrator.get_project_title_and_create_vcf_files_mapping') as m_get_project_title_and_create_vcf_files_mapping, \
                 patch('eva_sub_cli.orchestrator.DockerValidator') as m_docker_validator:
@@ -112,7 +110,6 @@ class TestOrchestrator(unittest.TestCase):
     def test_orchestrate_validate_submit(self):
         with patch('eva_sub_cli.orchestrator.get_vcf_files') as m_get_vcf, \
                 patch('eva_sub_cli.orchestrator.WritableConfig') as m_config, \
-                patch('eva_sub_cli.orchestrator.DEFAULT_METADATA_XLSX_TEMPLATE_VERSION', new='1.1.6'), \
                 patch(
                     'eva_sub_cli.orchestrator.get_project_title_and_create_vcf_files_mapping') as m_get_project_title_and_create_vcf_files_mapping, \
                 patch('eva_sub_cli.orchestrator.DockerValidator') as m_docker_validator, \
@@ -142,7 +139,6 @@ class TestOrchestrator(unittest.TestCase):
     def test_orchestrate_submit_no_validate(self):
         with patch('eva_sub_cli.orchestrator.get_vcf_files') as m_get_vcf, \
                 patch('eva_sub_cli.orchestrator.WritableConfig') as m_config, \
-                patch('eva_sub_cli.orchestrator.DEFAULT_METADATA_XLSX_TEMPLATE_VERSION', new='1.1.6'), \
                 patch(
                     'eva_sub_cli.orchestrator.get_project_title_and_create_vcf_files_mapping') as m_get_project_title_and_create_vcf_files_mapping, \
                 patch('eva_sub_cli.orchestrator.DockerValidator') as m_docker_validator, \
@@ -165,7 +161,6 @@ class TestOrchestrator(unittest.TestCase):
 
     def test_orchestrate_with_vcf_files(self):
         with patch('eva_sub_cli.orchestrator.WritableConfig') as m_config, \
-                patch('eva_sub_cli.orchestrator.DEFAULT_METADATA_XLSX_TEMPLATE_VERSION', new='1.1.6'), \
                 patch('eva_sub_cli.orchestrator.DockerValidator') as m_docker_validator, \
                 patch('eva_sub_cli.orchestrator.os.path.isfile'):
             orchestrate_process(self.test_sub_dir, self.vcf_files, self.reference_fasta, self.metadata_json,
@@ -245,7 +240,6 @@ class TestOrchestrator(unittest.TestCase):
 
     def test_orchestrate_with_metadata_xlsx(self):
         with patch('eva_sub_cli.orchestrator.WritableConfig') as m_config, \
-                patch('eva_sub_cli.orchestrator.DEFAULT_METADATA_XLSX_TEMPLATE_VERSION', new='1.1.6'), \
                 patch('eva_sub_cli.orchestrator.DockerValidator') as m_docker_validator:
             orchestrate_process(self.test_sub_dir, None, None, None, self.metadata_xlsx,
                                 tasks=[VALIDATE], executor=DOCKER)
@@ -272,11 +266,34 @@ class TestOrchestrator(unittest.TestCase):
         )
 
     def test_fasta_file_compressed(self):
-        with patch('eva_sub_cli.orchestrator.DEFAULT_METADATA_XLSX_TEMPLATE_VERSION', new='1.1.6'), \
-                patch('eva_sub_cli.orchestrator.os.path.isfile'):
+        with patch('eva_sub_cli.orchestrator.os.path.isfile'):
             with self.assertRaises(InvalidFileTypeError):
                 orchestrate_process(self.test_sub_dir, self.vcf_files, self.reference_fasta + '.gz', self.metadata_json,
                                     self.metadata_xlsx, tasks=[VALIDATE], executor=DOCKER)
+
+    def test_get_sub_cli_github_tags(self):
+        with patch("requests.get") as mock_req:
+            mock_response = MagicMock()
+            mock_response.status_code = 500
+            mock_response.raise_for_status.side_effect = HTTPError("Internal Server Error")
+            mock_req.return_value = mock_response
+
+            assert get_sub_cli_github_tags() == []
+
+    def test_get_metadata_xlsx_template_link(self):
+        with patch('eva_sub_cli.orchestrator.get_sub_cli_version') as sub_cli_version, \
+                patch('eva_sub_cli.orchestrator.get_sub_cli_github_tags') as sub_cli_tags:
+            sub_cli_version.return_value = '1.1.6'
+            sub_cli_tags.return_value = ['1.1.6']
+            assert get_metadata_xlsx_template_link() == 'https://raw.githubusercontent.com/EBIvariation/eva-sub-cli/v1.1.6/eva-sub-cli/eva_sub_cli/etc/EVA_Submission_template.xlsx'
+
+            sub_cli_version.return_value = '1.1.5'
+            sub_cli_tags.return_value = ['1.1.6']
+            assert get_metadata_xlsx_template_link() == 'https://raw.githubusercontent.com/EBIvariation/eva-sub-cli/main/eva_sub_cli/etc/EVA_Submission_template.xlsx'
+
+            sub_cli_version.return_value = '1.1.5'
+            sub_cli_tags.return_value = []
+            assert get_metadata_xlsx_template_link() == 'https://raw.githubusercontent.com/EBIvariation/eva-sub-cli/main/eva_sub_cli/etc/EVA_Submission_template.xlsx'
 
     def test_metadata_xlsx_version_should_pass_as_version_is_equal_to_min_required(self):
         verify_metadata_xlsx_version(self.metadata_xlsx, '1.1.6')
@@ -301,6 +318,6 @@ class TestOrchestrator(unittest.TestCase):
                 verify_metadata_xlsx_version(self.metadata_xlsx_version_missing, '1.1.8')
             except MetadataTemplateVersionNotFoundException as mte:
                 assert mte.message == (
-                    f"No version Information found in metadata xlsx sheet {self.metadata_xlsx_version_missing}. "
+                    f"No version information found in metadata xlsx sheet {self.metadata_xlsx_version_missing}. "
                     f"Please download the correct template from EVA github project "
                     f"https://raw.githubusercontent.com/EBIvariation/eva-sub-cli/v0.4.4/eva-sub-cli/eva_sub_cli/etc/EVA_Submission_template.xlsx")
