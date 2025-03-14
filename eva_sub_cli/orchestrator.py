@@ -129,15 +129,8 @@ def get_project_and_vcf_fasta_mapping_from_metadata_json(metadata_json, mapping_
 
 
 def get_sub_cli_version():
-    try:
-        # If setuptools_scm is installed we can get the version directly from it
-        from setuptools_scm import get_version
-        sub_cli_version_full = get_version(root='..', relative_to=__file__)
-    except:
-        sub_cli_version_full = eva_sub_cli.__version__
-
-    if version.parse(sub_cli_version_full).is_devrelease:
-        major, minor, patch = map(int, version.parse(sub_cli_version_full).base_version.split('.'))
+    if version.parse(eva_sub_cli.__version__).is_devrelease:
+        major, minor, patch = map(int, version.parse(eva_sub_cli.__version__).base_version.split('.'))
         if patch > 0:
             patch -= 1
         elif minor > 0:
@@ -149,7 +142,7 @@ def get_sub_cli_version():
             patch = 0
         return f"{major}.{minor}.{patch}"
     else:
-        return version.parse(sub_cli_version_full).base_version
+        return version.parse(eva_sub_cli.__version__).base_version
 
 
 @retry(exceptions=(HTTPError,), tries=3, delay=2, backoff=1.2, jitter=(1, 3))
