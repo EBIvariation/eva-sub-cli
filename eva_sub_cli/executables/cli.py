@@ -1,11 +1,14 @@
 import sys
 
 import eva_sub_cli
+from eva_sub_cli.exceptions.metadata_template_version_exception import MetadataTemplateVersionException, \
+    MetadataTemplateVersionNotFoundException
 from eva_sub_cli.exceptions.submission_not_found_exception import SubmissionNotFoundException
 from eva_sub_cli.exceptions.submission_status_exception import SubmissionStatusException
 
 if not sys.warnoptions:
     import warnings
+
     warnings.simplefilter("ignore")
 
 import logging
@@ -39,7 +42,7 @@ def validate_command_line_arguments(args, argparser):
 def parse_args(cmd_line_args):
     argparser = ArgumentParser(prog='eva-sub-cli',
                                description='EVA Submission CLI - validate and submit data to EVA. '
-                               'For full details, please see https://github.com/EBIvariation/eva-sub-cli')
+                                           'For full details, please see https://github.com/EBIvariation/eva-sub-cli')
     argparser.add_argument('--version', action='version', version=f'%(prog)s {eva_sub_cli.__version__}')
     argparser.add_argument('--submission_dir', required=True, type=str,
                            help='Path to the directory where all processing is done and submission info is stored')
@@ -111,5 +114,10 @@ def main():
     except SubmissionStatusException as sse:
         print(f'{sse}. Please try again later. If the problem persists, please contact EVA Helpdesk')
         exit_status = 68
+    except MetadataTemplateVersionException as mte:
+        print(mte)
+        exit_status = 69
+    except MetadataTemplateVersionNotFoundException as mte:
+        print(mte)
+        exit_status = 70
     return exit_status
-
