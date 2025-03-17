@@ -98,7 +98,7 @@ eva-sub-cli.py --metadata_xlsx metadata_spreadsheet.xlsx --submission_dir submis
 
 Make sure that Docker is running in the background, e.g. by opening Docker Desktop.
 For each of the below commands, add the command line option `--executor docker`, which will
-fetch and manage the docker container for you. 
+fetch and manage the Docker container for you. 
 
 ```shell
 eva-sub-cli.py --metadata_xlsx metadata_spreadsheet.xlsx --submission_dir submission_dir --tasks VALIDATE --executor docker 
@@ -138,12 +138,13 @@ shallow validation will **not** be sufficient for actual submission.
 
 When running natively (i.e. not using Docker), eva-sub-cli will use a workflow management system called Nextflow to run all the validation steps. When no options are provided, Nextflow will run as many tasks as there are available CPUs on the machine executing it. To modify how many tasks can start and how Nextflow will process each one, you can provide a Nextflow configuration file in several ways.
 
-From the command line you can use `--nextflow_config <path>` to specify the nextflow config file you want to apply. The configuration can also be picked up from other places directly by nextflow. Please refer to [the nextflow documentation](https://www.nextflow.io/docs/latest/config.html) for more details.
+From the command line you can use `--nextflow_config <path>` to specify the Nextflow config file you want to apply. The configuration can also be picked up from other places directly by Nextflow. Please refer to [the nextflow documentation](https://www.nextflow.io/docs/latest/config.html) for more details.
 
-### Basic nextflow configuration.
+### Basic Nextflow configuration.
 
-There are many options to configure nextflow so we will not provide them all. Please refer to [the documentation](https://www.nextflow.io/docs/latest/reference/config.html) for advanced features.
-Below is a very basic nextflow configuration file that will request 2 cpus for each process, essentially limiting the number of process to half the number of available CPUs 
+Nextflow is a common workflow management system that helps orchestrate tasks and interface with the execution engine (like HPC or cloud). eva-sub-cli uses nextflow to run task and in this section we'll see how it can be parameterised to work with your compute infrastructure. 
+There are many options to configure Nextflow so we will not provide them all. Please refer to [the documentation](https://www.nextflow.io/docs/latest/reference/config.html) for advanced features.
+Below is a very basic Nextflow configuration file that will request 2 cpus for each process, essentially limiting the number of process to half the number of available CPUs 
 ```
 process {
     executor="local"
@@ -159,7 +160,7 @@ eva-sub-cli
       |_ task2
 ```
 
-If you have access to High Performance Compute environment, nextflow supports the main resource managers such as [SLURM](https://www.nextflow.io/docs/latest/executor.html#slurm), [SGE](https://www.nextflow.io/docs/latest/executor.html#sge), [LSF](https://www.nextflow.io/docs/latest/executor.html#lsf) and others.
+If you have access to High Performance Compute environment, Nextflow supports the main resource managers such as [SLURM](https://www.nextflow.io/docs/latest/executor.html#slurm), [SGE](https://www.nextflow.io/docs/latest/executor.html#sge), [LSF](https://www.nextflow.io/docs/latest/executor.html#lsf) and others.
 ```
 process {
     executor="slurm"
