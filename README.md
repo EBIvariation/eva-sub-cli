@@ -136,13 +136,13 @@ shallow validation will **not** be sufficient for actual submission.
 
 ## Leveraging Nextflow to parallelize the validation process  
 
-When running natively (i.e. not using docker), eva-sub-cli will use nextflow to run all the validation steps. When no options are provided nextflow will run as many tasks as there are available CPU on the machine executing it. To modify how many tasks can start and how nextflow will process each one, you can provide a nextflow configuration file in several ways:
+When running natively (i.e. not using Docker), eva-sub-cli will use a workflow management system called Nextflow to run all the validation steps. When no options are provided, Nextflow will run as many tasks as there are available CPUs on the machine executing it. To modify how many tasks can start and how Nextflow will process each one, you can provide a Nextflow configuration file in several ways.
 
 From the command line you can use `--nextflow_config <path>` to specify the nextflow config file you want to apply. The configuration can also be picked up from other places directly by nextflow. Please refer to [the nextflow documentation](https://www.nextflow.io/docs/latest/config.html) for more details.
 
 ### Basic nextflow configuration.
 
-There are many options to configure nextflow so we will not provide them all. Please refer to [the documentation](https://www.nextflow.io/docs/latest/reference/config.html) for advanced feature 
+There are many options to configure nextflow so we will not provide them all. Please refer to [the documentation](https://www.nextflow.io/docs/latest/reference/config.html) for advanced features.
 Below is a very basic nextflow configuration file that will request 2 cpus for each process, essentially limiting the number of process to half the number of available CPUs 
 ```
 process {
@@ -167,7 +167,7 @@ process {
 }
 ```
 
-In this configuration, the subtasks will be performed in other machine as specified by your SLURM resource manager.
+In this configuration, the subtasks will be performed in other machines as specified by your SLURM resource manager.
 ```
 (Local machine)
 eva-sub-cli
