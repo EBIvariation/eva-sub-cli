@@ -38,6 +38,11 @@ def validate_command_line_arguments(args, argparser):
         print(f"'{args.submission_dir}' does not have write permissions or is not a directory.")
         sys.exit(1)
 
+    if args.nextflow_config and not os.path.isfile(args.nextflow_config):
+        print(f"'{args.nextflow_config}' is not a file or does not exist.")
+        argparser.print_usage()
+        sys.exit(1)
+
 
 def parse_args(cmd_line_args):
     argparser = ArgumentParser(prog='eva-sub-cli',
@@ -74,6 +79,9 @@ def parse_args(cmd_line_args):
     argparser.add_argument('--shallow', action='store_true', default=False, dest='shallow_validation',
                            help='Set the validation to be performed on the first 10000 records of the VCF. '
                                 'Only applies if the number of records exceed 10000')
+    argparser.add_argument('--nextflow_config', type=str,
+                           help='Path to the configuration file that will be applied to the Nextflow process. '
+                                'This will override other nextflow configuration files you might have on your filesystem')
     argparser.add_argument('--debug', action='store_true', default=False,
                            help='Set the script to output debug messages')
     args = argparser.parse_args(cmd_line_args)
