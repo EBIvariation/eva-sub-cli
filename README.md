@@ -136,13 +136,14 @@ shallow validation will **not** be sufficient for actual submission.
 
 ## Leveraging Nextflow to parallelize the validation process  
 
-When running natively (i.e. not using Docker), eva-sub-cli will use a workflow management system called Nextflow to run all the validation steps. When no options are provided, Nextflow will run as many tasks as there are available CPUs on the machine executing it. To modify how many tasks can start and how Nextflow will process each one, you can provide a Nextflow configuration file in several ways.
+Nextflow is a common workflow management system that helps orchestrate tasks and interface with the execution engine (like HPC or cloud). When running natively (i.e. not using Docker), eva-sub-cli will use Nextflow to run all the validation steps. In this section we'll see how it can be parameterised to work with your compute infrastructure.
+
+When no options are provided, Nextflow will run as many tasks as there are available CPUs on the machine executing it. To modify how many tasks can start and how Nextflow will process each one, you can provide a Nextflow configuration file in several ways.
 
 From the command line you can use `--nextflow_config <path>` to specify the Nextflow config file you want to apply. The configuration can also be picked up from other places directly by Nextflow. Please refer to [the nextflow documentation](https://www.nextflow.io/docs/latest/config.html) for more details.
 
 ### Basic Nextflow configuration.
 
-Nextflow is a common workflow management system that helps orchestrate tasks and interface with the execution engine (like HPC or cloud). eva-sub-cli uses nextflow to run task and in this section we'll see how it can be parameterised to work with your compute infrastructure. 
 There are many options to configure Nextflow so we will not provide them all. Please refer to [the documentation](https://www.nextflow.io/docs/latest/reference/config.html) for advanced features.
 Below is a very basic Nextflow configuration file that will request 2 cpus for each process, essentially limiting the number of process to half the number of available CPUs 
 ```
@@ -151,7 +152,7 @@ process {
     cpus=2
 }
 ```
-In this configuration, all the process will be running on the same machine where eva-sub-cli was started.
+In this configuration, all the process will be running on the same machine where eva-sub-cli was started as described in the schema below.
 ```
 (Local machine)
 eva-sub-cli
@@ -160,7 +161,10 @@ eva-sub-cli
       |_ task2
 ```
 
-If you have access to High Performance Compute environment, Nextflow supports the main resource managers such as [SLURM](https://www.nextflow.io/docs/latest/executor.html#slurm), [SGE](https://www.nextflow.io/docs/latest/executor.html#sge), [LSF](https://www.nextflow.io/docs/latest/executor.html#lsf) and others.
+### Basic Nextflow configuration for HPC use.
+
+If you have access to High Performance Compute (HPC) environment, Nextflow supports the main resource managers such as [SLURM](https://www.nextflow.io/docs/latest/executor.html#slurm), [SGE](https://www.nextflow.io/docs/latest/executor.html#sge), [LSF](https://www.nextflow.io/docs/latest/executor.html#lsf) and others.
+In the configuration below, we're assuming that you are using SLURM. It would work similarly with other resource managers.
 ```
 process {
     executor="slurm"
@@ -168,13 +172,13 @@ process {
 }
 ```
 
-In this configuration, the subtasks will be performed in other machines as specified by your SLURM resource manager.
+In this configuration, the subtasks will be performed in other machines as specified by your SLURM resource manager as described in the schema below.
 ```
 (Local machine)
 eva-sub-cli
   |_ nextflow
-(Other machine)
+(Other compute node)
 task1
-(Other machine)
+(Other compute node)
 task2
 ```
