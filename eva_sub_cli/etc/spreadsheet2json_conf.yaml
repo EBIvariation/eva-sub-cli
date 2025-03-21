@@ -32,7 +32,7 @@ Project:
     Project Title: title
     Description: description
     Center: centre
-    Tax ID: taxId
+    Taxonomy ID: taxId
   optional:
     Publication(s): publications
     Parent Project: parentProject
@@ -74,6 +74,7 @@ Analysis:
     Imputation: boolean
     Phasing: boolean
     Date: date
+    Software: list
 
 Sample:
   header_row: 3
@@ -89,7 +90,7 @@ Sample:
     Prefix: prefix
     Subject: subject
     Derived From: derivedFrom
-    Tax Id: taxId
+    Taxonomy ID: taxId
     Scientific Name: scientificName
     Common Name: commonName
     mating_type: matingType
