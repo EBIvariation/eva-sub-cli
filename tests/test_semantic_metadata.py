@@ -158,11 +158,11 @@ class TestSemanticMetadata(TestCase):
             self.assertEqual(
                 checker.errors[1],
                 {'property': '/sample/2/bioSampleAccession',
-                 'description': "Existing sample SAME00003 should have required property 'collection date'"}
+                 'description': "Existing sample SAME00003 Just one of the following properties must be specified: 'collection_date', 'collection date', 'Event Date/Time'"}
             )
             # Final error message lists all possible geographic locations
             self.assertTrue(checker.errors[2]['description'].startswith(
-                'Existing sample SAME00003 should be equal to one of the allowed values:'))
+                'Existing sample SAME00003 must be equal to one of the allowed values:'))
 
     def test_check_existing_biosamples(self):
         checker = SemanticMetadataChecker(metadata, sample_checklist=None)
