@@ -1,4 +1,4 @@
-ebi_eva_common_pyutils==0.6.11
+ebi_eva_common_pyutils
 jinja2
 jsonschema
 openpyxl
