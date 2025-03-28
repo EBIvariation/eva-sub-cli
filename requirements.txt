@@ -1,7 +1,6 @@
-ebi_eva_common_pyutils==0.6.11
-jinja2
-jsonschema
-openpyxl
-pyyaml
-requests
-retry
+ebi_eva_common_pyutils > 0.6.11, == 0.*
+jinja2 >= 3.0.0, ==3.*
+jsonschema == 4.*
+openpyxl == 3.*
+pyyaml == 6.*
+requests == 2.*
