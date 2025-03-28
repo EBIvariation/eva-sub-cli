@@ -210,10 +210,15 @@ def get_project_and_vcf_fasta_mapping_from_metadata_xlsx(metadata_xlsx, mapping_
             files_headers[cell.value] = cell.column - 1
 
         for row in files_sheet.iter_rows(min_row=2, values_only=True):
-            file_name = os.path.abspath(row[files_headers['File Name']])
+            file_name = row[files_headers['File Name']]
+            if file_name:
+                file_name = os.path.abspath(file_name)
             analysis_alias = row[files_headers['Analysis Alias']]
-            reference_fasta = os.path.abspath(analysis_alias_dict[analysis_alias])
-            vcf_fasta_report_mapping.append([os.path.abspath(file_name), os.path.abspath(reference_fasta), ''])
+            reference_fasta = analysis_alias_dict[analysis_alias]
+            if reference_fasta:
+                reference_fasta = os.path.abspath(reference_fasta)
+            if file_name and reference_fasta:
+                vcf_fasta_report_mapping.append([file_name, reference_fasta, ''])
 
     return project_title, vcf_fasta_report_mapping
 
