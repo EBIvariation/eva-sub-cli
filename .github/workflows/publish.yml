@@ -1,8 +1,6 @@
 name: Publish Python Package
 
 on:
-  pull_request:
-    branches: [ main ]
   push:
     tags:
       - '**'
@@ -49,5 +47,5 @@ jobs:
     - name: Build
       run: |
         python -m build
-#    - name: Publish
-#      uses: pypa/gh-action-pypi-publish@release/v1
+    - name: Publish
+      uses: pypa/gh-action-pypi-publish@release/v1
