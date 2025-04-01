@@ -88,6 +88,33 @@ class TestXlsReader(TestCase):
             assert 'name' not in novel_sample
             assert 'species' not in novel_sample['characteristics']
 
+    def test_json_validation_fails_for_large_project_title_and_project_description(self) -> None:
+        with open(self.eva_schema) as eva_schema_file:
+            eva_json_schema = json.load(eva_schema_file)
+        with open(self.biosample_schema) as biosample_schema_file:
+            biosample_json_schema = json.load(biosample_schema_file)
+        resolver = jsonschema.RefResolver.from_schema(eva_json_schema)
+        resolver.store['eva-biosamples.json'] = biosample_json_schema
+
+        # test fails for title
+        json_data = self.get_expected_json()
+        json_data['project']['title'] = self.build_large_string_of_length(600)
+
+        assert len(json_data['project']['title']) == 600
+        with self.assertRaises(jsonschema.ValidationError):
+            jsonschema.validate(json_data, eva_json_schema, resolver=resolver)
+
+        # test fails for description
+        json_data = self.get_expected_json()
+        json_data['project']['description'] = self.build_large_string_of_length(6000)
+
+        assert len(json_data['project']['description']) == 6000
+        with self.assertRaises(jsonschema.ValidationError):
+            jsonschema.validate(json_data, eva_json_schema, resolver=resolver)
+
+    def build_large_string_of_length(self, length):
+        return "A" * length
+
     def get_expected_json(self):
         return {
             "submitterDetails": [
