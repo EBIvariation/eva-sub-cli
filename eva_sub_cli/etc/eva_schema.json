@@ -75,11 +75,13 @@
       "properties": {
         "title": {
           "type": "string",
-          "description": "Title of the project"
+          "description": "Title of the project",
+          "maxLength": 500
         },
         "description": {
           "type": "string",
-          "description": "Description of the project"
+          "description": "Description of the project",
+          "maxLength": 5000
         },
         "centre": {
           "type": "string",
@@ -166,11 +168,11 @@
             "type": "string",
             "description": "Reference against which the analysis was performed. ENA or NCBI accession (starting with GCA) accepted."
           },
-           "referenceFasta": {
+          "referenceFasta": {
             "type": "string",
             "description": "The path to the reference in fasta format that was used to create the VCF. (This is a local path)"
           },
-           "assemblyReport": {
+          "assemblyReport": {
             "type": "string",
             "description": "The path to the assembly report associated with the assembly as found in NCBI assemblies. (This is a local path and only applicable for GCAs)"
           },
@@ -319,7 +321,7 @@
                 "$ref": "eva-biosamples.json"
               },
               {
-                 "$ref": "https://www.ebi.ac.uk/biosamples/schema/store/registry/schemas/ERC000011"
+                "$ref": "https://www.ebi.ac.uk/biosamples/schema/store/registry/schemas/ERC000011"
               },
               {
                 "$ref": "https://www.ebi.ac.uk/biosamples/schemas/certification/plant-miappe.json"
