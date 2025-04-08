@@ -37,6 +37,7 @@ expected_validation_results = {
         'json_errors': [
             {'property': '/files', 'description': "should have required property 'files'"},
             {'property': '/project/title', 'description': "should have required property 'title'"},
+            {'property': '/project/description', 'description': 'must NOT have more than 5000 characters'},
             {'property': '/project/taxId', 'description': "must have required property 'taxId'"},
             {'property': '/project/holdDate', 'description': 'must match format "date"'},
             {'property': '/analysis/0/description',
@@ -130,6 +131,8 @@ class TestValidator(TestCase):
             {'sheet': 'Files', 'row': '', 'column': '', 'description': 'Sheet "Files" is missing'},
             {'sheet': 'Project', 'row': 2, 'column': 'Project Title',
              'description': 'Column "Project Title" is not populated'},
+            {'sheet': 'Project', 'row': 2, 'column': 'Description',
+             'description': 'must NOT have more than 5000 characters'},
             {'sheet': 'Project', 'row': 2, 'column': 'Taxonomy ID',
              'description': 'Column "Taxonomy ID" is not populated'},
             {'sheet': 'Project', 'row': 2, 'column': 'Hold Date',
