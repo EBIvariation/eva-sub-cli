@@ -168,6 +168,7 @@ class TestValidator(TestCase):
         assert self.validator.results['metadata_check']['json_errors'] == [
             {'property': '/files', 'description': "should have required property 'files'"},
             {'property': '/project/title', 'description': "should have required property 'title'"},
+            {'property': '/project/description', 'description': 'must NOT have more than 5000 characters'},
             {'property': '/project/taxId', 'description': "must have required property 'taxId'"},
             {'property': '/project/holdDate', 'description': 'must match format "date"'},
             {'property': '/analysis/0/description', 'description': "should have required property 'description'"},

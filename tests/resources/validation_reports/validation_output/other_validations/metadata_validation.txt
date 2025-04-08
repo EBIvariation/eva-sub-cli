@@ -12,6 +12,8 @@
 	should have required property 'files'
 /project/title
 	should have required property 'title'
+/project/description
+	must NOT have more than 5000 characters
 /project/taxId
         must have required property 'taxId'
 /project/holdDate
