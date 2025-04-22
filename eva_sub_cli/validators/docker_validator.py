@@ -11,8 +11,8 @@ from eva_sub_cli.validators.validator import Validator
 
 logger = logging_config.get_logger(__name__)
 
-container_image = 'ebivariation/eva-sub-cli'
-container_tag = 'v0.0.3'
+default_container_image = 'ebivariation/eva-sub-cli'
+default_container_tag = 'v0.0.3'
 container_validation_dir = '/opt/vcf_validation'
 container_validation_output_dir = 'vcf_validation_output'
 
@@ -20,13 +20,16 @@ container_validation_output_dir = 'vcf_validation_output'
 class DockerValidator(Validator):
 
     def __init__(self, mapping_file, submission_dir, project_title, metadata_json=None,
-                 metadata_xlsx=None, shallow_validation=False, docker_path='docker', submission_config=None):
+                 metadata_xlsx=None, shallow_validation=False, docker_path='docker', submission_config=None,
+                 container_image=None, container_tag=None, container_name=None):
         super().__init__(mapping_file, submission_dir, project_title,
                          metadata_json=metadata_json, metadata_xlsx=metadata_xlsx,
                          shallow_validation=shallow_validation, submission_config=submission_config)
         self.docker_path = docker_path
         submission_basename = re.sub('[^a-zA-Z0-9]', '', os.path.basename(submission_dir))
-        self.container_name = f'{container_image.split("/")[1]}.{container_tag}.{submission_basename}'
+        self.container_image = container_image or default_container_image
+        self.container_tag = container_tag or default_container_tag
+        self.container_name = container_name or f'{self.container_image.split("/")[1]}.{self.container_tag}.{submission_basename}'
 
     def _validate(self):
         self.run_docker_validator()
@@ -130,11 +133,11 @@ class DockerValidator(Validator):
             f"{self.docker_path} images",
             return_process_output=True
         )
-        if container_images_cmd_ouptut is not None and re.search(container_image + r'\s+' + container_tag, container_images_cmd_ouptut):
-            logger.debug(f"Container ({container_image}) image is available locally")
+        if container_images_cmd_ouptut is not None and re.search(self.container_image + r'\s+' + self.container_tag, container_images_cmd_ouptut):
+            logger.debug(f"Container ({self.container_image}) image is available locally")
             return True
         else:
-            logger.debug(f"Container ({container_image}) image is not available locally")
+            logger.debug(f"Container ({self.container_image}) image is not available locally")
             return False
 
     def run_container_if_required(self):
@@ -149,7 +152,7 @@ class DockerValidator(Validator):
             try:
                 self._run_quiet_command(
                     "Running container",
-                    f"{self.docker_path} run -it --rm -d --name {self.container_name} {container_image}:{container_tag}"
+                    f"{self.docker_path} run -it --rm -d --name {self.container_name} {self.container_image}:{self.container_tag}"
                 )
                 # Wait to give some time to container to get up and running
                 time.sleep(5)
@@ -169,12 +172,13 @@ class DockerValidator(Validator):
     @retry(RuntimeError, tries=3, delay=5, backoff=1, jitter=2, logger=logger)
     def download_container_image_if_needed(self):
         if not self.verify_image_available_locally():
-            logger.debug(f"Pulling container ({container_image}) image")
+            logger.debug(f"Pulling container ({self.container_image}) image")
             try:
-                self._run_quiet_command("pull container image", f"{self.docker_path} pull {container_image}:{container_tag}")
+                self._run_quiet_command("pull container image",
+                                        f"{self.docker_path} pull {self.container_image}:{self.container_tag}")
             except subprocess.CalledProcessError as ex:
                 logger.error(ex)
-                raise RuntimeError(f"Cannot pull container ({container_image}) image")
+                raise RuntimeError(f"Cannot pull container ({self.container_image}) image")
             # Give the pull command some time to complete
             time.sleep(5)
 
