@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  eva_sub_cli:
+    build:
+      context: ../../
+      dockerfile: docker/Dockerfile
+    image: eva_sub_cli:test-latest
+    networks:
+      - eva_network
+
+networks:
+  eva_network:
+    name: eva_network
