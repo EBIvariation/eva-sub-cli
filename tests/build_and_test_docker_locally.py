@@ -94,7 +94,7 @@ class TestDockerValidator(TestCase):
     def build_docker_image_for_test(self):
         self.stop_and_remove_test_container()
         self.remove_existing_test_image()
-        self.build_docker_image_for_test()
+        self.build_docker_image()
 
     def stop_and_remove_test_container(self):
         try:
@@ -118,7 +118,7 @@ class TestDockerValidator(TestCase):
             raise RuntimeError(
                 f"Please make sure docker ({self.docker_path}) is installed and available on the path. {ex}")
 
-    def build_docker_image_for_test(self):
+    def build_docker_image(self):
         try:
             self._run_quiet_command(
                 "build docker image for test",
