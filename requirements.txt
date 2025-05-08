@@ -5,6 +5,4 @@ openpyxl == 3.*
 pyyaml == 6.*
 requests == 2.*
 packaging ==24.*
-pyyaml
-jinja2
 setuptools-scm
