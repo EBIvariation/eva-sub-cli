@@ -4,3 +4,5 @@ jsonschema == 4.*
 openpyxl == 3.*
 pyyaml == 6.*
 requests == 2.*
+packaging ==24.*
+setuptools-scm
