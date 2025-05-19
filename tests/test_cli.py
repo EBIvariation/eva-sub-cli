@@ -34,6 +34,11 @@ class TestCli(TestCase):
             logger = orchestrator.logger
             logger.debug('test')
             assert exit_status == 0
+            # Log file should contain the log message
+            log_file = os.path.join(self.submission_dir, 'eva_submission.log')
+            with open(log_file) as open_log_file:
+                all_lines = open_log_file.readlines()
+                all_lines[0].endswith('[eva_sub_cli.orchestrator][DEBUG] test\n')
 
     def test_validate_args(self):
         cmd_args = [

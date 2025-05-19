@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import csv
 import json
+import logging
 import os
 import re
 from collections import defaultdict
@@ -33,7 +34,7 @@ SUBMIT = 'submit'
 DOCKER = 'docker'
 NATIVE = 'native'
 
-logger = logging_config.get_logger(__name__)
+logger = logging_config.get_logger(__name__, level=logging.DEBUG)
 
 
 def get_vcf_files(mapping_file):
