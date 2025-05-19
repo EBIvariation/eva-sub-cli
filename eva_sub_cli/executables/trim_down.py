@@ -71,8 +71,10 @@ def main():
                          'trim_down_required': line_count == max_nb_lines}
     if len(sequence_found) != len(ref_sequence):
         logger.warning(f'Not all sequences were found in the fasta file. Cancelling trimming down of fasta file')
+        if os.path.exists(args.output_fasta_file):
+            os.remove(args.output_fasta_file)
         os.link(args.fasta_file, args.output_fasta_file)
         trim_down_metrics.pop('number_sequence_found')
-    with open(args.output_yaml_file) as open_file:
+    with open(args.output_yaml_file, 'w') as open_file:
         yaml.safe_dump(trim_down_metrics, open_file)
 
