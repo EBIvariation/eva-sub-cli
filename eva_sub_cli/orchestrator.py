@@ -34,7 +34,7 @@ SUBMIT = 'submit'
 DOCKER = 'docker'
 NATIVE = 'native'
 
-logger = logging_config.get_logger(__name__, level=logging.DEBUG)
+logger = logging_config.get_logger(__name__)
 
 
 def get_vcf_files(mapping_file):
