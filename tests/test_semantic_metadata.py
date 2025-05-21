@@ -10,7 +10,8 @@ metadata = {
         {"bioSampleAccession": "SAME00001"},
         {"bioSampleAccession": "SAME00002"},
         {"bioSampleAccession": "SAME00003"},
-        {"bioSampleAccession": "SAME00004"}
+        {"bioSampleAccession": "SAME00004"},
+        {"bioSampleAccession": "SAME00005"}
     ]
 }
 valid_sample = {
@@ -22,17 +23,26 @@ valid_sample = {
         'geographic location (country and/or sea)': [{'text': 'France'}]
     }
 }
-invalid_sample = {
+invalid_sample1 = {
     'accession': 'SAME00003',
     'name': 'sample3',
     "create": "2023-10-10T08:45:15.310Z",
     'characteristics': {
         'organism': [{'text': 'Viridiplantae'}],
-        'geographic location (country and/or sea)': [{'text': 'France: Montferrier-sur-Lez'}]
+        'geographic location (country and/or sea)': [{'text': 'France: Montferrier-sur-Lez'}],
+    }
+}
+invalid_sample2 = {
+    'accession': 'SAME00004',
+    'name': 'sample3',
+    "create": "2023-10-10T08:45:15.310Z",
+    'characteristics': {
+        'organism': [{'text': 'Viridiplantae'}],
+        'collection date': [{'text': 'November 2011'}]
     }
 }
 old_invalid_sample = {
-    'accession': 'SAME00004',
+    'accession': 'SAME00005',
     'name': 'sample4',
     "create": "2011-10-10T08:45:15.310Z",
     'characteristics': {
@@ -94,6 +104,7 @@ class TestSemanticMetadata(TestCase):
                     'description': '1234 is not a valid taxonomy code'
                 }
             ])
+
     def test_check_uniqueness_analysis_alias(self):
         metadata = {
             "analysis": [
@@ -159,7 +170,7 @@ class TestSemanticMetadata(TestCase):
     def test_check_existing_biosamples_with_checklist(self):
         checker = SemanticMetadataChecker(metadata)
         with patch.object(SemanticMetadataChecker, '_get_biosample',
-                          side_effect=[valid_sample, ValueError, invalid_sample, old_invalid_sample]) as m_get_sample:
+                          side_effect=[valid_sample, ValueError, invalid_sample1, invalid_sample2, old_invalid_sample]) as m_get_sample:
             checker.check_existing_biosamples()
             self.assertEqual(
                 checker.errors[0],
@@ -168,28 +179,30 @@ class TestSemanticMetadata(TestCase):
             self.assertEqual(
                 checker.errors[1],
                 {'property': '/sample/2/bioSampleAccession',
-                 'description': "Existing sample SAME00003 must have required property 'collection date'"}
+                 'description': "In existing sample SAME00003 must have required property 'collection date'"}
             )
-            # Final error message lists all possible geographic locations
+            # error message lists all possible geographic locations
             self.assertTrue(checker.errors[2]['description'].startswith(
-                'Existing sample SAME00003 must be equal to one of the allowed values:'))
-            self.assertTrue(len(checker.errors) == 3)
+                'In existing sample SAME00003 geographic location (country and~1or sea) must be equal to one of the allowed values:'))
+
+            self.assertEqual(checker.errors[3]['description'],
+                "In existing sample SAME00004 must have required property 'geographic location (country and/or sea)'")
+
+            # error message lists long regex for collection date
+            self.assertTrue(checker.errors[4]['description'].startswith(
+                'In existing sample SAME00004 collection date must match pattern '))
+            self.assertTrue(len(checker.errors) == 5)
 
     def test_check_existing_biosamples(self):
         checker = SemanticMetadataChecker(metadata, sample_checklist=None)
         with patch.object(NoAuthHALCommunicator, 'follows_link',
-                          side_effect=[valid_sample, ValueError, invalid_sample, old_invalid_sample]) as m_follows_link:
+                          side_effect=[valid_sample, ValueError, invalid_sample1, invalid_sample2, old_invalid_sample]) as m_follows_link:
             checker.check_existing_biosamples()
             self.assertEqual(checker.errors, [
-                {
-                    'property': '/sample/1/bioSampleAccession',
-                    'description': 'SAME00002 does not exist or is private'
-                },
-                {
-                    'property': '/sample/2/bioSampleAccession',
-                    'description': 'Existing sample SAME00003 does not have a valid collection date'
-                }
-            ])
+                {'description': 'SAME00002 does not exist or is private','property': '/sample/1/bioSampleAccession'},
+                {'description': 'Existing sample SAME00003 does not have a valid collection date', 'property': '/sample/2/bioSampleAccession'},
+                {'description': 'Existing sample SAME00004 does not have a valid collection date', 'property': '/sample/3/bioSampleAccession'},
+                {'description': 'Existing sample SAME00004 does not have a valid geographic location', 'property': '/sample/3/bioSampleAccession'}])
 
     def test_check_analysis_alias_coherence(self):
         metadata = {

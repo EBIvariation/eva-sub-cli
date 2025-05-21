@@ -190,9 +190,21 @@ class SemanticMetadataChecker(AppLogger):
             # Successful response returns the sample object, error response has a list of error objects.
             if isinstance(response, list):
                 for error_dict in response:
-                    error =  error_dict["errors"][0]
+                    error_property = ''
+                    # Retrieve the property the error applied to in the datapath
+                    if 'dataPath' in error_dict:
+                        if error_dict['dataPath'].startswith('/characteristics/'):
+                            error_property = error_dict['dataPath'].split('/')[2]
+                        else:
+                            error_property = error_dict['dataPath']
+                    # Define the error
+                    error_list = []
                     if accession:
-                        error = f'Existing sample {accession} {error_dict["errors"][0]}'
+                        error_list.append(f'In existing sample {accession}')
+                    if error_property and error_property not in error_dict['errors'][0]:
+                        error_list.append(error_property)
+                    error_list.append(error_dict['errors'][0])
+                    error = ' '.join(error_list)
                     if self._should_bypass_error(sample_data, error):
                         self.debug(f'bypass error {error} from {json_path}')
                         continue
