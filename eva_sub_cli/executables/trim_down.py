@@ -1,6 +1,7 @@
 import argparse
 import os
 
+import sys
 import yaml
 from ebi_eva_common_pyutils.logger import logging_config
 from eva_sub_cli.file_utils import open_gzip_if_required, fasta_iter
@@ -8,10 +9,10 @@ from eva_sub_cli.file_utils import open_gzip_if_required, fasta_iter
 logger = logging_config.get_logger(__name__)
 
 
-max_nb_lines = 10000
+MAX_NB_LINES = 10000
 
 
-def trim_down_vcf(vcf_file, output_vcf):
+def trim_down_vcf(vcf_file, output_vcf, max_nb_lines=MAX_NB_LINES):
     """
     Produce a smaller vcf files containing a maximum of 10000 records
     """
@@ -26,9 +27,16 @@ def trim_down_vcf(vcf_file, output_vcf):
                     ref_seq_names.add(line.split('\t')[0])
             else:
                 break
+        # Check if there are more lines:
+        trimmed_down = True
+        try:
+            next(vcf_in)
+        except StopIteration:
+            trimmed_down = False
     if line_count != max_nb_lines:
         logger.warning(f'Only {line_count} found in the source VCF {vcf_file} ')
-    return line_count, ref_seq_names
+
+    return line_count, trimmed_down, ref_seq_names
 
 
 def trim_down_fasta(fasta_file, output_fasta, ref_seq_names):
@@ -46,10 +54,9 @@ def trim_down_fasta(fasta_file, output_fasta, ref_seq_names):
                     print(sequence[i:i+80], file=fasta_out)
     return found_sequences
 
-
-def main():
+def parse_args(cmd_line_args):
     arg_parser = argparse.ArgumentParser(
-        description=f'Take a VCF file and only keep {max_nb_lines} lines and remove unused fasta sequence from the '
+        description=f'Take a VCF file and only keep {MAX_NB_LINES} lines and remove unused fasta sequence from the '
                     f'associated reference genome')
     arg_parser.add_argument('--vcf_file', dest='vcf_file', required=True,
                             help='Path to the vcf file to be trimmed down')
@@ -63,16 +70,23 @@ def main():
                             help='Path to the yaml file containing the trim down metrics')
 
     args = arg_parser.parse_args()
+    return args
+
+def main():
+    args = parse_args(sys.argv[1:])
+
     logging_config.add_stdout_handler()
 
-    line_count, ref_sequence = trim_down_vcf(args.vcf_file, args.output_vcf_file)
+    line_count, trimmed_down, ref_sequence = trim_down_vcf(args.vcf_file, args.output_vcf_file)
     sequence_found = trim_down_fasta(args.fasta_file, args.output_fasta_file, ref_sequence)
-    trim_down_metrics = {'trim_down_vcf_record': line_count, 'number_sequence_found': sequence_found,
-                         'trim_down_required': line_count == max_nb_lines}
+    trim_down_metrics = {'trim_down_vcf_record': line_count, 'number_sequence_found': len(sequence_found),
+                         'trim_down_required': trimmed_down}
     if len(sequence_found) != len(ref_sequence):
         logger.warning(f'Not all sequences were found in the fasta file. Cancelling trimming down of fasta file')
+        if os.path.exists(args.output_fasta_file):
+            os.remove(args.output_fasta_file)
         os.link(args.fasta_file, args.output_fasta_file)
         trim_down_metrics.pop('number_sequence_found')
-    with open(args.output_yaml_file) as open_file:
+    with open(args.output_yaml_file, 'w') as open_file:
         yaml.safe_dump(trim_down_metrics, open_file)
 
