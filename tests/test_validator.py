@@ -228,7 +228,9 @@ class TestValidator(TestCase):
                  'description': '1234 is not a valid taxonomy code'},
                 {'property': '/sample/analysisAlias', 'description': 'alias1 present in Analysis not in Samples'},
                 {'property': '/sample/analysisAlias',
-                 'description': 'alias_1,alias_2 present in Samples not in Analysis'}
+                 'description': 'alias_1,alias_2 present in Samples not in Analysis'},
+                {'property': '/sample/0/bioSampleAccession',
+                 'description': "Existing sample SAMEA6675477 must have required property 'collection date'"}
             ]
         }
         self.validator._convert_biovalidator_validation_to_spreadsheet()
@@ -257,7 +259,10 @@ class TestValidator(TestCase):
             {'sheet': 'Sample', 'row': '', 'column': 'Analysis Alias',
              'description': 'alias1 present in Analysis not in Samples'},
             {'sheet': 'Sample', 'row': '', 'column': 'Analysis Alias',
-             'description': 'alias_1,alias_2 present in Samples not in Analysis'}
+             'description': 'alias_1,alias_2 present in Samples not in Analysis'},
+            {'column': 'Sample Accession','row': 3, 'sheet': 'Sample',
+             'description': 'Existing sample SAMEA6675477 must have required property '
+                            "'collection date'"}
         ]
 
     def test_collect_conversion_errors(self):

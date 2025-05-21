@@ -371,15 +371,18 @@ class Validator(AppLogger):
             sheet = convert_metadata_sheet(sheet_json, xls2json_conf)
             row = convert_metadata_row(sheet, row_json, xls2json_conf)
             column = convert_metadata_attribute(sheet, attribute_json, xls2json_conf)
+
             if row_json is None and attribute_json is None and sheet is not None:
                 new_description = f'Sheet "{sheet}" is missing'
             elif row_json is None:
-                if 'have required' not in error['description']:
+                missing_property_error = f" have required property '{sheet_json}'"
+                if not error['description'].endswith(missing_property_error):
                     new_description = error['description']
                 else:
                     new_description = f'Column "{column}" is not populated'
             elif attribute_json and column:
-                if 'have required' not in error['description']:
+                missing_property_error = f" have required property '{attribute_json}'"
+                if not error['description'].endswith(missing_property_error):
                     new_description = error['description']
                 else:
                     new_description = f'Column "{column}" is not populated'
