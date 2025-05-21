@@ -9,7 +9,8 @@ metadata = {
     "sample": [
         {"bioSampleAccession": "SAME00001"},
         {"bioSampleAccession": "SAME00002"},
-        {"bioSampleAccession": "SAME00003"}
+        {"bioSampleAccession": "SAME00003"},
+        {"bioSampleAccession": "SAME00004"}
     ]
 }
 valid_sample = {
@@ -24,9 +25,18 @@ valid_sample = {
 invalid_sample = {
     'accession': 'SAME00003',
     'name': 'sample3',
+    "create": "2023-10-10T08:45:15.310Z",
     'characteristics': {
         'organism': [{'text': 'Viridiplantae'}],
         'geographic location (country and/or sea)': [{'text': 'France: Montferrier-sur-Lez'}]
+    }
+}
+old_invalid_sample = {
+    'accession': 'SAME00004',
+    'name': 'sample4',
+    "create": "2011-10-10T08:45:15.310Z",
+    'characteristics': {
+        'organism': [{'text': 'Viridiplantae'}]
     }
 }
 
@@ -149,7 +159,7 @@ class TestSemanticMetadata(TestCase):
     def test_check_existing_biosamples_with_checklist(self):
         checker = SemanticMetadataChecker(metadata)
         with patch.object(SemanticMetadataChecker, '_get_biosample',
-                          side_effect=[valid_sample, ValueError, invalid_sample]) as m_get_sample:
+                          side_effect=[valid_sample, ValueError, invalid_sample, old_invalid_sample]) as m_get_sample:
             checker.check_existing_biosamples()
             self.assertEqual(
                 checker.errors[0],
@@ -163,11 +173,12 @@ class TestSemanticMetadata(TestCase):
             # Final error message lists all possible geographic locations
             self.assertTrue(checker.errors[2]['description'].startswith(
                 'Existing sample SAME00003 must be equal to one of the allowed values:'))
+            self.assertTrue(len(checker.errors) == 3)
 
     def test_check_existing_biosamples(self):
         checker = SemanticMetadataChecker(metadata, sample_checklist=None)
         with patch.object(NoAuthHALCommunicator, 'follows_link',
-                          side_effect=[valid_sample, ValueError, invalid_sample]) as m_follows_link:
+                          side_effect=[valid_sample, ValueError, invalid_sample, old_invalid_sample]) as m_follows_link:
             checker.check_existing_biosamples()
             self.assertEqual(checker.errors, [
                 {
