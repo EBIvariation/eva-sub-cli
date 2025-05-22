@@ -46,12 +46,12 @@ def backup_file_or_directory(file_name, max_backups=None):
     os.rename(file_name, file_name + '.1')
 
 
-def open_gzip_if_required(input_file):
+def open_gzip_if_required(input_file, mode='r'):
     """Open a file in read mode using gzip if the file extension says .gz"""
     if input_file.endswith('.gz'):
-        return gzip.open(input_file, 'rt')
+        return gzip.open(input_file, mode + 't')
     else:
-        return open(input_file, 'r')
+        return open(input_file, mode)
 
 
 def fasta_iter(input_fasta):

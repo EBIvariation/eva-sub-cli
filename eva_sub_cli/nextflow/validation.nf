@@ -112,16 +112,14 @@ process trim_down_vcf {
     tuple path(vcf), path(fasta), path(report)
 
     output:
-    tuple path("output/$output_vcf"), path("output/$fasta"), path(report), emit: vcf_and_ref
+    tuple path("output/$vcf"), path("output/$fasta"), path(report), emit: vcf_and_ref
     path "${vcf.getBaseName()}_trim_down.log", emit: trim_down_log
     path "${vcf.getBaseName()}_trim_down.yml", emit: trim_down_metric
 
     script:
-    def vcfname = vcf.getName()
-    output_vcf = vcfname.endsWith('.gz') ? vcfname[0..-4] : vcfname
     """
     mkdir output
-    $params.python_scripts.trim_down --vcf_file $vcf  --output_vcf_file output/$output_vcf --fasta_file $fasta --output_fasta_file output/$fasta --output_yaml_file ${vcf.getBaseName()}_trim_down.yml > ${vcf.getBaseName()}_trim_down.log
+    $params.python_scripts.trim_down --vcf_file $vcf  --output_vcf_file output/$vcf --fasta_file $fasta --output_fasta_file output/$fasta --output_yaml_file ${vcf.getBaseName()}_trim_down.yml > ${vcf.getBaseName()}_trim_down.log
     # This is needed to ensure that a missing (NO_FILE) report can still be passed down to subsequent steps
     touch $report
     """
