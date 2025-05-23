@@ -201,7 +201,7 @@ class SemanticMetadataChecker(AppLogger):
                     # Define the error
                     error_list = []
                     if accession:
-                        error_list.append(f'In existing sample {accession}')
+                        error_list.append(f'Error validating existing sample {accession}:')
                     if error_property and error_property not in error_dict['errors'][0]:
                         error_list.append(error_property)
                     error_list.append(error_dict['errors'][0])

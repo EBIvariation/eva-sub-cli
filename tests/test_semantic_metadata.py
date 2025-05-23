@@ -179,18 +179,18 @@ class TestSemanticMetadata(TestCase):
             self.assertEqual(
                 checker.errors[1],
                 {'property': '/sample/2/bioSampleAccession',
-                 'description': "In existing sample SAME00003 must have required property 'collection date'"}
+                 'description': "Error validating existing sample SAME00003: must have required property 'collection date'"}
             )
             # error message lists all possible geographic locations
             self.assertTrue(checker.errors[2]['description'].startswith(
-                'In existing sample SAME00003 geographic location (country and~1or sea) must be equal to one of the allowed values:'))
+                'Error validating existing sample SAME00003: geographic location (country and~1or sea) must be equal to one of the allowed values:'))
 
             self.assertEqual(checker.errors[3]['description'],
-                "In existing sample SAME00004 must have required property 'geographic location (country and/or sea)'")
+                "Error validating existing sample SAME00004: must have required property 'geographic location (country and/or sea)'")
 
             # error message lists long regex for collection date
             self.assertTrue(checker.errors[4]['description'].startswith(
-                'In existing sample SAME00004 collection date must match pattern '))
+                'Error validating existing sample SAME00004: collection date must match pattern '))
             self.assertTrue(len(checker.errors) == 5)
 
     def test_check_existing_biosamples(self):
