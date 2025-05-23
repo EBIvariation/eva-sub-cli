@@ -27,6 +27,7 @@ SCI_NAME_KEYS = ['species', 'Species', 'organism', 'Organism']
 ANALYSIS_ALIAS_KEY = 'analysisAlias'
 ANALYSIS_RUNS_KEY = 'runAccessions'
 
+# Samples created before this date are not required to have collection date or geographic location
 threshold_2023 = datetime(2023,1,1)
 
 def cast_list(l, type_to_cast=str):
