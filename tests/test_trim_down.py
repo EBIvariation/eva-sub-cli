@@ -9,6 +9,7 @@ import yaml
 
 from eva_sub_cli.executables import trim_down
 from eva_sub_cli.executables.trim_down import trim_down_vcf, trim_down_fasta
+from eva_sub_cli.file_utils import open_gzip_if_required
 
 
 class TestTrimDown(TestCase):
@@ -64,6 +65,21 @@ class TestTrimDown(TestCase):
         nb_line = count_line(output_vcf)
         assert nb_line == 100
 
+    def test_trim_down_vcf_gz(self):
+        vcf_file = os.path.join(self.resources_folder, 'vcf_files', 'example2.vcf.gz')
+        nb_line = count_line(vcf_file)
+        assert nb_line == 2
+        assert is_gz_file(vcf_file)
+
+        output_vcf = os.path.join(self.submission_dir, 'trim_example2.vcf.gz')
+        line_count, trimmed_down, ref_seq_names = trim_down_vcf(vcf_file, output_vcf, max_nb_lines=1)
+        assert line_count == 1
+        assert trimmed_down == True
+        assert ref_seq_names == {'1'}
+        nb_line = count_line(output_vcf)
+        assert nb_line == 1
+        assert is_gz_file(output_vcf)
+
     def test_not_trim_down_vcf(self):
         vcf_file = os.path.join(self.resources_folder, 'vcf_files', 'input_passed.vcf')
         output_vcf = os.path.join(self.submission_dir, 'trim_input_passed.vcf')
@@ -75,9 +91,14 @@ class TestTrimDown(TestCase):
         assert nb_line == 247
 
 
+def is_gz_file(filepath):
+    with open(filepath, 'rb') as test_f:
+        return test_f.read(2) == b'\x1f\x8b'
+
+
 def count_line(vcf_file):
     count=0
-    with open(vcf_file) as open_vcf_file:
+    with open_gzip_if_required(vcf_file) as open_vcf_file:
         for line in open_vcf_file:
             if line.startswith('#'):
                 continue

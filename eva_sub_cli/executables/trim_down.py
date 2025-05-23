@@ -16,8 +16,9 @@ def trim_down_vcf(vcf_file, output_vcf, max_nb_lines=MAX_NB_LINES):
     """
     Produce a smaller vcf files containing a maximum of 10000 records
     """
-    with open_gzip_if_required(vcf_file) as vcf_in, open(output_vcf, 'w') as vcf_out:
+    with open_gzip_if_required(vcf_file) as vcf_in, open_gzip_if_required(output_vcf, 'w') as vcf_out:
         line_count = 0
+        trimmed_down = False
         ref_seq_names = set()
         for line in vcf_in:
             if line.startswith('#') or line_count < max_nb_lines:
@@ -26,13 +27,8 @@ def trim_down_vcf(vcf_file, output_vcf, max_nb_lines=MAX_NB_LINES):
                     line_count += 1
                     ref_seq_names.add(line.split('\t')[0])
             else:
+                trimmed_down = True
                 break
-        # Check if there are more lines:
-        trimmed_down = True
-        try:
-            next(vcf_in)
-        except StopIteration:
-            trimmed_down = False
     if line_count != max_nb_lines:
         logger.warning(f'Only {line_count} found in the source VCF {vcf_file} ')
 
