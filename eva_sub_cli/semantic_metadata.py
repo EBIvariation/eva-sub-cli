@@ -1,6 +1,7 @@
 import json
 from collections import Counter
 from copy import deepcopy
+from datetime import datetime
 
 import yaml
 
@@ -26,6 +27,8 @@ SCI_NAME_KEYS = ['species', 'Species', 'organism', 'Organism']
 ANALYSIS_ALIAS_KEY = 'analysisAlias'
 ANALYSIS_RUNS_KEY = 'runAccessions'
 
+# Samples created before this date are not required to have collection date or geographic location
+threshold_2023 = datetime(2023,1,1)
 
 def cast_list(l, type_to_cast=str):
     for e in l:
@@ -147,8 +150,12 @@ class SemanticMetadataChecker(AppLogger):
         """
         self.errors.append({'property': property, 'description': description})
 
-    def _get_biosample(self, sample_accession):
-        return self.communicator.follows_link('samples', join_url=sample_accession)
+    def _get_biosample(self, sample_accession, include_curation=False):
+        if include_curation:
+            append_to_url = sample_accession
+        else:
+            append_to_url = sample_accession + '?curationdomain='
+        return self.communicator.follows_link('samples', join_url=append_to_url)
 
     def check_existing_biosamples(self):
         """Check that existing BioSamples are accessible and contain the required attributes."""
@@ -184,15 +191,45 @@ class SemanticMetadataChecker(AppLogger):
             # Successful response returns the sample object, error response has a list of error objects.
             if isinstance(response, list):
                 for error_dict in response:
+                    error_property = ''
+                    # Retrieve the property the error applied to in the datapath
+                    if 'dataPath' in error_dict:
+                        if error_dict['dataPath'].startswith('/characteristics/'):
+                            error_property = error_dict['dataPath'].split('/')[2]
+                        else:
+                            error_property = error_dict['dataPath']
+                    # Define the error
+                    error_list = []
                     if accession:
-                        self.add_error(json_path, f'Existing sample {accession} {error_dict["errors"][0]}')
-                    else:
-                        self.add_error(json_path, error_dict["errors"][0])
+                        error_list.append(f'Error validating existing sample {accession}:')
+                    if error_property and error_property not in error_dict['errors'][0]:
+                        error_list.append(error_property)
+                    error_list.append(error_dict['errors'][0])
+                    error = ' '.join(error_list)
+                    if self._should_bypass_error(sample_data, error):
+                        self.debug(f'bypass error {error} from {json_path}')
+                        continue
+                    self.add_error(json_path, error)
+
         finally:
             self.communicator.acceptable_code = pre_acceptable_code
 
+    def _should_bypass_error(self, sample_data, error):
+        try:
+            created_dated = datetime.strptime(sample_data['create'],'%Y-%m-%dT%H:%M:%S.%fZ')
+            if created_dated < threshold_2023 and (
+                    'collection date' in error or
+                    'geographic location (country and/or sea)' in error
+            ):
+                return True
+        except Exception:
+            pass
+        return False
+
     def _local_validate_existing_biosample(self, sample_data, json_path, accession):
         """Check if the existing sample has the expected fields present"""
+        if self._should_bypass_error(sample_data, 'collection date'):
+            return
         found_collection_date = False
         for key in ['collection_date', 'collection date']:
             if key in sample_data['characteristics'] and check_date(sample_data['characteristics'][key][0]['text']):
