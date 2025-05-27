@@ -21,6 +21,7 @@ from eva_sub_cli.exceptions.metadata_template_version_exception import MetadataT
     MetadataTemplateVersionNotFoundException
 from eva_sub_cli.exceptions.submission_not_found_exception import SubmissionNotFoundException
 from eva_sub_cli.exceptions.submission_status_exception import SubmissionStatusException
+from eva_sub_cli.file_utils import is_vcf_file
 from eva_sub_cli.submission_ws import SubmissionWSClient
 from eva_sub_cli.submit import StudySubmitter, SUB_CLI_CONFIG_KEY_SUBMISSION_ID, \
     SUB_CLI_CONFIG_KEY_SUBMISSION_UPLOAD_URL
@@ -76,6 +77,8 @@ def get_project_title_and_create_vcf_files_mapping(submission_dir, vcf_files, re
         elif metadata_xlsx:
             project_title, vcf_files_mapping = get_project_and_vcf_fasta_mapping_from_metadata_xlsx(metadata_xlsx, True)
 
+        # Filter out non-vcf files
+        vcf_files_mapping = [(vcf, fasta, report) for vcf, fasta, report in vcf_files_mapping if is_vcf_file(vcf)]
         validate_vcf_mapping(vcf_files_mapping)
         for mapping in vcf_files_mapping:
             writer.writerow(mapping)
