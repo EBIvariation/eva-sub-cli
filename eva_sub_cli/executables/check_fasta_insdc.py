@@ -1,8 +1,6 @@
 import argparse
-import gzip
 import hashlib
 import json
-from itertools import groupby
 
 import requests
 import yaml
@@ -94,7 +92,7 @@ def assess_fasta(input_fasta, analyses, assembly_in_metadata):
                 possible_assemblies = containing_assemblies
             else:
                 possible_assemblies &= containing_assemblies
-    except (ConnectionError, HTTPError) as e:
+    except Exception as e:
         # Server errors from either ENA refget or EVA contig alias will halt the check prematurely.
         # Report the error but do not return from the method, so that incomplete results can be reported
         # (i.e. any sequences found to be INSDC and any compatible assemblies so far)
