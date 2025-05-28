@@ -312,8 +312,8 @@
           },
           "bioSampleAccession": {
             "type": "string",
-            "pattern": "^SAM(E|D|N)[A-Z]?[0-9]+|(E|D|S)RS[0-9]{6,}$",
-            "description": "Accession of the sample (BioSamples, ENA or EGA)"
+            "pattern": "^SAM(E|D|N)[A-Z]?[0-9]+$",
+            "description": "BioSample accession of pre-existing sample. Only use for preregistered samples"
           },
           "bioSampleObject": {
             "type": "object",

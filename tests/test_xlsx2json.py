@@ -34,8 +34,9 @@ class TestXlsReader(TestCase):
         assert XlsxParser.cast_value('None', 'boolean') == False
         assert XlsxParser.cast_value('1', 'boolean') == True
         assert XlsxParser.cast_value("'1'", 'boolean') == True
+        assert XlsxParser.cast_value('', 'boolean') == False
         # date
-        assert XlsxParser.cast_value(datetime(2025,5,27, 14, 44), 'date') == '2025-05-27'
+        assert XlsxParser.cast_value(datetime(2025, 5, 27, 14, 44), 'date') == '2025-05-27'
         assert XlsxParser.cast_value('2025-05-27', 'date') == '2025-05-27'
 
     def test_conversion_2_json(self) -> None:
