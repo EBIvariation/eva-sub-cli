@@ -50,7 +50,7 @@ def _get_containing_assemblies_paged(url):
                 results.add(contigEntity['assembly']['insdcAccession'])
         if '_links' in response_data and 'next' in response_data['_links']:
             # Add results from next page if needed
-            results |= _get_containing_assemblies_paged(response_data['_links']['next'])
+            results = results.union(_get_containing_assemblies_paged(response_data['_links']['next']['href']))
         return results
     return set()
 

@@ -5,7 +5,8 @@ from unittest.mock import patch
 import pytest
 import requests as requests
 
-from eva_sub_cli.executables.check_fasta_insdc import assess_fasta, get_analyses_and_reference_genome_from_metadata
+from eva_sub_cli.executables.check_fasta_insdc import assess_fasta, get_analyses_and_reference_genome_from_metadata, \
+    get_containing_assemblies
 
 
 class TestFastaChecker(TestCase):
@@ -102,3 +103,10 @@ class TestFastaChecker(TestCase):
             'associated_analyses': ['analysis'],
             'assembly_in_metadata': 'GCA_000146045.2'
         }
+
+    @pytest.mark.integration
+    def test_get_containing_assemblies(self):
+        results = get_containing_assemblies('6ac8f815bf8e845bb3031b73f812c012')
+        # TODO this does NOT always pass because contig alias pagination does not always work!
+        assert len(results) == 14
+        assert 'GCA_000001405.29' in results
