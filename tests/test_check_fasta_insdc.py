@@ -107,6 +107,5 @@ class TestFastaChecker(TestCase):
     @pytest.mark.integration
     def test_get_containing_assemblies(self):
         results = get_containing_assemblies('6ac8f815bf8e845bb3031b73f812c012')
-        # TODO this does NOT always pass because contig alias pagination does not always work!
         assert len(results) == 14
         assert 'GCA_000001405.29' in results
