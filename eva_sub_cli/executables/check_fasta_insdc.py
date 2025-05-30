@@ -1,8 +1,6 @@
 import argparse
-import gzip
 import hashlib
 import json
-from itertools import groupby
 
 import requests
 import yaml
@@ -52,7 +50,7 @@ def _get_containing_assemblies_paged(url):
                 results.add(contigEntity['assembly']['insdcAccession'])
         if '_links' in response_data and 'next' in response_data['_links']:
             # Add results from next page if needed
-            results |= _get_containing_assemblies_paged(response_data['_links']['next'])
+            results = results.union(_get_containing_assemblies_paged(response_data['_links']['next']['href']))
         return results
     return set()
 
@@ -94,7 +92,7 @@ def assess_fasta(input_fasta, analyses, assembly_in_metadata):
                 possible_assemblies = containing_assemblies
             else:
                 possible_assemblies &= containing_assemblies
-    except (ConnectionError, HTTPError) as e:
+    except Exception as e:
         # Server errors from either ENA refget or EVA contig alias will halt the check prematurely.
         # Report the error but do not return from the method, so that incomplete results can be reported
         # (i.e. any sequences found to be INSDC and any compatible assemblies so far)
