@@ -1,6 +1,5 @@
 import argparse
 import hashlib
-import json
 
 import requests
 import yaml
@@ -9,8 +8,7 @@ from requests import HTTPError
 from retry import retry
 
 from eva_sub_cli.file_utils import fasta_iter
-from eva_sub_cli.metadata_utils import get_files_per_analysis, get_analysis_for_vcf_file, \
-    get_reference_assembly_for_analysis
+from eva_sub_cli.metadata import EvaMetadata
 
 REFGET_SERVER = 'https://www.ebi.ac.uk/ena/cram'
 CONTIG_ALIAS_SERVER = 'https://www.ebi.ac.uk/eva/webservices/contig-alias/v1/chromosomes/md5checksum'
@@ -119,23 +117,21 @@ def get_analyses_and_reference_genome_from_metadata(vcf_files_for_fasta, json_fi
       single assembly accession
     :param json_file: JSON file of the metadata
     """
-    with open(json_file) as open_json:
-        metadata = json.load(open_json)
-        files_per_analysis = get_files_per_analysis(metadata)
-        # Get all analyses associated with all vcf files that are linked with a single fasta file
-        all_analyses = set()
-        for vcf_file in vcf_files_for_fasta:
-            analysis_aliases = get_analysis_for_vcf_file(vcf_file, files_per_analysis)
-            if len(analysis_aliases) != 1:
-                logger.error(f'Could not determine analysis associated with VCF file: {vcf_file}')
-            else:
-                all_analyses.add(analysis_aliases[0])
-        # Get (single) assembly associated with these analyses
-        assemblies = [get_reference_assembly_for_analysis(metadata, analysis) for analysis in all_analyses]
-        if len(assemblies) != 1:
-            logger.error(f'Could not determine assembly accession to check against fasta file, out of: {assemblies}')
-            return all_analyses, None
-        return all_analyses, assemblies[0]
+    metadata = EvaMetadata(json_file)
+    # Get all analyses associated with all vcf files that are linked with a single fasta file
+    all_analyses = set()
+    for vcf_file in vcf_files_for_fasta:
+        analysis_aliases = metadata.get_analysis_for_vcf_file(vcf_file)
+        if len(analysis_aliases) != 1:
+            logger.error(f'Could not determine analysis associated with VCF file: {vcf_file}')
+        else:
+            all_analyses.add(analysis_aliases[0])
+    # Get (single) assembly associated with these analyses
+    assemblies = [metadata.get_reference_assembly_for_analysis(analysis) for analysis in all_analyses]
+    if len(assemblies) != 1:
+        logger.error(f'Could not determine assembly accession to check against fasta file, out of: {assemblies}')
+        return all_analyses, None
+    return all_analyses, assemblies[0]
 
 
 def main():
@@ -154,4 +150,3 @@ def main():
     analyses, metadata_insdc = get_analyses_and_reference_genome_from_metadata(args.vcf_files, args.metadata_json)
     results = assess_fasta(args.input_fasta, analyses, metadata_insdc)
     write_result_yaml(args.output_yaml, results)
-

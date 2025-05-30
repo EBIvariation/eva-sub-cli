@@ -1,6 +1,4 @@
 import argparse
-import gzip
-import json
 import os
 
 from ebi_eva_common_pyutils.logger import logging_config
@@ -8,7 +6,7 @@ from ebi_eva_common_pyutils.logger import logging_config
 import yaml
 
 from eva_sub_cli.file_utils import open_gzip_if_required
-from eva_sub_cli.metadata_utils import get_samples_per_analysis, get_files_per_analysis, get_analysis_for_vcf_file
+from eva_sub_cli.metadata import EvaMetadata
 
 logger = logging_config.get_logger(__name__)
 
@@ -24,8 +22,10 @@ def get_samples_from_vcf(vcf_file):
                 if len(sp_line) > 9:
                     return sp_line[9:]
                 else:
-                    logger.warning(f"No Sample names found in file {vcf_file}")
+                    logger.warning(f"No sample names found in file {vcf_file}")
                     return []
+        logger.warning(f"No sample names found in file {vcf_file}")
+        return []
 
 
 def compare_names_in_files_and_samples(sample_name_in_analysis, sample_name_per_file):
@@ -54,12 +54,12 @@ def compare_names_in_files_and_samples(sample_name_in_analysis, sample_name_per_
             more_metadata_submitted_files)
 
 
-def compare_all_analysis(samples_per_analysis, files_per_analysis):
+def compare_all_analysis(metadata, files_per_analysis):
     overall_differences = False
     results_per_analysis_alias = {}
-    all_analysis_alias = set(samples_per_analysis) | set(files_per_analysis)
+    all_analysis_alias = set(metadata.samples_per_analysis) | set(files_per_analysis)
     for analysis_alias in all_analysis_alias:
-        sample_name_in_analysis = samples_per_analysis.get(analysis_alias, [])
+        sample_name_in_analysis = metadata.samples_per_analysis.get(analysis_alias, [])
         sample_name_per_file = {
             file_path: get_samples_from_vcf(file_path)
             for file_path in files_per_analysis.get(analysis_alias, [])
@@ -78,13 +78,7 @@ def compare_all_analysis(samples_per_analysis, files_per_analysis):
     return overall_differences, results_per_analysis_alias
 
 
-def read_metadata_json(json_file):
-    with open(json_file) as open_json:
-        metadata = json.load(open_json)
-        return get_samples_per_analysis(metadata), get_files_per_analysis(metadata)
-
-
-def associate_vcf_path_with_analysis(vcf_files, files_per_analysis):
+def associate_vcf_path_with_analysis(metadata, vcf_files):
     """
     Match the files names associated with analysis provided in the metadata with the file path given on the command
     line.
@@ -93,10 +87,10 @@ def associate_vcf_path_with_analysis(vcf_files, files_per_analysis):
     :returns dictionary of analysis and their associated vcf file path
     """
     result_files_per_analysis = dict()
-    for analysis in files_per_analysis:
+    for analysis in metadata.files_per_analysis:
         result_files_per_analysis[analysis] = []
     for vcf_file in vcf_files:
-        analysis_aliases = get_analysis_for_vcf_file(vcf_file, files_per_analysis)
+        analysis_aliases = metadata.get_analysis_for_vcf_file(vcf_file)
         if len(analysis_aliases) == 1:
             result_files_per_analysis[analysis_aliases[0]].append(vcf_file)
         elif len(analysis_aliases) == 0:
@@ -123,9 +117,9 @@ def check_sample_name_concordance(metadata_json, vcf_files, output_yaml):
     Take the metadata following EVA standard and formatted in JSON then compare the sample names in it to the ones
     found in the VCF files
     """
-    samples_per_analysis, files_per_analysis = read_metadata_json(metadata_json)
-    file_path_per_analysis = associate_vcf_path_with_analysis(vcf_files, files_per_analysis)
-    overall_differences, results_per_analysis_alias = compare_all_analysis(samples_per_analysis, file_path_per_analysis)
+    metadata = EvaMetadata(metadata_json)
+    file_path_per_analysis = associate_vcf_path_with_analysis(metadata, vcf_files)
+    overall_differences, results_per_analysis_alias = compare_all_analysis(metadata, file_path_per_analysis)
     write_result_yaml(output_yaml, overall_differences, results_per_analysis_alias)
 
 

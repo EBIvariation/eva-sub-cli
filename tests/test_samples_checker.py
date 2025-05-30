@@ -16,6 +16,7 @@ class TestSampleChecker(TestCase):
             os.remove(self.output_yaml)
 
     def test_check_sample_name_concordance(self):
+        # TODO test both relative and absolute paths
         metadata_json = os.path.join(self.resource_dir, 'sample_checker', 'metadata.json')
         vcf_files = [
             os.path.join(self.resource_dir, 'sample_checker', file_name)

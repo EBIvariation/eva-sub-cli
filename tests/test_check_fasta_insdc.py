@@ -13,6 +13,7 @@ class TestFastaChecker(TestCase):
     resource_dir = os.path.join(os.path.dirname(__file__), 'resources')
 
     def test_get_analysis_and_reference_genome_from_metadata(self):
+        # TODO test both relative and absolute paths
         metadata_json = os.path.join(self.resource_dir, 'sample_checker', 'metadata.json')
         vcf_file = os.path.join(self.resource_dir, 'sample_checker', 'example1.vcf.gz')
         analyses, reference = get_analyses_and_reference_genome_from_metadata([vcf_file], metadata_json)

@@ -12,6 +12,7 @@ from ebi_eva_common_pyutils.config import WritableConfig
 
 from eva_sub_cli import ETC_DIR, SUB_CLI_CONFIG_FILE, __version__
 from eva_sub_cli.file_utils import backup_file_or_directory, resolve_single_file_path
+from eva_sub_cli.metadata import EvaMetadata
 from eva_sub_cli.report import generate_html_report
 from ebi_eva_common_pyutils.logger import logging_config, AppLogger
 
@@ -119,7 +120,7 @@ class Validator(AppLogger):
 
     @staticmethod
     def _validation_file_path_for(file_path):
-        return file_path
+        raise NotImplementedError
 
     def verify_files_present(self):
         # verify mapping file exists
@@ -431,29 +432,25 @@ class Validator(AppLogger):
                 f"Cannot locate file_info.txt at {os.path.join(self.output_dir, 'other_validations', 'file_info.txt')}"
             )
         if self.metadata_json_post_validation:
-            with open(self.metadata_json_post_validation) as open_file:
-                try:
-                    json_data = json.load(open_file)
-                    file_rows = []
-                    files_from_metadata = json_data.get('files', [])
-                    if files_from_metadata:
-                        for file_dict in json_data.get('files', []):
-                            file_path = self._validation_file_path_for(file_dict.get('fileName'))
-                            file_dict['md5'] = file_path_2_md5.get(file_path) or \
-                                               file_name_2_md5.get(file_dict.get('fileName')) or ''
-                            file_dict['fileSize'] = file_path_2_file_size.get(file_path) or \
-                                               file_name_2_file_size.get(file_dict.get('fileName')) or ''
-                            file_rows.append(file_dict)
-                    else:
-                        self.error('No file found in metadata and multiple analysis alias exist: '
-                                   'cannot infer the relationship between files and analysis alias')
-                    json_data['files'] = file_rows
-                except Exception as e:
-                    # Skip adding the md5
-                    self.error('Error while loading or parsing metadata json: ' + str(e))
-            if json_data:
-                with open(self.metadata_json_post_validation, 'w') as open_file:
-                    json.dump(json_data, open_file)
+            metadata = EvaMetadata(self.metadata_json_post_validation)
+            try:
+                file_rows = []
+                if metadata.files:
+                    for file_dict in metadata.files:
+                        file_path = self._validation_file_path_for(file_dict.get('fileName'))
+                        file_dict['md5'] = file_path_2_md5.get(file_path) or \
+                                           file_name_2_md5.get(file_dict.get('fileName')) or ''
+                        file_dict['fileSize'] = file_path_2_file_size.get(file_path) or \
+                                           file_name_2_file_size.get(file_dict.get('fileName')) or ''
+                        file_rows.append(file_dict)
+                else:
+                    self.error('No file found in metadata and multiple analysis alias exist: '
+                               'cannot infer the relationship between files and analysis alias')
+                metadata.set_files(file_rows)
+            except Exception as e:
+                # Skip adding the md5
+                self.error('Error while loading or parsing metadata json: ' + str(e))
+            metadata.write(self.metadata_json_post_validation)
         else:
             self.error(f'Cannot locate the metadata in JSON format in {os.path.join(self.output_dir, "metadata.json")}')
 
@@ -479,25 +476,23 @@ class Validator(AppLogger):
                 vcf_fasta_analysis_mapping.append({'vcf_file': row['vcf'], 'fasta_file': row['fasta']})
 
         if self.metadata_json_post_validation:
-            with open(self.metadata_json_post_validation) as open_file:
-                try:
-                    vcf_analysis_dict = {}
-                    json_data = json.load(open_file)
-                    if json_data.get('files', []):
-                        for file in json_data.get('files', []):
-                            if file.get('fileName', []) and file.get('analysisAlias', []):
-                                vcf_analysis_dict[file.get('fileName')] = file.get('analysisAlias')
+            metadata = EvaMetadata(self.metadata_json_post_validation)
+            try:
+                vcf_analysis_dict = {}
+                for file in metadata.files:
+                    if file.get('fileName', []) and file.get('analysisAlias', []):
+                        vcf_analysis_dict[file.get('fileName')] = file.get('analysisAlias')
 
-                    for vcf_fasta_mapping in vcf_fasta_analysis_mapping:
-                        vcf_file = vcf_fasta_mapping.get('vcf_file')
-                        if vcf_file in vcf_analysis_dict:
-                            vcf_fasta_mapping.update({'analysis': vcf_analysis_dict.get(vcf_file)})
-                        else:
-                            vcf_fasta_mapping.update({'analysis': 'Could not be linked'})
+                for vcf_fasta_mapping in vcf_fasta_analysis_mapping:
+                    vcf_file = vcf_fasta_mapping.get('vcf_file')
+                    if vcf_file in vcf_analysis_dict:
+                        vcf_fasta_mapping.update({'analysis': vcf_analysis_dict.get(vcf_file)})
+                    else:
+                        vcf_fasta_mapping.update({'analysis': 'Could not be linked'})
 
-                    return vcf_fasta_analysis_mapping
-                except Exception as e:
-                    self.error('Error building Validation Report : Error getting info from metadata file' + str(e))
+                return vcf_fasta_analysis_mapping
+            except Exception as e:
+                self.error('Error building Validation Report : Error getting info from metadata file' + str(e))
         else:
             self.error('Error building validation report : Metadata file not present')
 
