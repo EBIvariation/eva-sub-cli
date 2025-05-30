@@ -14,7 +14,7 @@ from requests import HTTPError
 from retry import retry
 
 import eva_sub_cli
-from eva_sub_cli import DEFAULT_METADATA_XLSX_TEMPLATE_VERSION
+from eva_sub_cli import MINIMUM_METADATA_XLSX_TEMPLATE_VERSION
 from eva_sub_cli import SUB_CLI_CONFIG_FILE, __version__
 from eva_sub_cli.exceptions.invalid_file_type_exception import InvalidFileTypeError
 from eva_sub_cli.exceptions.metadata_template_version_exception import MetadataTemplateVersionException, \
@@ -275,7 +275,7 @@ def orchestrate_process(submission_dir, vcf_files, reference_fasta, metadata_jso
     if metadata_xlsx:
         metadata_xlsx = os.path.abspath(metadata_xlsx)
         # check metadata xlsx version is not lower than the required min metadata template version
-        verify_metadata_xlsx_version(metadata_xlsx, DEFAULT_METADATA_XLSX_TEMPLATE_VERSION)
+        verify_metadata_xlsx_version(metadata_xlsx, MINIMUM_METADATA_XLSX_TEMPLATE_VERSION)
 
     # Get the provided Project Title and VCF files mapping (VCF, Fasta and Report)
     project_title, vcf_files_mapping = get_project_title_and_create_vcf_files_mapping(
