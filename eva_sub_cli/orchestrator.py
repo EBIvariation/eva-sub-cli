@@ -14,13 +14,14 @@ from requests import HTTPError
 from retry import retry
 
 import eva_sub_cli
-from eva_sub_cli import DEFAULT_METADATA_XLSX_TEMPLATE_VERSION
+from eva_sub_cli import MINIMUM_METADATA_XLSX_TEMPLATE_VERSION
 from eva_sub_cli import SUB_CLI_CONFIG_FILE, __version__
 from eva_sub_cli.exceptions.invalid_file_type_exception import InvalidFileTypeError
 from eva_sub_cli.exceptions.metadata_template_version_exception import MetadataTemplateVersionException, \
     MetadataTemplateVersionNotFoundException
 from eva_sub_cli.exceptions.submission_not_found_exception import SubmissionNotFoundException
 from eva_sub_cli.exceptions.submission_status_exception import SubmissionStatusException
+from eva_sub_cli.file_utils import is_vcf_file
 from eva_sub_cli.submission_ws import SubmissionWSClient
 from eva_sub_cli.submit import StudySubmitter, SUB_CLI_CONFIG_KEY_SUBMISSION_ID, \
     SUB_CLI_CONFIG_KEY_SUBMISSION_UPLOAD_URL
@@ -76,6 +77,8 @@ def get_project_title_and_create_vcf_files_mapping(submission_dir, vcf_files, re
         elif metadata_xlsx:
             project_title, vcf_files_mapping = get_project_and_vcf_fasta_mapping_from_metadata_xlsx(metadata_xlsx, True)
 
+        # Filter out non-vcf files
+        vcf_files_mapping = [(vcf, fasta, report) for vcf, fasta, report in vcf_files_mapping if is_vcf_file(vcf)]
         validate_vcf_mapping(vcf_files_mapping)
         for mapping in vcf_files_mapping:
             writer.writerow(mapping)
@@ -272,7 +275,7 @@ def orchestrate_process(submission_dir, vcf_files, reference_fasta, metadata_jso
     if metadata_xlsx:
         metadata_xlsx = os.path.abspath(metadata_xlsx)
         # check metadata xlsx version is not lower than the required min metadata template version
-        verify_metadata_xlsx_version(metadata_xlsx, DEFAULT_METADATA_XLSX_TEMPLATE_VERSION)
+        verify_metadata_xlsx_version(metadata_xlsx, MINIMUM_METADATA_XLSX_TEMPLATE_VERSION)
 
     # Get the provided Project Title and VCF files mapping (VCF, Fasta and Report)
     project_title, vcf_files_mapping = get_project_title_and_create_vcf_files_mapping(

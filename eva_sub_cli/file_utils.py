@@ -23,6 +23,11 @@ def is_submission_dir_writable(submission_dir):
         return False
     return True
 
+def is_vcf_file(file_path):
+    if file_path:
+        file_path = file_path.strip().lower()
+        return file_path.endswith('.vcf') or file_path.endswith('.vcf.gz')
+    return False
 
 def backup_file_or_directory(file_name, max_backups=None):
     """

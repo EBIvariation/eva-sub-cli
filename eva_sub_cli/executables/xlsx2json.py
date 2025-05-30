@@ -105,11 +105,11 @@ class XlsxParser:
             if type_name == 'string':
                 return str(value)
             if type_name == 'boolean':
-                return str(value).lower() in ['true', '1', 't', 'y', 'yes']
+                return str(value).lower() in ['true', '1', "'1'", 't', 'y', 'yes']
             if type_name == 'list':
                 # split and remove empty values
-                return [XlsxParser.trim_value(v)
-                        for v in value.split(',') if v]
+                split_values = [XlsxParser.trim_value(v) for v in value.split(',') if v]
+                return [v for v in split_values if v]
             if type_name == 'date':
                 return XlsxParser.serialize(value)
         return value

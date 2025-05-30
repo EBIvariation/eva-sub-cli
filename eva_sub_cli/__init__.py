@@ -6,7 +6,7 @@ PACKAGE_DIR = os.path.dirname(os.path.abspath(__file__))
 NEXTFLOW_DIR = os.path.join(PACKAGE_DIR, 'nextflow')
 ETC_DIR = os.path.join(PACKAGE_DIR, 'etc')
 LSRI_CLIENT_ID = "aa0fcc42-096a-4f9d-b871-aceb1a97d174"
-DEFAULT_METADATA_XLSX_TEMPLATE_VERSION = '1.1.6'
+MINIMUM_METADATA_XLSX_TEMPLATE_VERSION = '2.0.0'
 
 SUB_CLI_CONFIG_FILE = ".eva_sub_cli_config.yml"
 

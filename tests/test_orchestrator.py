@@ -170,7 +170,7 @@ class TestOrchestrator(unittest.TestCase):
             with open(self.mapping_file) as open_file:
                 reader = csv.DictReader(open_file, delimiter=',')
                 for row in reader:
-                    assert row['vcf'].__contains__('vcf_file')
+                    assert 'vcf_file' in row['vcf']
                     assert row['report'] == ''
             m_docker_validator.assert_any_call(
                 self.mapping_file, self.test_sub_dir, self.project_title, self.metadata_json, self.metadata_xlsx,
@@ -188,7 +188,7 @@ class TestOrchestrator(unittest.TestCase):
             with open(self.mapping_file) as open_file:
                 reader = csv.DictReader(open_file, delimiter=',')
                 for row in reader:
-                    assert row['vcf'].__contains__('example')
+                    assert 'example' in row['vcf']
                     assert row['report'] == ''
             m_docker_validator.assert_any_call(
                 self.mapping_file, self.test_sub_dir, self.project_title, self.metadata_json, None,
@@ -209,8 +209,8 @@ class TestOrchestrator(unittest.TestCase):
             with open(self.mapping_file) as open_file:
                 reader = csv.DictReader(open_file, delimiter=',')
                 for row in reader:
-                    assert row['vcf'].__contains__('example')
-                    assert row['report'].__contains__('GCA_000001405.27_report.txt')
+                    assert 'example' in row['vcf']
+                    assert 'GCA_000001405.27_report.txt' in row['report']
             m_docker_validator.assert_any_call(
                 self.mapping_file, self.test_sub_dir, self.project_title, self.metadata_json, None,
                 submission_config=m_config.return_value, shallow_validation=False
@@ -230,8 +230,29 @@ class TestOrchestrator(unittest.TestCase):
             with open(self.mapping_file) as open_file:
                 reader = csv.DictReader(open_file, delimiter=',')
                 for row in reader:
-                    assert row['vcf'].__contains__('vcf_file')
+                    assert 'vcf_file' in row['vcf']
                     assert row['report'] == ''
+            m_docker_validator.assert_any_call(
+                self.mapping_file, self.test_sub_dir, self.project_title, self.metadata_json, None,
+                submission_config=m_config.return_value, shallow_validation=False
+            )
+            m_docker_validator().validate_and_report.assert_called_once_with()
+
+    def test_orchestrate_non_vcf_files_filtered_out(self):
+        with patch('eva_sub_cli.orchestrator.WritableConfig') as m_config, \
+                patch('eva_sub_cli.orchestrator.DockerValidator') as m_docker_validator, \
+                patch('eva_sub_cli.orchestrator.os.path.isfile'):
+            orchestrate_process(self.test_sub_dir, ['test.vcf.gz.csi'] + self.vcf_files, self.reference_fasta, self.metadata_json,
+                                None, tasks=[VALIDATE], executor=DOCKER, resume=False)
+            # Mapping file was created from the metadata_json
+            assert os.path.exists(self.mapping_file)
+            with open(self.mapping_file) as open_file:
+                reader = csv.DictReader(open_file, delimiter=',')
+                vcf_files = set()
+                for row in reader:
+                    vcf_files.add(row['vcf'])
+                assert len(vcf_files) == 2
+                assert 'test.vcf.gz.csi' not in vcf_files
             m_docker_validator.assert_any_call(
                 self.mapping_file, self.test_sub_dir, self.project_title, self.metadata_json, None,
                 submission_config=m_config.return_value, shallow_validation=False
@@ -248,7 +269,7 @@ class TestOrchestrator(unittest.TestCase):
             with open(self.mapping_file) as open_file:
                 reader = csv.DictReader(open_file, delimiter=',')
                 for row in reader:
-                    assert row['vcf'].__contains__('example')
+                    assert 'example' in row['vcf']
                     assert row['report'] == ''
             m_docker_validator.assert_any_call(
                 self.mapping_file, self.test_sub_dir, self.project_title, None, self.metadata_xlsx,
