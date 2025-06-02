@@ -14,3 +14,5 @@ jobs:
           token: ${{ secrets.TRIGGER_INTEGRATION_TESTS }}
           repository: EBIvariation/eva-integration-tests
           event-type: trigger-eva-sub-cli-tests
+
+
