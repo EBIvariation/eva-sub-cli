@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime
 from unittest import TestCase
 
 import jsonschema
@@ -24,6 +25,19 @@ class TestXlsReader(TestCase):
         for f in files_from_tests:
             if os.path.exists(f):
                 os.remove(f)
+
+    def test_cast_value(self):
+        # list
+        assert XlsxParser.cast_value('1', 'list') == ['1']
+        assert XlsxParser.cast_value('1, 2, 3, 4, ', 'list') == ['1', '2', '3', '4']
+        # boolean
+        assert XlsxParser.cast_value('None', 'boolean') == False
+        assert XlsxParser.cast_value('1', 'boolean') == True
+        assert XlsxParser.cast_value("'1'", 'boolean') == True
+        assert XlsxParser.cast_value('', 'boolean') == False
+        # date
+        assert XlsxParser.cast_value(datetime(2025, 5, 27, 14, 44), 'date') == '2025-05-27'
+        assert XlsxParser.cast_value('2025-05-27', 'date') == '2025-05-27'
 
     def test_conversion_2_json(self) -> None:
         xls_filename = os.path.join(self.resource_dir, 'EVA_Submission_test.xlsx')
