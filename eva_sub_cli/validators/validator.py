@@ -435,8 +435,8 @@ class Validator(AppLogger):
             metadata = EvaMetadata(self.metadata_json_post_validation)
             try:
                 file_rows = []
-                if metadata.resolved_files:
-                    for file_dict in metadata.resolved_files:
+                if metadata.files:
+                    for file_dict in metadata.files:
                         file_path = self._validation_file_path_for(file_dict.get('fileName'))
                         file_dict['md5'] = file_path_2_md5.get(file_path) or \
                                            file_name_2_md5.get(file_dict.get('fileName')) or ''
@@ -479,7 +479,7 @@ class Validator(AppLogger):
             metadata = EvaMetadata(self.metadata_json_post_validation)
             try:
                 vcf_analysis_dict = {}
-                for file in metadata.resolved_files:
+                for file in metadata.files:
                     if file.get('fileName', []) and file.get('analysisAlias', []):
                         vcf_analysis_dict[file.get('fileName')] = file.get('analysisAlias')
 

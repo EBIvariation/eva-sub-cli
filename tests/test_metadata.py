@@ -11,6 +11,7 @@ class TestEvaMetadata(TestCase):
 
     def setUp(self):
         self.metadata = EvaMetadata(self.metadata_json)
+        os.chdir(self.working_dir)
 
     def test_resolved_files(self):
         assert self.metadata.resolved_files == [
@@ -30,6 +31,8 @@ class TestEvaMetadata(TestCase):
                 'fileType': 'vcf'
             }
         ]
+        # Confirm resolved_files does not affect files
+        assert self.metadata.files[0]['fileName'] == 'example1.vcf.gz'
 
     def test_samples_per_analysis(self):
         assert self.metadata.samples_per_analysis == {

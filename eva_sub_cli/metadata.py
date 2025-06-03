@@ -1,6 +1,7 @@
 import json
 import os
 from collections import defaultdict
+from copy import deepcopy
 from functools import cached_property
 
 from ebi_eva_common_pyutils.logger import AppLogger
@@ -35,10 +36,11 @@ class EvaMetadata(AppLogger):
     @cached_property
     def resolved_files(self):
         """Returns list of files with fileName resolved to an absolute path."""
-        for file_info in self.content.get('files', []):
+        mod_files = deepcopy(self.content.get('files', []))
+        for file_info in mod_files:
             if 'fileName' in file_info:
                 file_info['fileName'] = os.path.abspath(file_info['fileName'])
-        return self.content.get('files', [])
+        return mod_files
 
     def set_files(self, file_list):
         assert isinstance(file_list, list)
