@@ -479,7 +479,7 @@ class Validator(AppLogger):
             metadata = EvaMetadata(self.metadata_json_post_validation)
             try:
                 vcf_analysis_dict = {}
-                for file in metadata.files:
+                for file in metadata.resolved_files:
                     if file.get('fileName', []) and file.get('analysisAlias', []):
                         vcf_analysis_dict[file.get('fileName')] = file.get('analysisAlias')
 
@@ -495,6 +495,7 @@ class Validator(AppLogger):
                 self.error('Error building Validation Report : Error getting info from metadata file' + str(e))
         else:
             self.error('Error building validation report : Metadata file not present')
+        return []
 
     def create_reports(self):
         report_html = generate_html_report(self.results, self.validation_date, self.submission_dir,
