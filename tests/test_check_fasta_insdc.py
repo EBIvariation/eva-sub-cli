@@ -7,18 +7,42 @@ import requests as requests
 
 from eva_sub_cli.executables.check_fasta_insdc import assess_fasta, get_analyses_and_reference_genome_from_metadata, \
     get_containing_assemblies
+from eva_sub_cli.metadata import EvaMetadata
 
 
 class TestFastaChecker(TestCase):
     resource_dir = os.path.join(os.path.dirname(__file__), 'resources')
 
     def test_get_analysis_and_reference_genome_from_metadata(self):
-        # TODO test both relative and absolute paths
-        metadata_json = os.path.join(self.resource_dir, 'sample_checker', 'metadata.json')
-        vcf_file = os.path.join(self.resource_dir, 'sample_checker', 'example1.vcf.gz')
+        working_dir = os.path.join(self.resource_dir, 'sample_checker')
+        metadata_json = os.path.join(working_dir, 'metadata.json')
+        vcf_file = os.path.join(working_dir, 'example1.vcf.gz')
+        # Change to working_dir so filenames in metadata.json are resolvable
+        os.chdir(working_dir)
         analyses, reference = get_analyses_and_reference_genome_from_metadata([vcf_file], metadata_json)
         assert analyses == {'VD1'}
         assert reference == 'GCA_000001405.27'
+
+    def test_get_analysis_and_reference_genome_from_metadata_absolute_paths(self):
+        working_dir = os.path.join(self.resource_dir, 'sample_checker')
+        metadata_json = os.path.join(working_dir, 'metadata.json')
+        vcf_file = os.path.join(working_dir, 'example1.vcf.gz')
+
+        # Set filenames in metadata to absolute paths
+        metadata = EvaMetadata(metadata_json)
+        updated_files = metadata.files
+        for file_obj in updated_files:
+            file_obj['fileName'] = os.path.join(working_dir, file_obj['fileName'])
+        metadata.set_files(updated_files)
+        updated_metadata = os.path.join(working_dir, 'updated_metadata.json')
+        metadata.write(updated_metadata)
+
+        analyses, reference = get_analyses_and_reference_genome_from_metadata([vcf_file], updated_metadata)
+        assert analyses == {'VD1'}
+        assert reference == 'GCA_000001405.27'
+
+        if os.path.exists(updated_metadata):
+            os.remove(updated_metadata)
 
     def test_assess_fasta_is_insdc(self):
         input_fasta = os.path.join(self.resource_dir, 'fasta_files', 'Saccharomyces_cerevisiae_I.fa')

@@ -118,7 +118,7 @@ def get_project_and_vcf_fasta_mapping_from_metadata_json(metadata_json, mapping_
             analysis_alias_dict[analysis['analysisAlias']]['assemblyReport'] = analysis['assemblyReport'] \
                 if 'assemblyReport' in analysis else ''
 
-        for file_dict in metadata.files:
+        for file_dict in metadata.resolved_files:
             reference_fasta = analysis_alias_dict[file_dict['analysisAlias']]['referenceFasta']
             assembly_report = analysis_alias_dict[file_dict['analysisAlias']]['assemblyReport']
             vcf_fasta_report_mapping.append([os.path.abspath(file_dict['fileName']),

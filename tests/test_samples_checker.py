@@ -4,6 +4,7 @@ from unittest import TestCase
 import yaml
 
 from eva_sub_cli.executables.samples_checker import check_sample_name_concordance
+from eva_sub_cli.metadata import EvaMetadata
 
 
 class TestSampleChecker(TestCase):
@@ -16,13 +17,38 @@ class TestSampleChecker(TestCase):
             os.remove(self.output_yaml)
 
     def test_check_sample_name_concordance(self):
-        # TODO test both relative and absolute paths
-        metadata_json = os.path.join(self.resource_dir, 'sample_checker', 'metadata.json')
+        working_dir = os.path.join(self.resource_dir, 'sample_checker')
+        metadata_json = os.path.join(working_dir, 'metadata.json')
+        # Change to working_dir so filenames in metadata.json are resolvable
+        os.chdir(working_dir)
         vcf_files = [
-            os.path.join(self.resource_dir, 'sample_checker', file_name)
+            os.path.join(working_dir, file_name)
             for file_name in ['example1.vcf.gz', 'example2.vcf', 'example3.vcf']
         ]
+        self.run_and_assert_sample_check(metadata_json, vcf_files)
 
+    def test_check_sample_name_concordance_absolute_paths(self):
+        working_dir = os.path.join(self.resource_dir, 'sample_checker')
+        metadata_json = os.path.join(working_dir, 'metadata.json')
+        vcf_files = [
+            os.path.join(working_dir, file_name)
+            for file_name in ['example1.vcf.gz', 'example2.vcf', 'example3.vcf']
+        ]
+        # Set filenames in metadata to absolute paths
+        metadata = EvaMetadata(metadata_json)
+        updated_files = metadata.files
+        for file_obj in updated_files:
+            file_obj['fileName'] = os.path.join(working_dir, file_obj['fileName'])
+        metadata.set_files(updated_files)
+        updated_metadata = os.path.join(working_dir, 'updated_metadata.json')
+        metadata.write(updated_metadata)
+
+        self.run_and_assert_sample_check(updated_metadata, vcf_files)
+
+        if os.path.exists(updated_metadata):
+            os.remove(updated_metadata)
+
+    def run_and_assert_sample_check(self, metadata_json, vcf_files):
         check_sample_name_concordance(metadata_json, vcf_files, self.output_yaml)
         expected_results = {
             'overall_differences': True,

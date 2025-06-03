@@ -30,7 +30,11 @@ class EvaMetadata(AppLogger):
 
     @cached_property
     def files(self):
-        # Modifies fileName to be always an absolute path
+        return self.content.get('files', [])
+
+    @cached_property
+    def resolved_files(self):
+        """Returns list of files with fileName resolved to an absolute path."""
         for file_info in self.content.get('files', []):
             if 'fileName' in file_info:
                 file_info['fileName'] = os.path.abspath(file_info['fileName'])
@@ -39,8 +43,11 @@ class EvaMetadata(AppLogger):
     def set_files(self, file_list):
         assert isinstance(file_list, list)
         self.content['files'] = file_list
-        # invalidate the cached property
-        del self.files
+        # invalidate the cached properties
+        if self.files:
+            del self.files
+        if self.resolved_files:
+            del self.resolved_files
 
     @cached_property
     def samples_per_analysis(self):
@@ -58,7 +65,7 @@ class EvaMetadata(AppLogger):
     def files_per_analysis(self):
         """Returns mapping of analysis alias to filenames, based on metadata."""
         files_per_analysis = defaultdict(list)
-        for file_info in self.files:
+        for file_info in self.resolved_files:
             files_per_analysis[file_info.get('analysisAlias')].append(file_info.get('fileName'))
         return {
             analysis_alias: set(filepaths)
@@ -78,7 +85,7 @@ class EvaMetadata(AppLogger):
             raise FileNotFoundError(f'{vcf_file} cannot be resolved')
         analysis_aliases = [analysis_alias for analysis_alias in self.files_per_analysis
                             if vcf_file in self.files_per_analysis[analysis_alias]
-                            or os.path.abspath(self.files_per_analysis[analysis_alias])]
+                            or os.path.abspath(vcf_file) in self.files_per_analysis[analysis_alias]]
         return analysis_aliases
 
     def write(self, output_path):
