@@ -66,7 +66,4 @@ class TestEvaMetadata(TestCase):
             self.metadata.get_analysis_for_vcf_file('example2.vcf')
 
         # File exists but does not resolve to a path that matches metadata
-        new_file = os.path.join(self.resource_dir, 'vcf_files', 'example2.vcf')
-        open(new_file, 'w').close()
-        assert self.metadata.get_analysis_for_vcf_file(new_file) == []
-        os.remove(new_file)
+        assert self.metadata.get_analysis_for_vcf_file(os.path.join(self.resource_dir, 'vcf_files', 'example2.vcf.gz')) == []

@@ -87,7 +87,9 @@ class EvaMetadata(AppLogger):
             raise FileNotFoundError(f'{vcf_file} cannot be resolved')
         analysis_aliases = [analysis_alias for analysis_alias in self.files_per_analysis
                             if vcf_file in self.files_per_analysis[analysis_alias]
-                            or os.path.abspath(vcf_file) in self.files_per_analysis[analysis_alias]]
+                            or os.path.basename(vcf_file) in [
+                                os.path.basename(p) for p in self.files_per_analysis[analysis_alias]
+                            ]]
         return analysis_aliases
 
     def write(self, output_path):
