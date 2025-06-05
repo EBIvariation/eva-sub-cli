@@ -8,7 +8,7 @@ from requests import HTTPError
 from retry import retry
 
 from eva_sub_cli.file_utils import fasta_iter
-from eva_sub_cli.metadata import EvaMetadata
+from eva_sub_cli.metadata import EvaMetadataJson
 
 REFGET_SERVER = 'https://www.ebi.ac.uk/ena/cram'
 CONTIG_ALIAS_SERVER = 'https://www.ebi.ac.uk/eva/webservices/contig-alias/v1/chromosomes/md5checksum'
@@ -117,7 +117,7 @@ def get_analyses_and_reference_genome_from_metadata(vcf_files_for_fasta, json_fi
       single assembly accession
     :param json_file: JSON file of the metadata
     """
-    metadata = EvaMetadata(json_file)
+    metadata = EvaMetadataJson(json_file)
     # Get all analyses associated with all vcf files that are linked with a single fasta file
     all_analyses = set()
     for vcf_file in vcf_files_for_fasta:

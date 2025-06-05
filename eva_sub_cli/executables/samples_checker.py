@@ -6,7 +6,7 @@ from ebi_eva_common_pyutils.logger import logging_config
 import yaml
 
 from eva_sub_cli.file_utils import open_gzip_if_required
-from eva_sub_cli.metadata import EvaMetadata
+from eva_sub_cli.metadata import EvaMetadataJson
 
 logger = logging_config.get_logger(__name__)
 
@@ -117,7 +117,7 @@ def check_sample_name_concordance(metadata_json, vcf_files, output_yaml):
     Take the metadata following EVA standard and formatted in JSON then compare the sample names in it to the ones
     found in the VCF files
     """
-    metadata = EvaMetadata(metadata_json)
+    metadata = EvaMetadataJson(metadata_json)
     file_path_per_analysis = associate_vcf_path_with_analysis(metadata, vcf_files)
     overall_differences, results_per_analysis_alias = compare_all_analysis(metadata, file_path_per_analysis)
     write_result_yaml(output_yaml, overall_differences, results_per_analysis_alias)

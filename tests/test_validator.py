@@ -2,7 +2,7 @@ import os.path
 from copy import deepcopy
 from unittest import TestCase
 
-from eva_sub_cli.metadata import EvaMetadata
+from eva_sub_cli.metadata import EvaMetadataJson
 from eva_sub_cli.validators.validator import Validator, VALIDATION_OUTPUT_DIR
 from tests.test_utils import create_mapping_file
 
@@ -290,7 +290,7 @@ class TestValidator(TestCase):
 
         # Also works from any directory if metadata contains full paths
         os.chdir(os.path.dirname(__file__))
-        metadata = EvaMetadata(metadata_path)
+        metadata = EvaMetadataJson(metadata_path)
         updated_files = metadata.files
         for file_obj in updated_files:
             file_obj['fileName'] = os.path.join(self.vcf_files, file_obj['fileName'])

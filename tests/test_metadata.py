@@ -1,7 +1,7 @@
 import os
 from unittest import TestCase
 
-from eva_sub_cli.metadata import EvaMetadata
+from eva_sub_cli.metadata import EvaMetadataJson
 
 
 class TestEvaMetadata(TestCase):
@@ -10,7 +10,7 @@ class TestEvaMetadata(TestCase):
     metadata_json = os.path.join(resource_dir, 'EVA_Submission_test.json')
 
     def setUp(self):
-        self.metadata = EvaMetadata(self.metadata_json)
+        self.metadata = EvaMetadataJson(self.metadata_json)
         os.chdir(self.working_dir)
 
     def test_resolved_files(self):

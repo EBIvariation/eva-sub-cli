@@ -7,7 +7,7 @@ import requests as requests
 
 from eva_sub_cli.executables.check_fasta_insdc import assess_fasta, get_analyses_and_reference_genome_from_metadata, \
     get_containing_assemblies
-from eva_sub_cli.metadata import EvaMetadata
+from eva_sub_cli.metadata import EvaMetadataJson
 
 
 class TestFastaChecker(TestCase):
@@ -29,7 +29,7 @@ class TestFastaChecker(TestCase):
         vcf_file = os.path.join(working_dir, 'example1.vcf.gz')
 
         # Set filenames in metadata to absolute paths
-        metadata = EvaMetadata(metadata_json)
+        metadata = EvaMetadataJson(metadata_json)
         updated_files = metadata.files
         for file_obj in updated_files:
             file_obj['fileName'] = os.path.join(working_dir, file_obj['fileName'])

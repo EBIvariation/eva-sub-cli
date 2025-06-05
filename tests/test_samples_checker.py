@@ -4,7 +4,7 @@ from unittest import TestCase
 import yaml
 
 from eva_sub_cli.executables.samples_checker import check_sample_name_concordance
-from eva_sub_cli.metadata import EvaMetadata
+from eva_sub_cli.metadata import EvaMetadataJson
 
 
 class TestSampleChecker(TestCase):
@@ -35,7 +35,7 @@ class TestSampleChecker(TestCase):
             for file_name in ['example1.vcf.gz', 'example2.vcf', 'example3.vcf']
         ]
         # Set filenames in metadata to absolute paths
-        metadata = EvaMetadata(metadata_json)
+        metadata = EvaMetadataJson(metadata_json)
         updated_files = metadata.files
         for file_obj in updated_files:
             file_obj['fileName'] = os.path.join(working_dir, file_obj['fileName'])

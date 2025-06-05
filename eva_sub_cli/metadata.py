@@ -7,29 +7,29 @@ from functools import cached_property
 from ebi_eva_common_pyutils.logger import AppLogger
 
 
-class EvaMetadata(AppLogger):
+class EvaMetadataJson(AppLogger):
 
     def __init__(self, path_to_json):
         with open(path_to_json) as open_json:
             self.content = json.load(open_json)
 
-    @cached_property
+    @property
     def project(self):
         return self.content.get('project', {})
 
-    @cached_property
+    @property
     def submitter_details(self):
         return self.content.get('submitterDetails', {})
 
-    @cached_property
+    @property
     def analyses(self):
         return self.content.get('analysis', [])
 
-    @cached_property
+    @property
     def samples(self):
         return self.content.get('sample', [])
 
-    @cached_property
+    @property
     def files(self):
         return self.content.get('files', [])
 
@@ -45,9 +45,7 @@ class EvaMetadata(AppLogger):
     def set_files(self, file_list):
         assert isinstance(file_list, list)
         self.content['files'] = file_list
-        # invalidate the cached properties
-        if self.files:
-            del self.files
+        # invalidate the cached property
         if self.resolved_files:
             del self.resolved_files
 

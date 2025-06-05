@@ -12,7 +12,7 @@ from ebi_eva_common_pyutils.config import WritableConfig
 
 from eva_sub_cli import ETC_DIR, SUB_CLI_CONFIG_FILE, __version__
 from eva_sub_cli.file_utils import backup_file_or_directory, resolve_single_file_path
-from eva_sub_cli.metadata import EvaMetadata
+from eva_sub_cli.metadata import EvaMetadataJson
 from eva_sub_cli.report import generate_html_report
 from ebi_eva_common_pyutils.logger import logging_config, AppLogger
 
@@ -432,7 +432,7 @@ class Validator(AppLogger):
                 f"Cannot locate file_info.txt at {os.path.join(self.output_dir, 'other_validations', 'file_info.txt')}"
             )
         if self.metadata_json_post_validation:
-            metadata = EvaMetadata(self.metadata_json_post_validation)
+            metadata = EvaMetadataJson(self.metadata_json_post_validation)
             try:
                 file_rows = []
                 if metadata.files:
@@ -476,7 +476,7 @@ class Validator(AppLogger):
                 vcf_fasta_analysis_mapping.append({'vcf_file': row['vcf'], 'fasta_file': row['fasta']})
 
         if self.metadata_json_post_validation:
-            metadata = EvaMetadata(self.metadata_json_post_validation)
+            metadata = EvaMetadataJson(self.metadata_json_post_validation)
             try:
                 vcf_analysis_dict = {}
                 for file in metadata.resolved_files:

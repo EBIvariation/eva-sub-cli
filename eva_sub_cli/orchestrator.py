@@ -21,7 +21,7 @@ from eva_sub_cli.exceptions.metadata_template_version_exception import MetadataT
 from eva_sub_cli.exceptions.submission_not_found_exception import SubmissionNotFoundException
 from eva_sub_cli.exceptions.submission_status_exception import SubmissionStatusException
 from eva_sub_cli.file_utils import is_vcf_file
-from eva_sub_cli.metadata import EvaMetadata
+from eva_sub_cli.metadata import EvaMetadataJson
 from eva_sub_cli.submission_ws import SubmissionWSClient
 from eva_sub_cli.submit import StudySubmitter, SUB_CLI_CONFIG_KEY_SUBMISSION_ID, \
     SUB_CLI_CONFIG_KEY_SUBMISSION_UPLOAD_URL
@@ -106,7 +106,7 @@ def validate_vcf_mapping(vcf_mapping):
 
 
 def get_project_and_vcf_fasta_mapping_from_metadata_json(metadata_json, mapping_req=False):
-    metadata = EvaMetadata(metadata_json)
+    metadata = EvaMetadataJson(metadata_json)
 
     project_title = metadata.project.get('title')
 
