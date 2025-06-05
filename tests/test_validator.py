@@ -2,6 +2,7 @@ import os.path
 from copy import deepcopy
 from unittest import TestCase
 
+from eva_sub_cli.metadata import EvaMetadataJson
 from eva_sub_cli.validators.validator import Validator, VALIDATION_OUTPUT_DIR
 from tests.test_utils import create_mapping_file
 
@@ -274,3 +275,37 @@ class TestValidator(TestCase):
                 'row': '',
                 'sheet': ''
             }]
+
+    def test_get_vcf_fasta_analysis_mapping(self):
+        prev_metadata_json_value = self.validator_json.metadata_json
+        metadata_path = os.path.join(self.resource_dir, 'metadata_with_filename.json')
+        self.validator_json.metadata_json = metadata_path
+        # Change directory so filenames in metadata are resolvable
+        os.chdir(self.vcf_files)
+        result = self.validator_json.get_vcf_fasta_analysis_mapping()
+        assert len(result) == 1
+        assert result[0]['vcf_file'].endswith('input_passed.vcf')
+        assert result[0]['fasta_file'].endswith('input_passed.fa')
+        assert result[0]['analysis'] == 'AA'
+
+        # Also works from any directory if metadata contains full paths
+        os.chdir(os.path.dirname(__file__))
+        metadata = EvaMetadataJson(metadata_path)
+        updated_files = metadata.files
+        for file_obj in updated_files:
+            file_obj['fileName'] = os.path.join(self.vcf_files, file_obj['fileName'])
+        metadata.set_files(updated_files)
+        updated_metadata = os.path.join(self.resource_dir, 'updated_metadata.json')
+        metadata.write(updated_metadata)
+
+        self.validator_json.metadata_json = updated_metadata
+        result = self.validator_json.get_vcf_fasta_analysis_mapping()
+        assert len(result) == 1
+        assert result[0]['vcf_file'].endswith('input_passed.vcf')
+        assert result[0]['fasta_file'].endswith('input_passed.fa')
+        assert result[0]['analysis'] == 'AA'
+
+        if os.path.exists(updated_metadata):
+            os.remove(updated_metadata)
+        # Reset metadata_json in case other tests need it
+        self.validator_json.metadata_json = prev_metadata_json_value

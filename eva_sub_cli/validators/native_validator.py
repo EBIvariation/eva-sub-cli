@@ -22,6 +22,10 @@ class NativeValidator(Validator):
         self.assembly_checker_path = assembly_checker_path
         self.biovalidator_path = biovalidator_path
 
+    @staticmethod
+    def _validation_file_path_for(file_path):
+        return file_path
+
     def _validate(self):
         self.run_validator()
 
