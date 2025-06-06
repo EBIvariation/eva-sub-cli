@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import csv
 import datetime
-import json
 import logging
 import os
 from functools import lru_cache, cached_property
@@ -13,7 +12,7 @@ from ebi_eva_common_pyutils.config import WritableConfig
 from eva_sub_cli import ETC_DIR, SUB_CLI_CONFIG_FILE, __version__
 from eva_sub_cli.file_utils import backup_file_or_directory, resolve_single_file_path
 from eva_sub_cli.metadata import EvaMetadataJson
-from eva_sub_cli.report import generate_html_report
+from eva_sub_cli.report import generate_html_report, generate_text_report
 from ebi_eva_common_pyutils.logger import logging_config, AppLogger
 
 from eva_sub_cli.validators.validation_results_parsers import parse_assembly_check_log, parse_assembly_check_report, \
@@ -501,9 +500,18 @@ class Validator(AppLogger):
         report_html = generate_html_report(self.results, self.validation_date, self.submission_dir,
                                            self.get_vcf_fasta_analysis_mapping(),
                                            self.project_title)
-        file_path = os.path.join(self.output_dir, 'report.html')
-        with open(file_path, "w") as f:
+        html_path = os.path.join(self.output_dir, 'report.html')
+        with open(html_path, "w") as f:
             f.write(report_html)
+
+        report_text = generate_text_report(self.results, self.validation_date, self.submission_dir,
+                                           self.get_vcf_fasta_analysis_mapping(),
+                                           self.project_title)
+        text_path = os.path.join(self.output_dir, 'report.txt')
+        with open(text_path, "w") as f:
+            f.write(report_text)
+
         self.info(f'Validation result: {"SUCCESS" if self.verify_ready_for_submission_to_eva() else "FAILURE"}')
-        self.info(f'View the full report in your browser: {file_path}')
-        return file_path
+        self.info(f'View the full report in your browser: {html_path}')
+        self.info(f'Or view a text version: {text_path}')
+        return html_path, text_path

@@ -101,7 +101,8 @@ class TestValidator(TestCase):
         files_from_tests = [
             self.mapping_file,
             os.path.join(self.output_dir, VALIDATION_OUTPUT_DIR, 'other_validations', 'metadata_spreadsheet_validation.txt'),
-            os.path.join(self.output_dir, VALIDATION_OUTPUT_DIR, 'report.html')
+            os.path.join(self.output_dir, VALIDATION_OUTPUT_DIR, 'report.html'),
+            os.path.join(self.output_dir, VALIDATION_OUTPUT_DIR, 'report.txt')
         ]
         for f in files_from_tests:
             if os.path.exists(f):
@@ -163,8 +164,9 @@ class TestValidator(TestCase):
 
     def test_create_report(self):
         self.validator._collect_validation_workflow_results()
-        report_path = self.validator.create_reports()
-        assert os.path.exists(report_path)
+        html_report, text_report = self.validator.create_reports()
+        assert os.path.exists(html_report)
+        assert os.path.exists(text_report)
 
     def test_parse_biovalidator_validation_results(self):
         self.validator.results['metadata_check'] = {}

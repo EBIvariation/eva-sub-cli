@@ -32,10 +32,10 @@ Checks whether each file is compliant with the VCF specification (http://samtool
 Also checks whether the variants' reference alleles match against the reference assembly.
 
 {% for file_name in vcf_files %}
-	{% if file_name != "pass"%}
-		<h3>{{ file_name }}</h3>
-		{{ file_validation_report(validation_results, file_name) }}
-	{% endif %}
+{% if file_name != "pass"%}
+	{{ file_name }}
+	{{ file_validation_report(validation_results, file_name) }}
+{% endif %}
 {% endfor %}
 
 ----------------------------------
@@ -52,8 +52,8 @@ Checks that the reference sequences in the FASTA file used to call the variants 
 Also checks if the reference assembly accession in the metadata matches the one determined from the FASTA file.
 
 {% for file_name in fasta_files %}
-	{% if file_name != "pass"%}
-		<h3>{{ file_name }}</h3>
-		{{ fasta_check_report(validation_results, file_name) }}
-	{% endif %}
+{% if file_name != "pass"%}
+	{{ file_name }}
+	{{ fasta_check_report(validation_results, file_name) }}
+{% endif %}
 {% endfor %}
