@@ -15,16 +15,16 @@ def get_logo_data():
         return logo_data
 
 
-def generate_html_report(validation_results, validation_date, submission_dir, vcf_fasta_analysis_mapping,
-                         project_title=None):
+def generate_report(validation_results, validation_date, submission_dir, vcf_fasta_analysis_mapping, project_title,
+                    subdir, template_file):
     vcf_files = sorted(set([file_name
                             for check in validation_results if check in ["vcf_check", "assembly_check"]
                             for file_name in validation_results[check]
                             ]))
     fasta_files = sorted([file_name for file_name in validation_results['fasta_check']])
     template = Environment(
-        loader=FileSystemLoader(os.path.join(current_dir, 'jinja_templates'))
-    ).get_template('html_report.html')
+        loader=FileSystemLoader(os.path.join(current_dir, 'jinja_templates', subdir))
+    ).get_template(template_file)
     rendered_template = template.render(
         cli_version=eva_sub_cli.__version__,
         logo_data=get_logo_data(),
@@ -38,3 +38,12 @@ def generate_html_report(validation_results, validation_date, submission_dir, vc
     )
     return re.sub('\s+\n', '\n', rendered_template)
 
+
+def generate_html_report(validation_results, validation_date, submission_dir, vcf_fasta_analysis_mapping, project_title):
+    return generate_report(validation_results, validation_date, submission_dir, vcf_fasta_analysis_mapping, project_title,
+                           subdir='html', template_file='report.html')
+
+
+def generate_text_report(validation_results, validation_date, submission_dir, vcf_fasta_analysis_mapping, project_title):
+    return generate_report(validation_results, validation_date, submission_dir, vcf_fasta_analysis_mapping, project_title,
+                           subdir='text', template_file='report.txt')
