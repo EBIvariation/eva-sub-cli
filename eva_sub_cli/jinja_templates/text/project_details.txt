@@ -1,0 +1,21 @@
+{% macro project_details_report(project_title, validation_date, submission_dir, vcf_fasta_analysis_mapping) -%}
+
+{% if project_title %}
+	Project Title: {{ project_title }}
+{% else %}
+	Project Title: Not Found
+{% endif %}
+	Validation Date: {{ validation_date }}
+	Submission Directory: {{ submission_dir }}
+
+{% if vcf_fasta_analysis_mapping %}
+	Files mapping:
+	{% for mapping in vcf_fasta_analysis_mapping %}
+		---
+		VCF File: {{ mapping.vcf_file }}
+		Fasta File: {{ mapping.fasta_file }}
+		Analysis: {{ mapping.analysis }}
+	{% endfor %}
+{% endif %}
+
+{%- endmacro %}

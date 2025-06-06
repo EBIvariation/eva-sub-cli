@@ -1,0 +1,46 @@
+{% macro fasta_check_report(validation_results, file_name) -%}
+
+	{% set results_for_fasta = validation_results['fasta_check'][file_name] %}
+
+	{% if results_for_fasta.get('connection_error') %}
+		Warning: The following results may be incomplete due to problems with external services.
+		Please try again later for complete results.
+		Error message: {{ results_for_fasta.get('connection_error') }}
+	{% endif %}
+
+	{% if results_for_fasta.get('all_insdc') %}
+		{{ "\u2714" }} All sequences are INSDC accessioned.
+	{% else %}
+		{{ "\u274C" }} Some sequences are not INSDC accessioned
+			First 10 sequences not in INSDC. Full report: {{ results_for_fasta.get('report_path', '') }}
+			{% set sequence_info_list = results_for_fasta.get('sequences', [])|rejectattr("insdc")|list %}
+			{% for sequence_info in sequence_info_list[:10] %}
+				Sequence name: {{ sequence_info.get('sequence_name') }}
+				Refget md5: {{ sequence_info.get('sequence_md5') }}
+				---
+			{% endfor %}
+	{% endif %}
+
+	{% if 'possible_assemblies' in results_for_fasta %}
+		{% if 'metadata_assembly_compatible' in results_for_fasta %}
+			{% set analysis_text = results_for_fasta.get('associated_analyses')|join(", ") %}
+			{% if results_for_fasta.get('metadata_assembly_compatible') %}
+				{% set icon = "\u2714" %}
+				{% set text = analysis_text + ": Assembly accession in metadata is compatible" %}
+			{% else %}
+				{% set icon = "\u274C" %}
+				{% set text = analysis_text + ": Assembly accession in metadata is not compatible" %}
+			{% endif %}
+		{% else %}
+			{% set icon = "\u274C" %}
+			{% set text = "No assembly accession found in metadata" %}
+		{% endif %}
+		{{ icon }} {{ text }}
+		{% if 'metadata_assembly_compatible' not in results_for_fasta or not results_for_fasta['metadata_assembly_compatible'] %}
+			Full report: {{ results_for_fasta.get('report_path', '') }}
+			Assembly accession found in metadata: {{ results_for_fasta.get('assembly_in_metadata', 'Not found') }}
+			Assembly accession(s) compatible with FASTA: {{ results_for_fasta.get('possible_assemblies')|join(", ") }}
+		{% endif %}
+	{% endif %}
+
+{%- endmacro %}

@@ -1,0 +1,126 @@
+
+VALIDATION REPORT
+eva-sub-cli vcligeneratedversion
+-
+PROJECT SUMMARY
+General details about the project
+	Project Title: My cool project
+	Validation Date: 2023-08-31 12:34:56
+	Submission Directory: /test/submission/dir
+	Files mapping:
+		---
+		VCF File: input_fail.vcf
+		Fasta File: input_fail.fa
+		Analysis: A
+		---
+		VCF File: input_pass.vcf
+		Fasta File: input_pass.fa
+		Analysis: B
+		---
+		VCF File: input_test.vcf
+		Fasta File: input_test.fa
+		Analysis: could not be linked
+-
+METADATA VALIDATION RESULTS
+Ensures that required fields are present and values are formatted correctly.
+For requirements, please refer to the EVA website (https://www.ebi.ac.uk/eva/?Submit-Data).
+    ❌ Metadata validation check
+	Full report: /path/to/metadata/metadata_spreadsheet_validation.txt
+		Sheet: Files | Row:  | Column:
+		Error: Sheet "Files" is missing
+		---
+		Sheet: Project | Row: 2 | Column: Project Title
+		Error: Column "Project Title" is not populated
+		---
+		Sheet: Project | Row: 2 | Column: Description
+		Error: Column "Description" is not populated
+		---
+		Sheet: Project | Row: 2 | Column: Tax ID
+		Error: Column "Tax ID" is not populated
+		---
+		Sheet: Project | Row: 2 | Column: Center
+		Error: Column "Center" is not populated
+		---
+		Sheet: Analysis | Row: 2 | Column: Analysis Title
+		Error: Column "Analysis Title" is not populated
+		---
+		Sheet: Analysis | Row: 2 | Column: Description
+		Error: Column "Description" is not populated
+		---
+		Sheet: Analysis | Row: 2 | Column: Experiment Type
+		Error: Column "Experiment Type" is not populated
+		---
+		Sheet: Analysis | Row: 2 | Column: Reference
+		Error: Column "Reference" is not populated
+		---
+		Sheet: Sample | Row: 3 | Column: Sample Accession
+		Error: Column "Sample Accession" is not populated
+		---
+-
+VCF VALIDATION RESULTS
+Checks whether each file is compliant with the VCF specification (http://samtools.github.io/hts-specs/VCFv4.4.pdf).
+Also checks whether the variants' reference alleles match against the reference assembly.
+	input_fail.vcf
+		❌ Assembly check: 26/36 (72.22%)
+		First 10 errors per category are below. Full report: /path/to/assembly_failed/report
+			Parsing error: The assembly checking could not be completed: Contig 'chr23' not found in assembly report
+			Mismatch error: Chromosome 1, position 35549, reference allele 'G' does not match the reference sequence, expected 'c'
+			Mismatch error: Chromosome 1, position 35595, reference allele 'G' does not match the reference sequence, expected 'a'
+			Mismatch error: Chromosome 1, position 35618, reference allele 'G' does not match the reference sequence, expected 'c'
+			Mismatch error: Chromosome 1, position 35626, reference allele 'A' does not match the reference sequence, expected 'g'
+			Mismatch error: Chromosome 1, position 35639, reference allele 'T' does not match the reference sequence, expected 'c'
+			Mismatch error: Chromosome 1, position 35643, reference allele 'T' does not match the reference sequence, expected 'g'
+			Mismatch error: Chromosome 1, position 35717, reference allele 'T' does not match the reference sequence, expected 'g'
+			Mismatch error: Chromosome 1, position 35819, reference allele 'T' does not match the reference sequence, expected 'a'
+			Mismatch error: Chromosome 1, position 35822, reference allele 'T' does not match the reference sequence, expected 'c'
+		❌ VCF check: 1 critical errors, 1 non-critical errors
+		First 10 errors per category are below. Full report: /path/to/vcf_failed/report
+			Critical error: Line 4: Error in meta-data section.
+			Non-critical error: Sample #11, field AD does not match the meta specification Number=R (expected 2 value(s)). AD=..
+	input_passed.vcf
+		✔ Assembly check: 247/247 (100.0%)
+		✔ VCF check: 0 critical errors, 0 non-critical errors
+-
+SAMPLE NAME CONCORDANCE CHECK
+Checks whether information in the metadata is concordant with that contained in the VCF files, in particular sample names.
+	❌ Analysis A: Sample names in metadata do not match with those in VCF files
+		First 10 errors per category are below. Full report: /path/to/sample/report
+			Samples described in the metadata but not in the VCF files:  SampleA1, SampleA2 , SampleA3, SampleA4, SampleA5, SampleA6, SampleA7, SampleA8, SampleA9, SampleA10
+			Samples in the VCF files but not described in the metadata: A1Sample ,  A2Sample, A3Sample, A4Sample, A5Sample, A6Sample, A7Sample, A8Sample, A9Sample, A10Sample
+	✔ Analysis B: Sample names in metadata match with those in VCF files
+	❌ Analysis C: Sample names in metadata do not match with those in VCF files
+		First 10 errors per category are below. Full report: /path/to/sample/report
+			Samples described in the metadata but not in the VCF files: SampleC1 ,  SampleC2, SampleC3, SampleC4
+			Samples in the VCF files but not described in the metadata: C1Sample ,  C2Sample, C3Sample, C4Sample
+-
+REFERENCE GENOME INSDC CHECK
+Checks that the reference sequences in the FASTA file used to call the variants are accessioned in INSDC.
+Also checks if the reference assembly accession in the metadata matches the one determined from the FASTA file.
+	metadata_asm_match.fa
+		✔ All sequences are INSDC accessioned.
+		✔ Analysis A: Assembly accession in metadata is compatible
+	metadata_asm_not_found.fa
+		✔ All sequences are INSDC accessioned.
+		❌ No assembly accession found in metadata
+			Full report: /path/to/metadata_asm_not_found.yml
+			Assembly accession found in metadata: Not found
+			Assembly accession(s) compatible with FASTA: GCA_1
+	metadata_asm_not_match.fa
+		✔ All sequences are INSDC accessioned.
+		❌ Analysis B: Assembly accession in metadata is not compatible
+			Full report: /path/to/metadata_asm_not_match.yml
+			Assembly accession found in metadata: GCA_2
+			Assembly accession(s) compatible with FASTA: GCA_1
+	metadata_error.fa
+		Warning: The following results may be incomplete due to problems with external services.
+		Please try again later for complete results.
+		Error message: 500 Server Error: Internal Server Error for url: https://www.ebi.ac.uk/eva/webservices/contig-alias/v1/chromosomes/md5checksum/hjfdoijsfc47hfg0gh9qwjrve
+		✔ All sequences are INSDC accessioned.
+		✔ Analysis C: Assembly accession in metadata is compatible
+	not_all_insdc.fa
+		❌ Some sequences are not INSDC accessioned
+			First 10 sequences not in INSDC. Full report: /path/to/not_all_insdc_check.yml
+				Sequence name: 2
+				Refget md5: hjfdoijsfc47hfg0gh9qwjrve
+				---
+		✔ Analysis A: Assembly accession in metadata is compatible
