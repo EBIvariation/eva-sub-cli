@@ -16,7 +16,7 @@
 	{{ icon }} {{ analysis }}: {{ text }}
 
 	{% if results_for_analysis.get('difference') %}
-		First 10 errors per category are below.
+		First 10 errors per category are below. Full report: {{ results.get('report_path', '') }}
 			Samples described in the metadata but not in the VCF files: {{ results_for_analysis.get('more_metadata_submitted_files')[:10]|join(", ") }}
 			Samples in the VCF files but not described in the metadata: {{ results_for_analysis.get('more_submitted_files_metadata')[:10]|join(", ") }}
 	{% endif %}

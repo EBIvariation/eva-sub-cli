@@ -10,14 +10,14 @@ eva-sub-cli v{{cli_version}}
 
 {{ optional_shallow_validation_report(validation_results) }}
 
-----------------------------------
+-
 
 PROJECT SUMMARY
 General details about the project
 
 {{ project_details_report(project_title, validation_date, submission_dir, vcf_fasta_analysis_mapping) }}
 
-----------------------------------
+-
 
 METADATA VALIDATION RESULTS
 Ensures that required fields are present and values are formatted correctly.
@@ -25,7 +25,7 @@ For requirements, please refer to the EVA website (https://www.ebi.ac.uk/eva/?Su
 
 {{ metadata_validation_report(validation_results) }}
 
-----------------------------------
+-
 
 VCF VALIDATION RESULTS
 Checks whether each file is compliant with the VCF specification (http://samtools.github.io/hts-specs/VCFv4.4.pdf).
@@ -38,14 +38,14 @@ Also checks whether the variants' reference alleles match against the reference 
 {% endif %}
 {% endfor %}
 
-----------------------------------
+-
 
 SAMPLE NAME CONCORDANCE CHECK
 Checks whether information in the metadata is concordant with that contained in the VCF files, in particular sample names.
 
 {{ sample_name_check_report(validation_results)}}
 
-----------------------------------
+-
 
 REFERENCE GENOME INSDC CHECK
 Checks that the reference sequences in the FASTA file used to call the variants are accessioned in INSDC.
