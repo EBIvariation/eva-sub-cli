@@ -1,0 +1,19 @@
+{
+  "submitterDetails": [],
+  "project": {},
+  "sample": [],
+  "analysis": [
+    {
+      "analysisAlias": "AA"
+    }
+  ],
+  "files": [
+    {
+      "analysisAlias": "AA",
+      "fileName": "input_passed.vcf",
+      "fileType": "vcf",
+      "md5": "96a80c9368cc3c37095c86fbe6044fb2",
+      "fileSize": 45050
+    }
+  ]
+}
