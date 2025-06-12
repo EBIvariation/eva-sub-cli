@@ -1,10 +1,10 @@
 import copy
-import os
 import datetime
+import os
 from unittest import TestCase
 
 import eva_sub_cli
-from eva_sub_cli.report import generate_html_report
+from eva_sub_cli.report import generate_html_report, generate_text_report
 
 validation_results_xlsx = {
     "assembly_check": {
@@ -50,7 +50,8 @@ validation_results_xlsx = {
             "critical_count": 1,
             "critical_list": ["Line 4: Error in meta-data section."],
             "error_count": 1,
-            "error_list": ["Sample #11, field AD does not match the meta specification Number=R (expected 2 value(s)). AD=.."],
+            "error_list": [
+                "Sample #11, field AD does not match the meta specification Number=R (expected 2 value(s)). AD=.."],
             "valid": False,
             "warning_count": 0,
         },
@@ -61,9 +62,11 @@ validation_results_xlsx = {
         'results_per_analysis': {
             'Analysis A': {
                 'difference': True,
-                'more_metadata_submitted_files': [' SampleA1', 'SampleA2 ','SampleA3', 'SampleA4', 'SampleA5', 'SampleA6', 'SampleA7','SampleA8', 'SampleA9', 'SampleA10'],
+                'more_metadata_submitted_files': [' SampleA1', 'SampleA2 ', 'SampleA3', 'SampleA4', 'SampleA5',
+                                                  'SampleA6', 'SampleA7', 'SampleA8', 'SampleA9', 'SampleA10'],
                 'more_per_submitted_files_metadata': {},
-                'more_submitted_files_metadata': ['A1Sample ', ' A2Sample', 'A3Sample', 'A4Sample', 'A5Sample', 'A6Sample', 'A7Sample', 'A8Sample', 'A9Sample', 'A10Sample']
+                'more_submitted_files_metadata': ['A1Sample ', ' A2Sample', 'A3Sample', 'A4Sample', 'A5Sample',
+                                                  'A6Sample', 'A7Sample', 'A8Sample', 'A9Sample', 'A10Sample']
             },
             'Analysis B': {
                 'difference': False,
@@ -144,15 +147,22 @@ validation_results_xlsx = {
     'metadata_check': {
         'spreadsheet_errors': [
             {'sheet': 'Files', 'row': '', 'column': '', 'description': 'Sheet "Files" is missing'},
-            {'sheet': 'Project', 'row': 2, 'column': 'Project Title', 'description': 'Column "Project Title" is not populated'},
-            {'sheet': 'Project', 'row': 2, 'column': 'Description', 'description': 'Column "Description" is not populated'},
+            {'sheet': 'Project', 'row': 2, 'column': 'Project Title',
+             'description': 'Column "Project Title" is not populated'},
+            {'sheet': 'Project', 'row': 2, 'column': 'Description',
+             'description': 'Column "Description" is not populated'},
             {'sheet': 'Project', 'row': 2, 'column': 'Tax ID', 'description': 'Column "Tax ID" is not populated'},
             {'sheet': 'Project', 'row': 2, 'column': 'Center', 'description': 'Column "Center" is not populated'},
-            {'sheet': 'Analysis', 'row': 2, 'column': 'Analysis Title', 'description': 'Column "Analysis Title" is not populated'},
-            {'sheet': 'Analysis', 'row': 2, 'column': 'Description', 'description': 'Column "Description" is not populated'},
-            {'sheet': 'Analysis', 'row': 2, 'column': 'Experiment Type', 'description': 'Column "Experiment Type" is not populated'},
-            {'sheet': 'Analysis', 'row': 2, 'column': 'Reference', 'description': 'Column "Reference" is not populated'},
-            {'sheet': 'Sample', 'row': 3, 'column': 'Sample Accession', 'description': 'Column "Sample Accession" is not populated'}
+            {'sheet': 'Analysis', 'row': 2, 'column': 'Analysis Title',
+             'description': 'Column "Analysis Title" is not populated'},
+            {'sheet': 'Analysis', 'row': 2, 'column': 'Description',
+             'description': 'Column "Description" is not populated'},
+            {'sheet': 'Analysis', 'row': 2, 'column': 'Experiment Type',
+             'description': 'Column "Experiment Type" is not populated'},
+            {'sheet': 'Analysis', 'row': 2, 'column': 'Reference',
+             'description': 'Column "Reference" is not populated'},
+            {'sheet': 'Sample', 'row': 3, 'column': 'Sample Accession',
+             'description': 'Column "Sample Accession" is not populated'}
         ],
         'spreadsheet_report_path': '/path/to/metadata/metadata_spreadsheet_validation.txt',
     }
@@ -203,7 +213,8 @@ validation_results_json = {
             "critical_count": 1,
             "critical_list": ["Line 4: Error in meta-data section."],
             "error_count": 1,
-            "error_list": ["Sample #11, field AD does not match the meta specification Number=R (expected 2 value(s)). AD=.."],
+            "error_list": [
+                "Sample #11, field AD does not match the meta specification Number=R (expected 2 value(s)). AD=.."],
             "valid": False,
             "warning_count": 0,
         },
@@ -215,9 +226,11 @@ validation_results_json = {
         'results_per_analysis': {
             'Analysis A': {
                 'difference': True,
-                'more_metadata_submitted_files': [' SampleA1', 'SampleA2 ','SampleA3', 'SampleA4', 'SampleA5', 'SampleA6', 'SampleA7','SampleA8', 'SampleA9', 'SampleA10'],
+                'more_metadata_submitted_files': [' SampleA1', 'SampleA2 ', 'SampleA3', 'SampleA4', 'SampleA5',
+                                                  'SampleA6', 'SampleA7', 'SampleA8', 'SampleA9', 'SampleA10'],
                 'more_per_submitted_files_metadata': {},
-                'more_submitted_files_metadata': ['A1Sample ', ' A2Sample', 'A3Sample', 'A4Sample', 'A5Sample', 'A6Sample', 'A7Sample', 'A8Sample', 'A9Sample', 'A10Sample']
+                'more_submitted_files_metadata': ['A1Sample ', ' A2Sample', 'A3Sample', 'A4Sample', 'A5Sample',
+                                                  'A6Sample', 'A7Sample', 'A8Sample', 'A9Sample', 'A10Sample']
             },
             'Analysis B': {
                 'difference': False,
@@ -308,8 +321,10 @@ validation_results_json = {
             {'property': '/analysis/0.analysisTitle', 'description': "should have required property 'analysisTitle'"},
             {'property': '/analysis/0.description', 'description': "should have required property 'description'"},
             {'property': '/analysis/0.experimentType', 'description': "should have required property 'experimentType'"},
-            {'property': '/analysis/0.referenceGenome', 'description': "should have required property 'referenceGenome'"},
-            {'property': '/sample/0.bioSampleAccession', 'description': "should have required property 'bioSampleAccession'"},
+            {'property': '/analysis/0.referenceGenome',
+             'description': "should have required property 'referenceGenome'"},
+            {'property': '/sample/0.bioSampleAccession',
+             'description': "should have required property 'bioSampleAccession'"},
             {'property': '/sample/0.bioSampleObject', 'description': "should have required property 'bioSampleObject'"},
             {'property': '/sample/0', 'description': 'should match exactly one schema in oneOf'}
         ],
@@ -320,25 +335,41 @@ validation_results_json = {
 
 class TestReport(TestCase):
     resource_dir = os.path.join(os.path.dirname(__file__), 'resources')
-    expected_report_metadata_xlsx = os.path.join(resource_dir, 'validation_reports', 'expected_report_metadata_xlsx.html')
-    expected_report_metadata_json = os.path.join(resource_dir, 'validation_reports', 'expected_report_metadata_json.html')
-    expected_report_metadata_xlsx_shallow = os.path.join(resource_dir, 'validation_reports', 'expected_shallow_metadata_xlsx_report.html')
+    expected_report_metadata_xlsx = os.path.join(resource_dir, 'validation_reports',
+                                                 'expected_report_metadata_xlsx.html')
+    expected_report_metadata_json = os.path.join(resource_dir, 'validation_reports',
+                                                 'expected_report_metadata_json.html')
+    expected_report_metadata_xlsx_shallow = os.path.join(resource_dir, 'validation_reports',
+                                                         'expected_shallow_metadata_xlsx_report.html')
+    expected_text_report_metadata_xlsx = os.path.join(resource_dir, 'validation_reports',
+                                                 'expected_report_metadata_xlsx.txt')
+    expected_text_report_metadata_json = os.path.join(resource_dir, 'validation_reports',
+                                                 'expected_report_metadata_json.txt')
+    expected_text_report_metadata_xlsx_shallow = os.path.join(resource_dir, 'validation_reports',
+                                                         'expected_shallow_metadata_xlsx_report.txt')
     test_project_name = "My cool project"
     test_validation_date = datetime.datetime(2023, 8, 31, 12, 34, 56)
     test_submission_dir = "/test/submission/dir"
     test_vcf_fasta_analysis_mapping = []
-    test_vcf_fasta_analysis_mapping.append({'vcf_file': 'input_fail.vcf', 'fasta_file': 'input_fail.fa', 'analysis': 'A'})
-    test_vcf_fasta_analysis_mapping.append({'vcf_file': 'input_pass.vcf', 'fasta_file': 'input_pass.fa', 'analysis': 'B'})
-    test_vcf_fasta_analysis_mapping.append({'vcf_file': 'input_test.vcf', 'fasta_file': 'input_test.fa', 'analysis': 'could not be linked'})
+    test_vcf_fasta_analysis_mapping.append(
+        {'vcf_file': 'input_fail.vcf', 'fasta_file': 'input_fail.fa', 'analysis': 'A'})
+    test_vcf_fasta_analysis_mapping.append(
+        {'vcf_file': 'input_pass.vcf', 'fasta_file': 'input_pass.fa', 'analysis': 'B'})
+    test_vcf_fasta_analysis_mapping.append(
+        {'vcf_file': 'input_test.vcf', 'fasta_file': 'input_test.fa', 'analysis': 'could not be linked'})
 
-    def check_report_vs_expected(self, validation_results, output_report, expected_report):
-        report = generate_html_report(validation_results, self.test_validation_date, self.test_submission_dir,
-                                      self.test_vcf_fasta_analysis_mapping, self.test_project_name)
+    def check_report_vs_expected(self, validation_results, output_report, expected_report, html=True):
+        if html:
+            report = generate_html_report(validation_results, self.test_validation_date, self.test_submission_dir,
+                                          self.test_vcf_fasta_analysis_mapping, self.test_project_name)
+        else:
+            report = generate_text_report(validation_results, self.test_validation_date, self.test_submission_dir,
+                                          self.test_vcf_fasta_analysis_mapping, self.test_project_name)
         with open(output_report, 'w') as open_file:
             open_file.write(report)
 
-        with open(expected_report) as open_html:
-            expected_report_text = open_html.read()
+        with open(expected_report) as open_expected_file:
+            expected_report_text = open_expected_file.read()
             # Inject the version in the expected report
             expected_report_text = expected_report_text.replace('cligeneratedversion', eva_sub_cli.__version__)
             assert report == expected_report_text
@@ -366,11 +397,46 @@ class TestReport(TestCase):
         shallow_validation_results_xlsx['shallow_validation'] = {
             'required': True, 'requested': True,
             'metrics': {
-                'input_fail.vcf': {'trim_down_vcf_record': 10000, 'number_sequence_found': 24, 'trim_down_required': True},
-                'input_passed.vcf': {'trim_down_vcf_record': 10000, 'number_sequence_found': 24, 'trim_down_required': True}
+                'input_fail.vcf': {'trim_down_vcf_record': 10000, 'number_sequence_found': 24,
+                                   'trim_down_required': True},
+                'input_passed.vcf': {'trim_down_vcf_record': 10000, 'number_sequence_found': 24,
+                                     'trim_down_required': True}
             }}
         self.check_report_vs_expected(
             shallow_validation_results_xlsx,
             'shallow_metadata_xlsx_report.html',
             self.expected_report_metadata_xlsx_shallow
+        )
+
+    def test_generate_text_report_metadata_xlsx(self):
+        self.check_report_vs_expected(
+            validation_results_xlsx,
+            'metadata_xlsx_report.txt',
+            self.expected_text_report_metadata_xlsx,
+            html=False
+        )
+
+    def test_generate_text_report_metadata_json(self):
+        self.check_report_vs_expected(
+            validation_results_json,
+            'metadata_json_report.txt',
+            self.expected_text_report_metadata_json,
+            html=False
+        )
+
+    def test_generate_text_report_metadata_xlsx_shallow(self):
+        shallow_validation_results_xlsx = copy.deepcopy(validation_results_xlsx)
+        shallow_validation_results_xlsx['shallow_validation'] = {
+            'required': True, 'requested': True,
+            'metrics': {
+                'input_fail.vcf': {'trim_down_vcf_record': 10000, 'number_sequence_found': 24,
+                                   'trim_down_required': True},
+                'input_passed.vcf': {'trim_down_vcf_record': 10000, 'number_sequence_found': 24,
+                                     'trim_down_required': True}
+            }}
+        self.check_report_vs_expected(
+            shallow_validation_results_xlsx,
+            'shallow_metadata_xlsx_report.txt',
+            self.expected_text_report_metadata_xlsx_shallow,
+            html=False
         )

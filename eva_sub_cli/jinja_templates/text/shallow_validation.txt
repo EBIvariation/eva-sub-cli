@@ -1,0 +1,16 @@
+{% macro optional_shallow_validation_report(validation_results) -%}
+
+{% set results = validation_results.get('shallow_validation', {}) %}
+{% if results.get('required') %}
+
+{{ "\u274C" }} You requested to run the shallow validation, please run full validation before submitting the data
+{% for vcf_file in results.get('metrics') %}
+	---
+	VCF File: {{ vcf_file }}
+	Variant lines validated in VCF: {{ results.get('metrics').get(vcf_file).get('trim_down_vcf_record') }}
+	Entries used in Fasta: {{ results.get('metrics').get(vcf_file).get('number_sequence_found') }}
+{% endfor %}
+
+{% endif %}
+
+{%- endmacro %}

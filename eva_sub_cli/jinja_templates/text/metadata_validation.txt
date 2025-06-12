@@ -1,0 +1,33 @@
+
+{% macro metadata_validation_report(validation_results) -%}
+
+    {% set results = validation_results.get('metadata_check', {}) %}
+    {% set spreadsheet_errors = results.get('spreadsheet_errors', []) %}
+    {% set json_errors = results.get('json_errors', []) %}
+    {% set has_errors = spreadsheet_errors or json_errors %}
+    {% if has_errors %}
+        {% set icon = "\u274C" %}
+    {% else %}
+        {% set icon = "\u2714" %}
+    {% endif %}
+    {{ icon }} Metadata validation check
+
+{% if spreadsheet_errors %}
+	Full report: {{ results.get('spreadsheet_report_path', '') }}
+	{% for error in spreadsheet_errors %}
+		Sheet: {{ error.get('sheet') }} | Row: {{ error.get('row') }} | Column: {{ error.get('column') }}
+		Error: {{ error.get('description') }}
+		---
+	{% endfor %}
+{% endif %}
+
+{% if json_errors %}
+	Full report: {{ results.get('json_report_path', '') }}
+	{% for error in json_errors %}
+		JSON Property: {{ error.get('property') }}
+		Error: {{ error.get('description') }}
+		---
+	{% endfor %}
+{% endif %}
+
+{%- endmacro %}

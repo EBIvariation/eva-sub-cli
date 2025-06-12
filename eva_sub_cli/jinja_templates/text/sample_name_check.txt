@@ -1,0 +1,24 @@
+
+{% macro sample_name_check_report(validation_results) -%}
+    {% set results = validation_results.get('sample_check', {}) %}
+    {% macro format_error(error) %}
+        {{ error | replace(' ', '•') }}
+    {% endmacro %}
+
+{% for analysis, results_for_analysis in results.get('results_per_analysis', {}).items() %}
+	{% if results_for_analysis.get('difference') %}
+		{% set icon = "\u274C" %}
+		{% set text = "Sample names in metadata do not match with those in VCF files" %}
+	{% else %}
+		{% set icon = "\u2714" %}
+		{% set text = "Sample names in metadata match with those in VCF files" %}
+	{% endif %}
+	{{ icon }} {{ analysis }}: {{ text }}
+
+	{% if results_for_analysis.get('difference') %}
+		First 10 errors per category are below. Full report: {{ results.get('report_path', '') }}
+			Samples described in the metadata but not in the VCF files: {{ results_for_analysis.get('more_metadata_submitted_files')[:10]|join(", ") }}
+			Samples in the VCF files but not described in the metadata: {{ results_for_analysis.get('more_submitted_files_metadata')[:10]|join(", ") }}
+	{% endif %}
+{% endfor %}
+{%- endmacro %}
