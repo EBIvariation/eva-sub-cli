@@ -1,0 +1,73 @@
+# How to submit
+
+## 1. File preparation
+You should have **one or more VCF files** to submit, as well as a **completed metadata spreadsheet** following [our 
+template](https://raw.githubusercontent.com/EBIvariation/eva-sub-cli/main/eva_sub_cli/etc/EVA_Submission_template.xlsx).
+More guidance on these files can be found in the [inputs overview](Input_file_overview.md) as well as in the metadata 
+template itself.
+
+You will also need the **reference genome FASTA file** that you used to generate the VCF files. This is required for
+validation, though it will not be submitted.
+
+## 2. Setting up
+First [install eva-sub-cli](Installation.md), or check that you have the latest version installed.
+
+You will need an [ENA Webin account](https://www.ebi.ac.uk/ena/submit/webin/login) in order to submit, though you
+can run validation without one.
+
+Finally, you need to have a specific directory associated with each submission (for example, the location of your VCF
+files and associated metadata). This is the directory where all processing will take place, and where configuration and
+reports will be saved.
+
+Crucially, the eva-sub-cli tool requires that there be **only one submission per directory** and
+that the submission directory not be reused. Running multiple submissions from a single directory can result in data 
+loss during validation and submission.
+
+## 3. Running eva-sub-cli
+The basic command to run validation and submission is as follows:
+```shell
+eva-sub-cli.py --metadata_xlsx <metadata file> --submission_dir <submission directory> 
+```
+This will run validation and generate a report with the results. The report can be viewed as HTML or plain text. More 
+description of the validation checks being performed can be found in the [validation overview](Validation_overview.md).
+
+**NOTE:** If the validation is successful, this command will automatically submit your data and metadata to EVA. If you 
+don't want this, see [below](#running-only-validation-or-only-submission).
+
+## 4. Post submission
+Once you've successfully validated and submitted your data, you will receive an automatic email stating that your data
+has been uploaded. If you don't get this email within a few minutes, we have very likely **not received your data**, so
+you should get in touch with our [helpdesk](mailto:eva-helpdesk@ebi.ac.uk).
+
+## Other options
+The above steps are the most common, but there are some other options depending on your specific submission.
+
+### Running only validation or only submission
+If you want to run validation without submitting automatically once the validation passes, you can use the `--tasks` 
+option. To run only validation:
+```shell
+eva-sub-cli.py --metadata_xlsx <metadata file> --submission_dir <submission directory>  --tasks VALIDATE
+```
+To run only submission - note this will **not submit** if you've not yet validated successfully:
+```shell
+eva-sub-cli.py --metadata_xlsx <metadata file> --submission_dir <submission directory>  --tasks SUBMIT
+```
+
+### Shallow validation
+If you are working with large VCF files and find that validation takes a very long time, you can add the
+argument `--shallow` to the command, which will validate only the first 10,000 lines in each VCF. Note that running
+shallow validation will **not** be sufficient for actual submission.
+
+### Metadata JSON
+Frequent submitters may be interested in using our [metadata JSON schema](https://github.com/EBIvariation/eva-sub-cli/blob/main/eva_sub_cli/etc/eva_schema.json)
+instead of our spreadsheet template. The metadata requirements are the same regardless of which format you use, you will
+just need to use the `--metadata_json` option instead of the `--metadata_xlsx` option.
+
+### Running using Docker
+If you've installed eva-sub-cli using Docker, make sure that Docker is running in the background before running 
+eva-sub-cli, e.g. by opening Docker Desktop. Additionally, for each eva-sub-cli command, add the command line option 
+`--executor docker`, which will fetch and manage the Docker container for you. 
+
+### Even more options
+The eva-sub-cli tool provides several options and parameters that you can use to tailor its functionality to your needs.
+A full description is available in the [parameter overview](Parameter_overview.md) or by running `eva-sub-cli.py -h`.
