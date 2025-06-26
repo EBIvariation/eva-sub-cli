@@ -1,4 +1,4 @@
-# eva-sub-cli
+# About eva-sub-cli
 The eva-sub-cli tool is a command line interface tool for data validation and upload. The tool enables users to perform
 validation and submission to the EVA directly, without requiring interaction with our helpdesk team.
 

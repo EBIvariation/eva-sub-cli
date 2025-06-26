@@ -4,7 +4,7 @@ Nextflow is a common workflow management system that helps orchestrate tasks and
 
 When no options are provided, Nextflow will run as many tasks as there are available CPUs on the machine executing it. To modify how many tasks can start and how Nextflow will process each one, you can provide a Nextflow configuration file in several ways.
 
-From the command line you can use `--nextflow_config <path>` to specify the Nextflow config file you want to apply. The configuration can also be picked up from other places directly by Nextflow. Please refer to [the nextflow documentation](https://www.nextflow.io/docs/latest/config.html) for more details.
+From the command line you can use `--nextflow_config <path>` to specify the Nextflow config file you want to apply. The configuration can also be picked up from other places directly by Nextflow. Please refer to [the Nextflow documentation](https://www.nextflow.io/docs/latest/config.html) for more details.
 
 ## Basic Nextflow configuration
 

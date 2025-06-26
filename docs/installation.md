@@ -1,6 +1,6 @@
 # Installation
 
-There are currently three ways to install and run the tool : 
+There are currently three ways to install and run the tool: 
 - Using conda
 - From source using Docker
 - From source natively (i.e. installing dependencies yourself)
@@ -27,14 +27,14 @@ Then you can install the most recent version from [PyPI](https://pypi.org/projec
 pip install eva-sub-cli
 ```
 
-To verify that the cli tool is installed correctly, run the following command, and you should see the help message displayed : 
+To verify that the cli tool is installed correctly, run the following command, and you should see the help message displayed: 
 ```bash
 eva-sub-cli.py -h
 ```
 
 ## 3. From source natively
 
-This installation method requires the following :
+This installation method requires the following:
 * Python 3.8+
 * [Nextflow](https://www.nextflow.io/docs/latest/getstarted.html) 21.10+
 * [biovalidator](https://github.com/elixir-europe/biovalidator) 2.1.0+

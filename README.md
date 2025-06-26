@@ -1,10 +1,3 @@
 # eva-sub-cli
-The eva-sub-cli tool is a command line interface tool for data validation and upload. The tool enables users to perform
-validation and submission to the EVA directly, without requiring interaction with our helpdesk team.
 
-For instructions on how to install eva-sub-cli, see [Installation](docs/installation.md).
-
-For instructions on how to use eva-sub-cli to submit data, see [How to submit](docs/how_to_submit.md)
-
-## Contact us
-For help or feedback, please get in touch with us at [eva-helpdesk@ebi.ac.uk](mailto:eva-helpdesk@ebi.ac.uk).
+Please view our [documentation website](https://ebivariation.github.io/eva-sub-cli) for help installing and using eva-sub-cli.

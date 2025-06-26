@@ -28,7 +28,7 @@ File format version
 
 ```
 
-Body: The body of the VCF file contains the actual variant data, with each row representing a single variant. The columns in the body are : CHROM, POS, ID, REF, ALT, QUAL, FILTER, INFO, FORMAT, Sample Columns
+Body: The body of the VCF file contains the actual variant data, with each row representing a single variant. The columns in the body are: CHROM, POS, ID, REF, ALT, QUAL, FILTER, INFO, FORMAT, Sample Columns
 
 ```
 #CHROM  POS  ID  REF  ALT  QUAL  FILTER  INFO  FORMAT  [SampleIDs...]
