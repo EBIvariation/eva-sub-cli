@@ -77,7 +77,3 @@ Common errors seen with sample concordance checks:
 - Link between “Sample” and “File” provided via the Analysis alias is not correctly defined in the metadata which causes the sample name concordance check to fail.
 - Extra white spaces in the sample names can lead to mismatches.
 - Case sensitivity issues between the sample names in the VCF file and the metadata spreadsheet.
-
-## Reference Genome INSDC Check
-
-TODO
