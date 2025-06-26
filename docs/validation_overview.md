@@ -1,4 +1,4 @@
-# Overview of validation checks 
+# Overview of Validation Checks 
 
 The CLI tool performs the following validation checks and generates corresponding reports:
 

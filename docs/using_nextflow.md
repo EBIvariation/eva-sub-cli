@@ -1,4 +1,4 @@
-# Leveraging Nextflow to parallelize the validation process  
+# Using Nextflow for Parallelization  
 
 Nextflow is a common workflow management system that helps orchestrate tasks and interface with the execution engine (like HPC or cloud). When running natively (i.e. not using Docker), eva-sub-cli will use Nextflow to run all the validation steps. In this section we'll see how it can be parameterised to work with your compute infrastructure.
 

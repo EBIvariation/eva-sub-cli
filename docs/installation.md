@@ -3,7 +3,7 @@
 There are currently three ways to install and run the tool : 
 - Using conda
 - From source using Docker
-- From source natively (i.e. installing dependencies yourself)\
+- From source natively (i.e. installing dependencies yourself)
 
 We encourage users to install the most recent version, as we are constantly improving the tool.
 

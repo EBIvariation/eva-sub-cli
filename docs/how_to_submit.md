@@ -1,16 +1,16 @@
-# How to submit
+# How to Submit
 
 ## 1. File preparation
 You should have **one or more VCF files** to submit, as well as a **completed metadata spreadsheet** following [our 
 template](https://raw.githubusercontent.com/EBIvariation/eva-sub-cli/main/eva_sub_cli/etc/EVA_Submission_template.xlsx).
-More guidance on these files can be found in the [inputs overview](Input_file_overview.md) as well as in the metadata 
+More guidance on these files can be found in the [inputs overview](input_file_overview.md) as well as in the metadata 
 template itself.
 
 You will also need the **reference genome FASTA file** that you used to generate the VCF files. This is required for
 validation, though it will not be submitted.
 
 ## 2. Setting up
-First [install eva-sub-cli](Installation.md), or check that you have the latest version installed.
+First [install eva-sub-cli](installation.md), or check that you have the latest version installed.
 
 You will need an [ENA Webin account](https://www.ebi.ac.uk/ena/submit/webin/login) in order to submit, though you
 can run validation without one.
@@ -29,7 +29,7 @@ The basic command to run validation and submission is as follows:
 eva-sub-cli.py --metadata_xlsx <metadata file> --submission_dir <submission directory> 
 ```
 This will run validation and generate a report with the results. The report can be viewed as HTML or plain text. More 
-description of the validation checks being performed can be found in the [validation overview](Validation_overview.md).
+description of the validation checks being performed can be found in the [validation overview](validation_overview.md).
 
 **NOTE:** If the validation is successful, this command will automatically submit your data and metadata to EVA. If you 
 don't want this, see [below](#running-only-validation-or-only-submission).
@@ -70,4 +70,4 @@ eva-sub-cli, e.g. by opening Docker Desktop. Additionally, for each eva-sub-cli 
 
 ### Even more options
 The eva-sub-cli tool provides several options and parameters that you can use to tailor its functionality to your needs.
-A full description is available in the [parameter overview](Parameter_overview.md) or by running `eva-sub-cli.py -h`.
+A full description is available in the [parameter overview](options_overview.md) or by running `eva-sub-cli.py -h`.

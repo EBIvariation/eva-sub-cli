@@ -1,4 +1,4 @@
-# Troubleshooting common issues
+# Common Issues
 
 ## Installation
 
@@ -15,3 +15,5 @@
 ### Sample concordance check
 
 ### Reference genome check
+
+## After submission

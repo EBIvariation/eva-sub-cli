@@ -1,4 +1,4 @@
-# Input file overview 
+# Overview of Input Files 
 
 The eva-sub-cli tool requires the following inputs:
 
