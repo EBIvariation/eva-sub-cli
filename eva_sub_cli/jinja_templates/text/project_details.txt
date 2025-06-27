@@ -1,4 +1,4 @@
-{% macro project_details_report(project_title, validation_date, submission_dir, vcf_fasta_analysis_mapping) -%}
+{% macro project_details_report(project_title, validation_date, submission_dir, consent_statement_required, vcf_fasta_analysis_mapping) -%}
 
 {% if project_title %}
 	Project Title: {{ project_title }}
@@ -7,6 +7,10 @@
 {% endif %}
 	Validation Date: {{ validation_date }}
 	Submission Directory: {{ submission_dir }}
+{% if consent_statement_required %}
+    Consent Statement: Link to Consent Statement (https://docs.google.com/document/d/1UaRmimAe919IZYIH55mDXMe-4sHsRVqaP4moqx2IYE4)
+        Please provide a signed copy of the consent statement at the time of submission. Your submission will be on hold and will only be processed after receiving the consent statement
+{% endif %}
 
 {% if vcf_fasta_analysis_mapping %}
 	Files mapping:

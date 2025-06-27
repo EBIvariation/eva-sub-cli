@@ -1,4 +1,4 @@
-{% macro project_details_report(project_title, validation_date, submission_dir, vcf_fasta_analysis_mapping) -%}
+{% macro project_details_report(project_title, validation_date, submission_dir, consent_statement_required, vcf_fasta_analysis_mapping) -%}
     <div class="report-section info">
           {% if project_title %}
              <p><b>Project Title:</b> {{ project_title }}</p>
@@ -7,6 +7,11 @@
          {% endif %}
         <p><b>Validation Date:</b> {{ validation_date }}</p>
         <p><b>Submission Directory:</b> {{ submission_dir }}</p>
+        {% if consent_statement_required %}
+            <p><b>Consent Statement:</b> <a href="https://docs.google.com/document/d/1UaRmimAe919IZYIH55mDXMe-4sHsRVqaP4moqx2IYE4" target=”_blank”>Link to Consent Statement</a></p>
+            <p>Please provide a signed copy of the consent statement at the time of submission.
+                Your submission will be on hold and will only be processed after receiving the consent statement</p>
+        {% endif %}
     </div>
 
     {% if vcf_fasta_analysis_mapping %}
