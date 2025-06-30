@@ -1,11 +1,13 @@
 # Installation
 
-There are currently three ways to install and run the tool: 
+There are currently three ways to install and run eva-sub-cli:
 - Using conda
 - From source using Docker
 - From source natively (i.e. installing dependencies yourself)
 
-We encourage users to install the most recent version, as we are constantly improving the tool.
+We encourage users to install the most recent version, as we are constantly improving the tool. You can check that you
+have the latest version installed by running `eva-sub-cli.py --version` and comparing against the
+[release page](https://github.com/EBIvariation/eva-sub-cli/releases).
 
 ## 1. Conda
 
@@ -18,6 +20,8 @@ conda activate eva
 eva-sub-cli.py --help
 ````
 
+To upgrade to the newest version, run `conda update eva-sub-cli`.
+
 ## 2. From source using Docker
 
 Docker provides an easy way to run eva-sub-cli without installing dependencies separately.
@@ -29,8 +33,10 @@ pip install eva-sub-cli
 
 To verify that the cli tool is installed correctly, run the following command, and you should see the help message displayed: 
 ```bash
-eva-sub-cli.py -h
+eva-sub-cli.py --help
 ```
+
+To upgrade to the newest version, run `pip install --upgrade eva-sub-cli`.
 
 ## 3. From source natively
 
