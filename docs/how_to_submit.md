@@ -6,7 +6,7 @@ template](https://raw.githubusercontent.com/EBIvariation/eva-sub-cli/main/eva_su
 More guidance on these files can be found in the [inputs overview](input_file_overview.md) as well as in the metadata 
 template itself.
 
-You will also need the **reference genome FASTA file** that you used to generate the VCF files. This is required for
+You will also need the **reference sequences in FASTA format** that you used to generate the VCF files. This is required for
 validation, though it will not be submitted.
 
 ## 2. Setting up
@@ -15,7 +15,7 @@ First [**install eva-sub-cli**](installation.md), or check that you have the lat
 You will need an [**ENA Webin account**](https://www.ebi.ac.uk/ena/submit/webin/login) in order to submit, though you
 can run validation without one.
 
-Finally, you need to have **submission directory**, which is a specific directory associated with each submission (for
+Finally, you need to specify a **submission directory**, which is a specific directory associated with each submission (for
 example, the location of your VCF and metadata files). This is where all processing will take place, and where
 configuration and reports will be saved.
 
@@ -60,7 +60,7 @@ eva-sub-cli.py --metadata_xlsx <metadata file> --submission_dir <submission dire
 ### Shallow validation
 If you are working with large VCF files and find that validation takes a very long time, you can add the
 argument `--shallow` to the command, which will validate only the first 10,000 lines in each VCF. Note that running
-shallow validation will **not** be sufficient for actual submission.
+shallow validation will **not** be sufficient for actual submission but will allow you to identify most validation concerns without long run time.
 
 ### VCF files and reference FASTA
 These can be provided either in the metadata file directly, or on the command line using the `--vcf_files` and

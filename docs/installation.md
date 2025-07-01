@@ -46,4 +46,4 @@ This installation method requires the following:
 * [biovalidator](https://github.com/elixir-europe/biovalidator) 2.1.0+
 * [vcf-validator](https://github.com/EBIvariation/vcf-validator) 0.9.7+
 
-Install each of these and ensure they are included in your PATH. Then install the latest release as previously described.
+Install each of these and ensure they are included in your PATH. Then install the latest eva-sub-cli release as previously described.
