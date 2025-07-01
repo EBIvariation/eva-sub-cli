@@ -18,14 +18,11 @@ A VCF (Variant Call Format) file is a type of file used in bioinformatics to sto
 
 Header: The header contains metadata about the file, such as the format version, reference genome information, and descriptions of the data fields. Each line in the header starts with a double ##, except for the last header line which starts with a single #.
 
-File format version
-
 ```
 ##fileformat=VCFv4.2
 ##INFO=<ID=DP,Number=1,Type=Integer,Description="Total Depth">
 ##FILTER=<ID=PASS,Description="All filters passed">
 ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
-
 ```
 
 Body: The body of the VCF file contains the actual variant data, with each row representing a single variant. The columns in the body are: CHROM, POS, ID, REF, ALT, QUAL, FILTER, INFO, FORMAT, Sample Columns
@@ -33,7 +30,6 @@ Body: The body of the VCF file contains the actual variant data, with each row r
 ```
 #CHROM  POS  ID  REF  ALT  QUAL  FILTER  INFO  FORMAT  [SampleIDs...]
 ``` 
-Here's a small example to illustrate the structure of a VCF file: Example VCF file archived at EVA to be inserted 
 
 # Metadata Spreadsheet
 

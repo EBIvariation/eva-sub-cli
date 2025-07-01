@@ -15,9 +15,8 @@ First [**install eva-sub-cli**](installation.md), or check that you have the lat
 You will need an [**ENA Webin account**](https://www.ebi.ac.uk/ena/submit/webin/login) in order to submit, though you
 can run validation without one.
 
-Finally, you need to specify a **submission directory**, which is a specific directory associated with each submission (for
-example, the location of your VCF and metadata files). This is where all processing will take place, and where
-configuration and reports will be saved.
+Finally, you need to specify a **submission directory**, which is a specific directory associated with each submission.
+This is where all processing will take place, and where configuration and reports will be saved.
 
 Crucially, the eva-sub-cli tool requires that there be **only one submission per directory** and
 that the submission directory not be reused. Running multiple submissions from a single directory can result in data 
