@@ -8,8 +8,8 @@
 	Validation Date: {{ validation_date }}
 	Submission Directory: {{ submission_dir }}
 {% if consent_statement_required %}
-    Consent Statement: Link to Consent Statement (https://docs.google.com/document/d/1UaRmimAe919IZYIH55mDXMe-4sHsRVqaP4moqx2IYE4)
-        Please provide a signed copy of the consent statement at the time of submission. Your submission will be on hold and will only be processed after receiving the consent statement
+    Note for human genotype data:
+        You will need to provide a signed copy of our Consent Statement (https://docs.google.com/document/d/1UaRmimAe919IZYIH55mDXMe-4sHsRVqaP4moqx2IYE4) via email to eva-helpdesk@ebi.ac.uk after submission. Your submission will only be processed after receiving the consent statement.
 {% endif %}
 
 {% if vcf_fasta_analysis_mapping %}

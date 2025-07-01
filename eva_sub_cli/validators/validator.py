@@ -501,14 +501,14 @@ class Validator(AppLogger):
     def create_reports(self):
         report_html = generate_html_report(self.results, self.validation_date, self.submission_dir,
                                            self.get_vcf_fasta_analysis_mapping(),
-                                           self.project_title, self.checkConsentStatementIsNeededForSubmisssion())
+                                           self.project_title, self.check_consent_statement_is_needed_for_submisssion())
         html_path = os.path.join(self.output_dir, 'report.html')
         with open(html_path, "w") as f:
             f.write(report_html)
 
         report_text = generate_text_report(self.results, self.validation_date, self.submission_dir,
                                            self.get_vcf_fasta_analysis_mapping(),
-                                           self.project_title, self.checkConsentStatementIsNeededForSubmisssion())
+                                           self.project_title, self.check_consent_statement_is_needed_for_submisssion())
         text_path = os.path.join(self.output_dir, 'report.txt')
         with open(text_path, "w") as f:
             f.write(report_text)
@@ -518,22 +518,11 @@ class Validator(AppLogger):
         self.info(f'Or view a text version: {text_path}')
         return html_path, text_path
 
-    def checkConsentStatementIsNeededForSubmisssion(self):
-        if self.metadata_json:
-            json_metadata = EvaMetadataJson(self.metadata_json)
+    def check_consent_statement_is_needed_for_submisssion(self):
+        # TODO: Check the aggregation as well as the taxonomy
+        if self.metadata_json_post_validation:
+            json_metadata = EvaMetadataJson(self.metadata_json_post_validation)
             if json_metadata.project.get('taxId') == 9606:
-                return True
-            else:
-                return False
-        elif self.metadata_xlsx:
-            workbook = load_workbook(self.metadata_xlsx)
-            project_sheet = workbook['Project']
-            project_headers = {}
-            for cell in project_sheet[1]:
-                project_headers[cell.value] = cell.column
-
-            taxonomy_id = project_sheet.cell(row=2, column=project_headers['Taxonomy ID']).value
-            if taxonomy_id == 9606:
                 return True
             else:
                 return False
