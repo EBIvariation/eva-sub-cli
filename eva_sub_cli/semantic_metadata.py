@@ -4,6 +4,7 @@ from copy import deepcopy
 from datetime import datetime
 
 import yaml
+from requests import HTTPError
 
 from retry import retry
 from ebi_eva_common_pyutils.biosamples_communicators import NoAuthHALCommunicator
@@ -121,8 +122,13 @@ class SemanticMetadataChecker(AppLogger):
     def check_accession_in_ena(self, ena_accession, accession_type, json_path):
         try:
             res = download_xml_from_ena(f'https://www.ebi.ac.uk/ena/browser/api/xml/{ena_accession}')
-        except Exception:
-            self.add_error(json_path, f'{accession_type} {ena_accession} does not exist in ENA or is private')
+        except HTTPError as e:
+            if e.response.status_code == 500:
+                self.add_error(json_path, f'{accession_type} {ena_accession} could not be resolve on ENA because the service is unavailable. try again later.')
+            else:
+                self.add_error(json_path, f'{accession_type} {ena_accession} does not exist in ENA or is private')
+        except Exception as e:
+            self.add_error(json_path, f'Unexpected error occurred when checking {accession_type} {ena_accession}')
 
     def check_project_accession(self, project_acc, json_path):
         self.check_accession_in_ena(project_acc, 'Project', json_path)
@@ -216,7 +222,10 @@ class SemanticMetadataChecker(AppLogger):
 
     def _should_bypass_error(self, sample_data, error):
         try:
-            created_dated = datetime.strptime(sample_data['create'],'%Y-%m-%dT%H:%M:%S.%fZ')
+            try:
+                created_dated = datetime.strptime(sample_data['create'],'%Y-%m-%dT%H:%M:%S.%fZ')
+            except ValueError:
+                created_dated = datetime.strptime(sample_data['create'],'%Y-%m-%dT%H:%M:%SZ')
             if created_dated < threshold_2023 and (
                     'collection date' in error or
                     'geographic location (country and/or sea)' in error

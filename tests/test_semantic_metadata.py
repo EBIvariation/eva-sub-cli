@@ -1,6 +1,7 @@
 from unittest import TestCase
 from unittest.mock import patch
 
+import pytest
 from ebi_eva_common_pyutils.biosamples_communicators import NoAuthHALCommunicator
 
 from eva_sub_cli.semantic_metadata import SemanticMetadataChecker
@@ -11,7 +12,8 @@ metadata = {
         {"bioSampleAccession": "SAME00002"},
         {"bioSampleAccession": "SAME00003"},
         {"bioSampleAccession": "SAME00004"},
-        {"bioSampleAccession": "SAME00005"}
+        {"bioSampleAccession": "SAME00005"},
+        {"bioSampleAccession": "SAME00006"}
     ]
 }
 valid_sample = {
@@ -45,6 +47,15 @@ old_invalid_sample = {
     'accession': 'SAME00005',
     'name': 'sample4',
     "create": "2011-10-10T08:45:15.310Z",
+    'characteristics': {
+        'organism': [{'text': 'Viridiplantae'}]
+    }
+}
+
+old_invalid_sample2 = {
+    'accession': 'SAME00005',
+    'name': 'sample4',
+    "create": "2011-10-10T08:45:15Z",
     'characteristics': {
         'organism': [{'text': 'Viridiplantae'}]
     }
@@ -196,13 +207,24 @@ class TestSemanticMetadata(TestCase):
     def test_check_existing_biosamples(self):
         checker = SemanticMetadataChecker(metadata, sample_checklist=None)
         with patch.object(NoAuthHALCommunicator, 'follows_link',
-                          side_effect=[valid_sample, ValueError, invalid_sample1, invalid_sample2, old_invalid_sample]) as m_follows_link:
+                          side_effect=[valid_sample, ValueError, invalid_sample1, invalid_sample2, old_invalid_sample, old_invalid_sample2]) as m_follows_link:
             checker.check_existing_biosamples()
             self.assertEqual(checker.errors, [
                 {'description': 'SAME00002 does not exist or is private','property': '/sample/1/bioSampleAccession'},
                 {'description': 'Existing sample SAME00003 does not have a valid collection date', 'property': '/sample/2/bioSampleAccession'},
                 {'description': 'Existing sample SAME00004 does not have a valid collection date', 'property': '/sample/3/bioSampleAccession'},
                 {'description': 'Existing sample SAME00004 does not have a valid geographic location', 'property': '/sample/3/bioSampleAccession'}])
+
+    @pytest.mark.skip(reason='Contact BioSample API')
+    def test_check_existing_real_biosamples(self):
+        metadata = {
+            "sample": [
+                {"bioSampleAccession": "SAMN01894452"}
+            ]
+        }
+        checker = SemanticMetadataChecker(metadata, sample_checklist=None)
+        checker.check_existing_biosamples()
+        print(checker.errors)
 
     def test_check_analysis_alias_coherence(self):
         metadata = {
