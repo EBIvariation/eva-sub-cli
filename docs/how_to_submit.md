@@ -43,7 +43,7 @@ you should get in touch with our [helpdesk](mailto:eva-helpdesk@ebi.ac.uk).
 
 If your submission contains **human genotype data**, then you will also need to provide a signed copy of our
 [consent statement](https://docs.google.com/document/d/1UaRmimAe919IZYIH55mDXMe-4sHsRVqaP4moqx2IYE4) via email.
-For more information please see our [submission FAQs](https://www.ebi.ac.uk/eva/?Help#submissionPanel).
+For more information please see our [submission FAQs](https://www.ebi.ac.uk/eva/?Help#submissionPanel&link=consent-statement-for-human-genotype-data).
 
 ## Other options
 The above steps are the most common, but there are some other options that you can use to tailor its functionality to
