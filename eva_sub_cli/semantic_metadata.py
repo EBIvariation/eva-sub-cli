@@ -123,8 +123,9 @@ class SemanticMetadataChecker(AppLogger):
         try:
             res = download_xml_from_ena(f'https://www.ebi.ac.uk/ena/browser/api/xml/{ena_accession}')
         except HTTPError as e:
+            # We cannot currently differentiate between the service returning an error and the accession not existing
             if e.response.status_code == 500:
-                self.add_error(json_path, f'{accession_type} {ena_accession} could not be resolve on ENA because the service is unavailable. try again later.')
+                self.add_error(json_path, f'{accession_type} {ena_accession} does not exist in ENA or is private')
             else:
                 self.add_error(json_path, f'{accession_type} {ena_accession} does not exist in ENA or is private')
         except Exception as e:

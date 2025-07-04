@@ -1,5 +1,6 @@
 from unittest import TestCase
 from unittest.mock import patch
+from requests import HTTPError, Response
 
 import pytest
 from ebi_eva_common_pyutils.biosamples_communicators import NoAuthHALCommunicator
@@ -73,7 +74,7 @@ class TestSemanticMetadata(TestCase):
         }
         checker = SemanticMetadataChecker(metadata)
         with patch('eva_sub_cli.semantic_metadata.download_xml_from_ena') as m_ena_download:
-            m_ena_download.side_effect = [True, True, Exception('problem downloading')]
+            m_ena_download.side_effect = [True, True, HTTPError('problem downloading', response=Response())]
             checker.check_all_project_accessions()
             self.assertEqual(checker.errors, [
                 {'property': '/project/childProjects/1', 'description': 'Project PRJEBNA does not exist in ENA or is private'}
@@ -181,7 +182,7 @@ class TestSemanticMetadata(TestCase):
     def test_check_existing_biosamples_with_checklist(self):
         checker = SemanticMetadataChecker(metadata)
         with patch.object(SemanticMetadataChecker, '_get_biosample',
-                          side_effect=[valid_sample, ValueError, invalid_sample1, invalid_sample2, old_invalid_sample]) as m_get_sample:
+                          side_effect=[valid_sample, ValueError, invalid_sample1, invalid_sample2, old_invalid_sample, old_invalid_sample2]) as m_get_sample:
             checker.check_existing_biosamples()
             self.assertEqual(
                 checker.errors[0],
