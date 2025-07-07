@@ -85,7 +85,7 @@ class TestValidator(TestCase):
     assembly_reports = os.path.join(resource_dir, 'assembly_reports')
     output_dir = os.path.join(resource_dir, 'validation_reports')
     mapping_file = os.path.join(output_dir, 'vcf_files_mapping.csv')
-    metadata_xlsx_file = os.path.join(output_dir, 'EVA_Submission_test.xlsx')
+    metadata_xlsx_file = os.path.join(resource_dir, 'EVA_Submission_test.xlsx')
 
     def setUp(self) -> None:
         # create vcf mapping file

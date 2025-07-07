@@ -16,7 +16,7 @@ def get_logo_data():
 
 
 def generate_report(validation_results, validation_date, submission_dir, vcf_fasta_analysis_mapping, project_title,
-                    subdir, template_file):
+                    consent_statement_required, subdir, template_file):
     vcf_files = sorted(set([file_name
                             for check in validation_results if check in ["vcf_check", "assembly_check"]
                             for file_name in validation_results[check]
@@ -33,17 +33,20 @@ def generate_report(validation_results, validation_date, submission_dir, vcf_fas
         vcf_files=vcf_files,
         fasta_files=fasta_files,
         submission_dir=submission_dir,
+        consent_statement_required=consent_statement_required,
         vcf_fasta_analysis_mapping=vcf_fasta_analysis_mapping,
         validation_results=validation_results
     )
     return re.sub('\s+\n', '\n', rendered_template)
 
 
-def generate_html_report(validation_results, validation_date, submission_dir, vcf_fasta_analysis_mapping, project_title):
-    return generate_report(validation_results, validation_date, submission_dir, vcf_fasta_analysis_mapping, project_title,
-                           subdir='html', template_file='report.html')
+def generate_html_report(validation_results, validation_date, submission_dir, vcf_fasta_analysis_mapping, project_title,
+                         consent_statement_required):
+    return generate_report(validation_results, validation_date, submission_dir, vcf_fasta_analysis_mapping,
+                           project_title, consent_statement_required, subdir='html', template_file='report.html')
 
 
-def generate_text_report(validation_results, validation_date, submission_dir, vcf_fasta_analysis_mapping, project_title):
-    return generate_report(validation_results, validation_date, submission_dir, vcf_fasta_analysis_mapping, project_title,
-                           subdir='text', template_file='report.txt')
+def generate_text_report(validation_results, validation_date, submission_dir, vcf_fasta_analysis_mapping, project_title,
+                         consent_statement_required):
+    return generate_report(validation_results, validation_date, submission_dir, vcf_fasta_analysis_mapping,
+                           project_title, consent_statement_required, subdir='text', template_file='report.txt')
