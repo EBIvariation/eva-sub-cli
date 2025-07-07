@@ -363,10 +363,10 @@ class TestReport(TestCase):
     def check_report_vs_expected(self, validation_results, output_report, expected_report, html=True):
         if html:
             report = generate_html_report(validation_results, self.test_validation_date, self.test_submission_dir,
-                                          self.test_vcf_fasta_analysis_mapping, self.test_project_name)
+                                          self.test_vcf_fasta_analysis_mapping, self.test_project_name, True)
         else:
             report = generate_text_report(validation_results, self.test_validation_date, self.test_submission_dir,
-                                          self.test_vcf_fasta_analysis_mapping, self.test_project_name)
+                                          self.test_vcf_fasta_analysis_mapping, self.test_project_name, True)
         with open(output_report, 'w') as open_file:
             open_file.write(report)
 
