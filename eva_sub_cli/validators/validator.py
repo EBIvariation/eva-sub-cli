@@ -9,10 +9,9 @@ import yaml
 from ebi_eva_common_pyutils.command_utils import run_command_with_output
 from ebi_eva_common_pyutils.config import WritableConfig
 from ebi_eva_common_pyutils.logger import logging_config, AppLogger
-from openpyxl.reader.excel import load_workbook
 
 from eva_sub_cli import ETC_DIR, SUB_CLI_CONFIG_FILE, __version__
-from eva_sub_cli.file_utils import backup_file_or_directory, resolve_single_file_path
+from eva_sub_cli.file_utils import backup_file_or_directory, resolve_single_file_path, detect_vcf_evidence_type
 from eva_sub_cli.metadata import EvaMetadataJson
 from eva_sub_cli.report import generate_html_report, generate_text_report
 from eva_sub_cli.validators.validation_results_parsers import parse_assembly_check_log, parse_assembly_check_report, \
@@ -90,6 +89,7 @@ class Validator(AppLogger):
         self.set_up_output_dir()
         self.verify_files_present()
         self._validate()
+        self._run_evidence_type_check()
         self.clean_up_output_dir()
         self._collect_validation_workflow_results()
         self._assess_validation_results()
@@ -154,12 +154,59 @@ class Validator(AppLogger):
         """ Checks if all the validation are passed """
         return all((
             all((value.get('pass', False) is True for key, value in self.results.items() if
-                 key in ['vcf_check', 'assembly_check', 'fasta_check', 'sample_check', 'metadata_check'])),
+                 key in ['vcf_check', 'assembly_check', 'fasta_check', 'sample_check', 'metadata_check', 'evidence_type_check'])),
             any((
                 self.results['shallow_validation']['requested'] is False,
                 self.results['shallow_validation'].get('required', True) is False
             ))
         ))
+
+    def _run_evidence_type_check(self):
+        metadata = EvaMetadataJson(self.metadata_json_post_validation)
+        self.results['evidence_type_check'] = {}
+
+        for analysis_alias, vcf_file_set in metadata.files_per_analysis.items():
+            self.results['evidence_type_check'][analysis_alias] = {
+                'evidence_type': None,
+                'errors': ''
+            }
+            vcf_files = list(vcf_file_set)
+            aggregations = [detect_vcf_evidence_type(vcf_file) for vcf_file in vcf_files]
+
+            if len(set(aggregations)) == 1 and None not in aggregations:
+                self.results['evidence_type_check'][analysis_alias]['evidence_type'] = set(aggregations).pop()
+            elif None in aggregations:
+                self.results['evidence_type_check'][analysis_alias]['evidence_type'] = None
+                indices = [i for i, x in enumerate(aggregations) if x is None]
+                self.results['evidence_type_check'][analysis_alias][
+                    'errors'] = f'VCF file evidence type could not be determined: {", ".join([vcf_files[i] for i in indices])}'
+            else:
+                self.results['evidence_type_check'][analysis_alias]['evidence_type'] = None
+                self.results['evidence_type_check'][analysis_alias][
+                    'errors'] = f'Multiple aggregation found: {", ".join(set(aggregations))}'
+
+        self.results['evidence_type_check']['pass'] = all(v['evidence_type'] is not None
+                                                          for k, v in self.results['evidence_type_check'].items()
+                                                          if isinstance(v, dict))
+
+        # update metadata file with evidence type check results
+        try:
+            analysis_data = []
+            if metadata.analyses:
+                for analysis in metadata.analyses:
+                    analysis_alias = analysis['analysisAlias']
+                    analysis['evidence_type'] = self.results['evidence_type_check'][analysis_alias][
+                        'evidence_type'] if analysis_alias in self.results['evidence_type_check'] else None
+                    self.info(f"Setting evidence_type for {analysis_alias}: {analysis['evidence_type']}")
+                    analysis_data.append(analysis)
+            else:
+                self.error('No analyses found in metadata')
+
+            metadata.set_analyses(analysis_data)
+        except Exception as e:
+            # Skip adding the results in case of any exception or error
+            self.error('Error while loading or parsing metadata json: ' + str(e))
+        metadata.write(self.metadata_json_post_validation)
 
     def _collect_validation_workflow_results(self):
         # Collect information from the output and summarise in the config
@@ -499,16 +546,18 @@ class Validator(AppLogger):
         return []
 
     def create_reports(self):
+        is_consent_statement_needed = self._check_consent_statement_is_needed_for_submission()
+
         report_html = generate_html_report(self.results, self.validation_date, self.submission_dir,
                                            self.get_vcf_fasta_analysis_mapping(),
-                                           self.project_title, self.check_consent_statement_is_needed_for_submisssion())
+                                           self.project_title, is_consent_statement_needed)
         html_path = os.path.join(self.output_dir, 'report.html')
         with open(html_path, "w") as f:
             f.write(report_html)
 
         report_text = generate_text_report(self.results, self.validation_date, self.submission_dir,
                                            self.get_vcf_fasta_analysis_mapping(),
-                                           self.project_title, self.check_consent_statement_is_needed_for_submisssion())
+                                           self.project_title, is_consent_statement_needed)
         text_path = os.path.join(self.output_dir, 'report.txt')
         with open(text_path, "w") as f:
             f.write(report_text)
@@ -518,13 +567,7 @@ class Validator(AppLogger):
         self.info(f'Or view a text version: {text_path}')
         return html_path, text_path
 
-    def check_consent_statement_is_needed_for_submisssion(self):
-        # TODO: Check the aggregation as well as the taxonomy
-        if self.metadata_json_post_validation:
-            json_metadata = EvaMetadataJson(self.metadata_json_post_validation)
-            if json_metadata.project.get('taxId') == 9606:
-                return True
-            else:
-                return False
-
-        return False
+    def _check_consent_statement_is_needed_for_submission(self):
+        metadata = EvaMetadataJson(self.metadata_json_post_validation)
+        return metadata.project.get('taxId') == 9606 and any(
+            v['evidence_type'] == 'genotype' for k, v in self.results['evidence_type_check'].items() if k != 'pass')

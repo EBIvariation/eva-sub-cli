@@ -1,6 +1,7 @@
 import os.path
 from copy import deepcopy
 from unittest import TestCase
+from unittest.mock import patch
 
 from eva_sub_cli.metadata import EvaMetadataJson
 from eva_sub_cli.validators.validator import Validator, VALIDATION_OUTPUT_DIR
@@ -163,10 +164,11 @@ class TestValidator(TestCase):
         assert self.validator.results == expected_results
 
     def test_create_report(self):
-        self.validator._collect_validation_workflow_results()
-        html_report, text_report = self.validator.create_reports()
-        assert os.path.exists(html_report)
-        assert os.path.exists(text_report)
+        with patch.object(self.validator, '_check_consent_statement_is_needed_for_submission', return_value=False):
+            self.validator._collect_validation_workflow_results()
+            html_report, text_report = self.validator.create_reports()
+            assert os.path.exists(html_report)
+            assert os.path.exists(text_report)
 
     def test_parse_biovalidator_validation_results(self):
         self.validator.results['metadata_check'] = {}
