@@ -204,6 +204,7 @@ class Validator(AppLogger):
 
         # update config based on the validation results
         self.sub_config.set(READY_FOR_SUBMISSION_TO_EVA, value=self.verify_ready_for_submission_to_eva())
+        self.results[READY_FOR_SUBMISSION_TO_EVA] = self.verify_ready_for_submission_to_eva()
 
     def _save_validation_results(self):
         with open(self.validation_result_file, 'w') as val_res_file:
