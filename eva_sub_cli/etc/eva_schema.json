@@ -170,7 +170,7 @@
           },
           "evidenceType": {
             "type": "string",
-            "description": "The type of evidence (genotype aggregation) provided in the VCF files of analysis alias",
+            "description": "The type of evidence (allele frequencies or genotypes) provided in the VCF files of the analysis",
             "enum": [
               "genotype",
               "allele_frequency"

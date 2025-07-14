@@ -11,7 +11,7 @@ from ebi_eva_common_pyutils.config import WritableConfig
 from ebi_eva_common_pyutils.logger import logging_config, AppLogger
 
 from eva_sub_cli import ETC_DIR, SUB_CLI_CONFIG_FILE, __version__
-from eva_sub_cli.file_utils import backup_file_or_directory, resolve_single_file_path, detect_vcf_evidence_type
+from eva_sub_cli.file_utils import backup_file_or_directory, resolve_single_file_path
 from eva_sub_cli.metadata import EvaMetadataJson
 from eva_sub_cli.report import generate_html_report, generate_text_report
 from eva_sub_cli.validators.validation_results_parsers import parse_assembly_check_log, parse_assembly_check_report, \
@@ -89,7 +89,6 @@ class Validator(AppLogger):
         self.set_up_output_dir()
         self.verify_files_present()
         self._validate()
-        self._run_evidence_type_check()
         self.clean_up_output_dir()
         self._collect_validation_workflow_results()
         self._assess_validation_results()
@@ -161,52 +160,6 @@ class Validator(AppLogger):
             ))
         ))
 
-    def _run_evidence_type_check(self):
-        metadata = EvaMetadataJson(self.metadata_json_post_validation)
-        self.results['evidence_type_check'] = {}
-
-        for analysis_alias, vcf_file_set in metadata.files_per_analysis.items():
-            self.results['evidence_type_check'][analysis_alias] = {
-                'evidence_type': None,
-                'errors': ''
-            }
-            vcf_files = list(vcf_file_set)
-            aggregations = [detect_vcf_evidence_type(vcf_file) for vcf_file in vcf_files]
-
-            if len(set(aggregations)) == 1 and None not in aggregations:
-                self.results['evidence_type_check'][analysis_alias]['evidence_type'] = set(aggregations).pop()
-            elif None in aggregations:
-                self.results['evidence_type_check'][analysis_alias]['evidence_type'] = None
-                indices = [i for i, x in enumerate(aggregations) if x is None]
-                self.results['evidence_type_check'][analysis_alias][
-                    'errors'] = f'VCF file evidence type could not be determined: {", ".join([vcf_files[i] for i in indices])}'
-            else:
-                self.results['evidence_type_check'][analysis_alias]['evidence_type'] = None
-                self.results['evidence_type_check'][analysis_alias][
-                    'errors'] = f'Multiple aggregation found: {", ".join(set(aggregations))}'
-
-        self.results['evidence_type_check']['pass'] = all(v['evidence_type'] is not None
-                                                          for k, v in self.results['evidence_type_check'].items()
-                                                          if isinstance(v, dict))
-
-        # update metadata file with evidence type check results
-        try:
-            analysis_data = []
-            if metadata.analyses:
-                for analysis in metadata.analyses:
-                    analysis_alias = analysis['analysisAlias']
-                    analysis['evidence_type'] = self.results['evidence_type_check'][analysis_alias][
-                        'evidence_type'] if analysis_alias in self.results['evidence_type_check'] else None
-                    self.info(f"Setting evidence_type for {analysis_alias}: {analysis['evidence_type']}")
-                    analysis_data.append(analysis)
-            else:
-                self.error('No analyses found in metadata')
-
-            metadata.set_analyses(analysis_data)
-        except Exception as e:
-            # Skip adding the results in case of any exception or error
-            self.error('Error while loading or parsing metadata json: ' + str(e))
-        metadata.write(self.metadata_json_post_validation)
 
     def _collect_validation_workflow_results(self):
         # Collect information from the output and summarise in the config
@@ -215,6 +168,7 @@ class Validator(AppLogger):
         self._collect_vcf_check_results()
         self._collect_assembly_check_results()
         self._load_sample_check_results()
+        self._load_evidence_check_results()
         self._load_fasta_check_results()
         self._collect_metadata_results()
 
@@ -243,6 +197,11 @@ class Validator(AppLogger):
         # sample check result
         self.results['sample_check']['pass'] = self.results.get('sample_check', {}).get('overall_differences',
                                                                                         True) is False
+
+        # evidence type check result
+        self.results['evidence_type_check']['pass'] = all(v['evidence_type'] is not None
+                                                      for k, v in self.results['evidence_type_check'].items()
+                                                      if isinstance(v, dict))
 
         # metadata check result
         metadata_xlsx_result = len(self.results.get('metadata_check', {}).get('spreadsheet_errors', []) or []) == 0
@@ -291,6 +250,10 @@ class Validator(AppLogger):
     @cached_property
     def _sample_check_yaml(self):
         return resolve_single_file_path(os.path.join(self.output_dir, 'other_validations', 'sample_checker.yml'))
+
+    @cached_property
+    def _evidence_type_check_yaml(self):
+        return resolve_single_file_path(os.path.join(self.output_dir, 'other_validations', 'evidence_type_checker.yml'))
 
     def _collect_vcf_check_results(self):
         # detect output files for vcf check
@@ -363,6 +326,17 @@ class Validator(AppLogger):
         with open(self._sample_check_yaml) as open_yaml:
             self.results['sample_check'] = yaml.safe_load(open_yaml)
         self.results['sample_check']['report_path'] = self._sample_check_yaml
+
+    def _load_evidence_check_results(self):
+        self.results['evidence_type_check'] = {}
+        if self._evidence_type_check_yaml:
+            with open(self._evidence_type_check_yaml) as open_yaml:
+                self.results['evidence_type_check'] = yaml.safe_load(open_yaml)
+            self.results['evidence_type_check']['report_path'] = self._evidence_type_check_yaml
+
+        self._update_metadata_with_evidence_type()
+
+
 
     def _collect_metadata_results(self):
         self.results['metadata_check'] = {}
@@ -502,6 +476,29 @@ class Validator(AppLogger):
         else:
             self.error(f'Cannot locate the metadata in JSON format in {os.path.join(self.output_dir, "metadata.json")}')
 
+
+    def _update_metadata_with_evidence_type(self):
+        if self.metadata_json_post_validation:
+            metadata = EvaMetadataJson(self.metadata_json_post_validation)
+            try:
+                analysis_data = []
+                if metadata.analyses:
+                    for analysis in metadata.analyses:
+                        analysis_alias = analysis['analysisAlias']
+                        analysis['evidence_type'] = self.results['evidence_type_check'][analysis_alias][
+                            'evidence_type'] if analysis_alias in self.results['evidence_type_check'] else None
+                        analysis_data.append(analysis)
+                else:
+                    self.error('No analyses found in metadata')
+
+                metadata.set_analyses(analysis_data)
+            except Exception as e:
+                # Skip adding the results in case of any exception or error
+                self.error('Error while loading or parsing metadata json: ' + str(e))
+            metadata.write(self.metadata_json_post_validation)
+        else:
+            self.error(f'Cannot locate the metadata in JSON format in {os.path.join(self.output_dir, "metadata.json")}')
+
     def _collect_trim_down_metrics(self):
         self.results['shallow_validation']['metrics'] = {}
         shallow_validation_required = False
@@ -568,6 +565,9 @@ class Validator(AppLogger):
         return html_path, text_path
 
     def _check_consent_statement_is_needed_for_submission(self):
-        metadata = EvaMetadataJson(self.metadata_json_post_validation)
-        return metadata.project.get('taxId') == 9606 and any(
-            v['evidence_type'] == 'genotype' for k, v in self.results['evidence_type_check'].items() if k != 'pass')
+        if self.metadata_json_post_validation:
+            metadata = EvaMetadataJson(self.metadata_json_post_validation)
+            return metadata.project.get('taxId') == 9606 and any(
+                v['evidence_type'] == 'genotype' for k, v in self.results['evidence_type_check'].items() if k != 'pass')
+
+        return False

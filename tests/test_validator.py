@@ -1,12 +1,10 @@
 import os.path
 from copy import deepcopy
 from unittest import TestCase
-from unittest.mock import patch
 
 from eva_sub_cli.metadata import EvaMetadataJson
 from eva_sub_cli.validators.validator import Validator, VALIDATION_OUTPUT_DIR
 from tests.test_utils import create_mapping_file
-
 
 expected_validation_results = {
     'shallow_validation': {'requested': False},
@@ -29,6 +27,14 @@ expected_validation_results = {
             }
         }
     },
+    'evidence_type_check': {
+        'AA': {
+            'errors': None,
+            'evidence_type': 'allele_frequence'
+        },
+        'report_path': '/home/nkumar2/PycharmProjects/eva-sub-cli/tests/resources/validation_reports/validation_output/other_validations/evidence_type_checker.yml'
+    },
+
     'fasta_check': {
         'input_passed.fa': {'all_insdc': False, 'sequences': [
             {'sequence_name': 1, 'insdc': True, 'sequence_md5': '6681ac2f62509cfc220d78751b8dc524'},
@@ -101,7 +107,8 @@ class TestValidator(TestCase):
     def tearDown(self) -> None:
         files_from_tests = [
             self.mapping_file,
-            os.path.join(self.output_dir, VALIDATION_OUTPUT_DIR, 'other_validations', 'metadata_spreadsheet_validation.txt'),
+            os.path.join(self.output_dir, VALIDATION_OUTPUT_DIR, 'other_validations',
+                         'metadata_spreadsheet_validation.txt'),
             os.path.join(self.output_dir, VALIDATION_OUTPUT_DIR, 'report.html'),
             os.path.join(self.output_dir, VALIDATION_OUTPUT_DIR, 'report.txt')
         ]
@@ -164,11 +171,10 @@ class TestValidator(TestCase):
         assert self.validator.results == expected_results
 
     def test_create_report(self):
-        with patch.object(self.validator, '_check_consent_statement_is_needed_for_submission', return_value=False):
-            self.validator._collect_validation_workflow_results()
-            html_report, text_report = self.validator.create_reports()
-            assert os.path.exists(html_report)
-            assert os.path.exists(text_report)
+        self.validator._collect_validation_workflow_results()
+        html_report, text_report = self.validator.create_reports()
+        assert os.path.exists(html_report)
+        assert os.path.exists(text_report)
 
     def test_parse_biovalidator_validation_results(self):
         self.validator.results['metadata_check'] = {}
@@ -265,7 +271,7 @@ class TestValidator(TestCase):
              'description': 'alias1 present in Analysis not in Samples'},
             {'sheet': 'Sample', 'row': '', 'column': 'Analysis Alias',
              'description': 'alias_1,alias_2 present in Samples not in Analysis'},
-            {'column': 'Sample Accession','row': 3, 'sheet': 'Sample',
+            {'column': 'Sample Accession', 'row': 3, 'sheet': 'Sample',
              'description': 'Existing sample SAMEA6675477 must have required property '
                             "'collection date'"}
         ]
@@ -274,11 +280,11 @@ class TestValidator(TestCase):
         self.validator.results['metadata_check'] = {}
         self.validator._load_spreadsheet_conversion_errors()
         assert self.validator.results['metadata_check']['spreadsheet_errors'] == [{
-                'column': '',
-                'description': 'Error loading problem.xlsx: Exception()',
-                'row': '',
-                'sheet': ''
-            }]
+            'column': '',
+            'description': 'Error loading problem.xlsx: Exception()',
+            'row': '',
+            'sheet': ''
+        }]
 
     def test_get_vcf_fasta_analysis_mapping(self):
         prev_metadata_json_value = self.validator_json.metadata_json

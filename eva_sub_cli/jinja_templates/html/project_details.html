@@ -14,27 +14,6 @@
         {% endif %}
     </div>
 
-    {% set evidence_type_check_results = validation_results.get('evidence_type_check', {}) %}
-    {% set evidence_check_type_pass = evidence_type_check_results.get('pass', true) %}
-    {% if not evidence_check_type_pass %}
-        <div class="report-section fail collapsible"><span class="expand_icon">&#9654;</span>&#10060; Evidence Type Check Failures </div>
-         <div class="error-list">
-            <table>
-                <tr>
-                    <th>Analysis Alias</th><th>Errors</th>
-                </tr>
-                    {% for alias, alias_result in evidence_type_check_results.items() if alias != 'pass' %}
-                        {% if alias_result.evidence_type is none and alias_result.errors %}
-                             <tr>
-                                <td><strong>{{ alias }} </strong></td>
-                                <td>{{ alias_result.errors }}</td>
-                            </tr>
-                        {% endif %}
-                    {% endfor %}
-            </table>
-        </div>
-    {% endif %}
-
 
     {% if vcf_fasta_analysis_mapping %}
         {% set row_class = "report-section info collapsible" %}
@@ -56,6 +35,28 @@
                     {% endfor %}
                 </table>
             </div>
+        </div>
+    {% endif %}
+
+
+    {% set evidence_type_check_results = validation_results.get('evidence_type_check', {}) %}
+    {% set evidence_check_type_pass = evidence_type_check_results.get('pass', true) %}
+    {% if not evidence_check_type_pass %}
+        <div class="report-section fail collapsible"><span class="expand_icon">&#9654;</span>&#10060; Evidence Type Check Failures </div>
+         <div class="error-list">
+            <table>
+                <tr>
+                    <th>Analysis Alias</th><th>Errors</th>
+                </tr>
+                    {% for alias, alias_result in evidence_type_check_results.items() if alias != 'pass' %}
+                        {% if alias_result.evidence_type is none and alias_result.errors %}
+                             <tr>
+                                <td><strong>{{ alias }} </strong></td>
+                                <td>{{ alias_result.errors }}</td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+            </table>
         </div>
     {% endif %}
 

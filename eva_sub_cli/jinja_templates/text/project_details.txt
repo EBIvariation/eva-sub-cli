@@ -13,17 +13,6 @@
         Your submission will only be processed after receiving the consent statement.For more info, please see our help section (https://www.ebi.ac.uk/eva/?Help#submissionPanel&link=consent-statement-for-human-genotype-data).
 {% endif %}
 
-{% set evidence_type_check_results = validation_results.get('evidence_type_check', {}) %}
-{% set evidence_check_type_pass = evidence_type_check_results.get('pass', true) %}
-{% if not evidence_check_type_pass %}
-    Evidence Type Check Failures:
-    {% for alias, alias_result in evidence_type_check_results.items() if alias != 'pass' %}
-        {% if alias_result.evidence_type is none and alias_result.errors %}
-            {{ alias }} - {{ alias_result.errors }}
-        {% endif %}
-    {% endfor %}
-{% endif %}
-
 {% if vcf_fasta_analysis_mapping %}
 	Files mapping:
 	{% for mapping in vcf_fasta_analysis_mapping %}
@@ -32,6 +21,17 @@
 		Fasta File: {{ mapping.fasta_file }}
 		Analysis: {{ mapping.analysis }}
 	{% endfor %}
+{% endif %}
+
+{% set evidence_type_check_results = validation_results.get('evidence_type_check', {}) %}
+{% set evidence_check_type_pass = evidence_type_check_results.get('pass', true) %}
+{% if not evidence_check_type_pass %}
+    Evidence Type Check Failures:
+    {% for alias, alias_result in evidence_type_check_results.items() if alias != 'pass' %}
+        {% if alias_result.evidence_type is none and alias_result.errors %}
+            {{ alias }}: {{ alias_result.errors }}
+        {% endif %}
+    {% endfor %}
 {% endif %}
 
 {%- endmacro %}
