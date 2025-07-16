@@ -28,7 +28,7 @@ params.executable = [
 // python scripts - installed as part of eva-sub-cli
 params.python_scripts = [
     "samples_checker": "samples_checker.py",
-    "evidence_type_checker": "evidence_type_checker.py"
+    "evidence_type_checker": "evidence_type_checker.py",
     "fasta_checker": "check_fasta_insdc.py",
     "xlsx2json": "xlsx2json.py",
     "semantic_checker": "check_metadata_semantics.py",
