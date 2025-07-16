@@ -175,7 +175,7 @@ validation_results_xlsx = {
         },
         'Analysis B': {
             'evidence_type': None,
-            'errors': 'Multiple aggregation found: genotype, allele_frequency'
+            'errors': 'Multiple evidence types found: genotype, allele_frequency'
         },
     }
 }
@@ -351,7 +351,7 @@ validation_results_json = {
         },
         'Analysis B': {
             'evidence_type': None,
-            'errors': 'Multiple aggregation found: genotype, allele_frequency'
+            'errors': 'Multiple evidence types found: genotype, allele_frequency'
         },
     }
 }

@@ -199,9 +199,10 @@ class Validator(AppLogger):
                                                                                         True) is False
 
         # evidence type check result
-        self.results['evidence_type_check']['pass'] = all(v['evidence_type'] is not None
-                                                      for k, v in self.results['evidence_type_check'].items()
-                                                      if isinstance(v, dict))
+        self.results['evidence_type_check']['pass'] = (bool(self.results.get('evidence_type_check')) and
+                                                       all('evidence_type' in v and v['evidence_type'] is not None
+                                                      for k, v in self.results.get('evidence_type_check', {}).items()
+                                                      if isinstance(v, dict)))
 
         # metadata check result
         metadata_xlsx_result = len(self.results.get('metadata_check', {}).get('spreadsheet_errors', []) or []) == 0

@@ -19,17 +19,17 @@ def check_evidence_type(metadata_json, output_yaml):
             'errors': None
         }
         vcf_files = list(vcf_file_set)
-        aggregations = [detect_vcf_evidence_type(vcf_file) for vcf_file in vcf_files]
+        evidence_types_for_vcf_files = [detect_vcf_evidence_type(vcf_file) for vcf_file in vcf_files]
 
-        if len(set(aggregations)) == 1 and None not in aggregations:
-            results_per_analysis_alias[analysis_alias]['evidence_type'] = set(aggregations).pop()
-        elif None in aggregations:
-            indices = [i for i, x in enumerate(aggregations) if x is None]
+        if len(set(evidence_types_for_vcf_files)) == 1 and None not in evidence_types_for_vcf_files:
+            results_per_analysis_alias[analysis_alias]['evidence_type'] = set(evidence_types_for_vcf_files).pop()
+        elif None in evidence_types_for_vcf_files:
+            indices = [i for i, x in enumerate(evidence_types_for_vcf_files) if x is None]
             results_per_analysis_alias[analysis_alias][
                 'errors'] = f'VCF file evidence type could not be determined: {", ".join([vcf_files[i] for i in indices])}'
         else:
             results_per_analysis_alias[analysis_alias][
-                'errors'] = f'Multiple evidence types found: {", ".join(set(aggregations))}'
+                'errors'] = f'Multiple evidence types found: {", ".join(set(evidence_types_for_vcf_files))}'
 
     write_result_yaml(output_yaml, results_per_analysis_alias)
 

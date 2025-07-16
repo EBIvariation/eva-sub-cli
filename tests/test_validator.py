@@ -30,7 +30,7 @@ expected_validation_results = {
     'evidence_type_check': {
         'AA': {
             'errors': None,
-            'evidence_type': 'allele_frequence'
+            'evidence_type': 'allele_frequency'
         },
         'report_path': '/home/nkumar2/PycharmProjects/eva-sub-cli/tests/resources/validation_reports/validation_output/other_validations/evidence_type_checker.yml'
     },

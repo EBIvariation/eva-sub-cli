@@ -25,7 +25,7 @@ General details about the project
 		Analysis: could not be linked
     Evidence Type Check Failures:
             Analysis A: VCF file evidence type could not be determined: vcf_files_1, vcf_files_2
-            Analysis B: Multiple aggregation found: genotype, allele_frequency
+            Analysis B: Multiple evidence types found: genotype, allele_frequency
 -
 METADATA VALIDATION RESULTS
 Ensures that required fields are present and values are formatted correctly.
