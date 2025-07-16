@@ -486,7 +486,7 @@ class Validator(AppLogger):
                 if metadata.analyses:
                     for analysis in metadata.analyses:
                         analysis_alias = analysis['analysisAlias']
-                        analysis['evidence_type'] = self.results['evidence_type_check'][analysis_alias][
+                        analysis['evidenceType'] = self.results['evidence_type_check'][analysis_alias][
                             'evidence_type'] if analysis_alias in self.results['evidence_type_check'] else None
                         analysis_data.append(analysis)
                 else:
