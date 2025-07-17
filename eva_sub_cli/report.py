@@ -17,6 +17,8 @@ def get_logo_data():
 
 def generate_report(validation_results, validation_date, submission_dir, vcf_fasta_analysis_mapping, project_title,
                     subdir, template_file):
+    if 'ready_for_submission_to_eva' in validation_results:
+        validation_results.pop('ready_for_submission_to_eva')
     vcf_files = sorted(set([file_name
                             for check in validation_results if check in ["vcf_check", "assembly_check"]
                             for file_name in validation_results[check]
