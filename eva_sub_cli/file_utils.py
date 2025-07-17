@@ -5,6 +5,11 @@ import shutil
 import time
 from itertools import groupby
 
+import pysam
+from ebi_eva_common_pyutils.logger import logging_config
+
+logger = logging_config.get_logger(__name__)
+
 
 def resolve_single_file_path(file_path):
     files = glob.glob(file_path)
@@ -23,11 +28,85 @@ def is_submission_dir_writable(submission_dir):
         return False
     return True
 
+
 def is_vcf_file(file_path):
     if file_path:
         file_path = file_path.strip().lower()
         return file_path.endswith('.vcf') or file_path.endswith('.vcf.gz')
     return False
+
+
+def detect_vcf_evidence_type(vcf_file):
+    """
+    Detect the type of evidence (genotype aggregation) provided in the VCF file by checking the first 10 data lines
+    The evidence type is determined to be "genotype" (meaning genotype are all present) if a GT field can be found in
+    all the samples. It is determined to be "allele_frequency" if it is not "genotype" and an AF field or AN and AC fields are found
+    in every line checked.
+    Otherwise, it returns None meaning that the evidence type could not be determined.
+    """
+
+    try:
+        samples, af_in_info, gt_in_format = _assess_vcf_evidence_type_with_pysam(vcf_file)
+    except Exception:
+        logger.error(f"Pysam Failed to open and read {vcf_file}")
+        try:
+            samples, af_in_info, gt_in_format = _assess_vcf_evidence_type_manual(vcf_file)
+        except Exception:
+            logger.error(f"Manual parsing Failed to open or read {vcf_file}")
+            return None
+    if len(samples) > 0 and gt_in_format:
+        return 'genotype'
+    elif len(samples) == 0 and af_in_info:
+        return 'allele_frequency'
+    else:
+        logger.error(f'Aggregation type could not be detected for {vcf_file}')
+        return None
+
+
+def _assess_vcf_evidence_type_with_pysam(vcf_file):
+    with pysam.VariantFile(vcf_file, 'r') as vcf_in:
+        samples = list(vcf_in.header.samples)
+        # check that the first 10 lines have genotypes for all the samples present and if they have allele frequency
+        nb_line_checked = 0
+        max_line_check = 10
+        gt_in_format = True
+        af_in_info = True
+        for vcf_rec in vcf_in:
+            gt_in_format = gt_in_format and all('GT' in vcf_rec.samples.get(sample, {}) for sample in samples)
+            af_in_info = af_in_info and ('AF' in vcf_rec.info or ('AC' in vcf_rec.info and 'AN' in vcf_rec.info))
+            nb_line_checked += 1
+            if nb_line_checked >= max_line_check:
+                break
+        return samples, af_in_info, gt_in_format
+
+
+def _assess_vcf_evidence_type_manual(vcf_file):
+    try:
+        if vcf_file.endswith('.gz'):
+            open_file = gzip.open(vcf_file, 'rt')
+        else:
+            open_file = open(vcf_file, 'r')
+
+        nb_line_checked = 0
+        max_line_check = 10
+        gt_in_format = True
+        af_in_info = True
+        samples = []
+        for line in open_file:
+            sp_line = line.strip().split('\t')
+            if line.startswith('#CHROM'):
+                if len(sp_line) > 9:
+                    samples = sp_line[9:]
+            if not line.startswith('#'):
+                gt_in_format = gt_in_format and len(sp_line) > 8 and 'GT' in sp_line[8]
+                af_in_info = af_in_info and (
+                        sp_line[7].find('AF=') or (sp_line[7].find('AC=') and sp_line[7].find('AN=')))
+            if nb_line_checked >= max_line_check:
+                break
+        return samples, af_in_info, gt_in_format
+    finally:
+        open_file.close()
+
 
 def backup_file_or_directory(file_name, max_backups=None):
     """
@@ -83,7 +162,6 @@ class DirLockError(Exception):
 
 
 class DirLock(object):
-
     _SPIN_PERIOD_SECONDS = 0.05
 
     def __init__(self, dirname, timeout=3):

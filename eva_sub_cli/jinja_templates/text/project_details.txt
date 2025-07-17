@@ -1,4 +1,4 @@
-{% macro project_details_report(project_title, validation_date, submission_dir, consent_statement_required, vcf_fasta_analysis_mapping) -%}
+{% macro project_details_report(validation_results, project_title, validation_date, submission_dir, consent_statement_required, vcf_fasta_analysis_mapping) -%}
 
 {% if project_title %}
 	Project Title: {{ project_title }}
@@ -21,6 +21,17 @@
 		Fasta File: {{ mapping.fasta_file }}
 		Analysis: {{ mapping.analysis }}
 	{% endfor %}
+{% endif %}
+
+{% set evidence_type_check_results = validation_results.get('evidence_type_check', {}) %}
+{% set evidence_check_type_pass = evidence_type_check_results.get('pass', true) %}
+{% if not evidence_check_type_pass %}
+    Evidence Type Check Failures:
+    {% for alias, alias_result in evidence_type_check_results.items() if alias != 'pass' %}
+        {% if alias_result.evidence_type is none and alias_result.errors %}
+            {{ alias }}: {{ alias_result.errors }}
+        {% endif %}
+    {% endfor %}
 {% endif %}
 
 {%- endmacro %}

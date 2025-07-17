@@ -34,6 +34,7 @@ classifiers = [
 'check_fasta_insdc.py'='eva_sub_cli.executables.check_fasta_insdc:main'
 'check_metadata_semantics.py'='eva_sub_cli.executables.check_metadata_semantics:main'
 'samples_checker.py'='eva_sub_cli.executables.samples_checker:main'
+'evidence_type_checker.py'='eva_sub_cli.executables.evidence_type_checker:main'
 'xlsx2json.py'='eva_sub_cli.executables.xlsx2json:main'
 'trim_down.py'='eva_sub_cli.executables.trim_down:main'
 

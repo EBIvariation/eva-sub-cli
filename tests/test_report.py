@@ -165,6 +165,18 @@ validation_results_xlsx = {
              'description': 'Column "Sample Accession" is not populated'}
         ],
         'spreadsheet_report_path': '/path/to/metadata/metadata_spreadsheet_validation.txt',
+    },
+
+    'evidence_type_check': {
+        'pass': False,
+        'Analysis A': {
+            'evidence_type': None,
+            'errors': 'VCF file evidence type could not be determined: vcf_files_1, vcf_files_2'
+        },
+        'Analysis B': {
+            'evidence_type': None,
+            'errors': 'Multiple evidence types found: genotype, allele_frequency'
+        },
     }
 }
 
@@ -329,6 +341,18 @@ validation_results_json = {
             {'property': '/sample/0', 'description': 'should match exactly one schema in oneOf'}
         ],
         'json_report_path': '/path/to/json/metadata/report'
+    },
+
+    'evidence_type_check': {
+        'pass': False,
+        'Analysis A': {
+            'evidence_type': None,
+            'errors': 'VCF file evidence type could not be determined: vcf_files_1, vcf_files_2'
+        },
+        'Analysis B': {
+            'evidence_type': None,
+            'errors': 'Multiple evidence types found: genotype, allele_frequency'
+        },
     }
 }
 
