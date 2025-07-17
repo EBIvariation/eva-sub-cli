@@ -49,6 +49,10 @@ class EvaMetadataJson(AppLogger):
         if self.resolved_files:
             del self.resolved_files
 
+    def set_analyses(self, analysis_list):
+        assert isinstance(analysis_list, list)
+        self.content['analysis'] = analysis_list
+
     @cached_property
     def samples_per_analysis(self):
         """Returns mapping of analysis alias to sample names, based on metadata."""
