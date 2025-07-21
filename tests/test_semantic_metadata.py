@@ -276,3 +276,55 @@ class TestSemanticMetadata(TestCase):
         checker.check_all_analysis_run_accessions()
         assert checker.errors == [
             {'property': '/analysis/1/runAccessions', 'description': 'Run SRR00000000001 does not exist in ENA or is private'}]
+
+    def test_check_all_analysis_contain_samples(self):
+        # all analysis contain samples
+        metadata = {
+            "analysis": [
+                {"analysisAlias": "A1"},
+                {"analysisAlias": "A2"}
+            ],
+            "sample": [
+                {"analysisAlias": ["A1"]},
+                {"analysisAlias": ["A2"]}
+            ]
+        }
+
+        checker = SemanticMetadataChecker(metadata)
+        checker.check_all_analysis_contain_samples()
+        assert checker.errors == []
+
+        # analysis missing samples
+        metadata = {
+            "analysis": [
+                {"analysisAlias": "A1"},
+                {"analysisAlias": "A2"},
+                {"analysisAlias": "A3"}
+            ],
+            "sample": [
+                {"analysisAlias": ["A1"]}
+            ]
+        }
+
+        checker = SemanticMetadataChecker(metadata)
+        checker.check_all_analysis_contain_samples()
+        self.assertEqual(len(checker.errors), 2)
+        self.assertEqual(checker.errors[0]["property"], "/analysis/1")
+        self.assertEqual(checker.errors[1]["property"], "/analysis/2")
+        self.assertEqual(checker.errors[0]["description"],
+                         "No sample found for the analysis. Should have at the least one sample.")
+
+        # no samples in metadata
+        metadata = {
+            "analysis": [
+                {"analysisAlias": "A1"}
+            ],
+            "sample": []
+        }
+
+        checker = SemanticMetadataChecker(metadata)
+        checker.check_all_analysis_contain_samples()
+        self.assertEqual(len(checker.errors), 1)
+        self.assertEqual(checker.errors[0]["property"], "/analysis/0")
+        self.assertEqual(checker.errors[0]["description"],
+                         "No sample found for the analysis. Should have at the least one sample.")
