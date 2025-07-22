@@ -1,6 +1,6 @@
 FROM python:3.10
 
-ENV vcf_validator_version=0.10.0
+ENV vcf_validator_version=0.10.2
 ENV NXF_VER=22.10.6
 
 WORKDIR /opt
