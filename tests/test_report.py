@@ -7,6 +7,7 @@ import eva_sub_cli
 from eva_sub_cli.report import generate_html_report, generate_text_report
 
 validation_results_xlsx = {
+    "ready_for_submission_to_eva": False,
     "assembly_check": {
         "input_passed.vcf": {
             "report_path": "/path/to/assembly_passed/report",
@@ -169,6 +170,7 @@ validation_results_xlsx = {
 }
 
 validation_results_json = {
+    "ready_for_submission_to_eva": False,
     "assembly_check": {
         "input_passed.vcf": {
             "report_path": "/path/to/assembly_passed/report",

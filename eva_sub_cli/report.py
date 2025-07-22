@@ -17,11 +17,12 @@ def get_logo_data():
 
 def generate_report(validation_results, validation_date, submission_dir, vcf_fasta_analysis_mapping, project_title,
                     subdir, template_file):
+    results_for_report = {k: v for k, v in validation_results.items() if k != 'ready_for_submission_to_eva'}
     vcf_files = sorted(set([file_name
-                            for check in validation_results if check in ["vcf_check", "assembly_check"]
-                            for file_name in validation_results[check]
+                            for check in results_for_report if check in ["vcf_check", "assembly_check"]
+                            for file_name in results_for_report[check]
                             ]))
-    fasta_files = sorted([file_name for file_name in validation_results['fasta_check']])
+    fasta_files = sorted([file_name for file_name in results_for_report['fasta_check']])
     template = Environment(
         loader=FileSystemLoader(os.path.join(current_dir, 'jinja_templates', subdir))
     ).get_template(template_file)
@@ -34,7 +35,7 @@ def generate_report(validation_results, validation_date, submission_dir, vcf_fas
         fasta_files=fasta_files,
         submission_dir=submission_dir,
         vcf_fasta_analysis_mapping=vcf_fasta_analysis_mapping,
-        validation_results=validation_results
+        validation_results=results_for_report
     )
     return re.sub('\s+\n', '\n', rendered_template)
 
