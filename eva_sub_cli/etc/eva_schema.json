@@ -366,7 +366,7 @@
     "projectAccession": {
       "type": "string",
       "description": "ENA project accession",
-      "pattern": "^PRJ(EB|NA)\\d+$"
+      "pattern": "^PRJ(E|D|N)[A-Z][0-9]+$"
     }
   }
 }
