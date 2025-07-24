@@ -46,9 +46,10 @@ class TestEvidenceTypeChecker(TestCase):
 
     def run_and_assert_evidence_type_check(self, metadata_json):
         check_evidence_type(metadata_json, self.output_yaml)
+        failing_vcf = os.path.join(self.resource_dir,'sample_checker','example1.vcf.gz.tbi')
         expected_results = {
             'VD1': {
-                'errors': 'VCF file evidence type could not be determined: /home/nkumar2/PycharmProjects/eva-sub-cli/tests/resources/sample_checker/example1.vcf.gz.tbi',
+                'errors': f'VCF file evidence type could not be determined: {failing_vcf}',
                 'evidence_type': None
             },
             'VD2': {
