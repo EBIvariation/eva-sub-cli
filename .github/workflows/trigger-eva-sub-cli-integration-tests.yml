@@ -2,7 +2,7 @@ name: Trigger Eva Sub Cli Integration Tests
 
 on:
   push:
-    branches: [main]
+    branches: [main, add-consent-statement]
 
 jobs:
   trigger-integration-tests:
