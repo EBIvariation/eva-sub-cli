@@ -32,7 +32,7 @@ expected_validation_results = {
             'errors': None,
             'evidence_type': 'allele_frequency'
         },
-        'report_path': '/home/nkumar2/PycharmProjects/eva-sub-cli/tests/resources/validation_reports/validation_output/other_validations/evidence_type_checker.yml'
+        'report_path': '{resource_dir}/validation_reports/validation_output/other_validations/evidence_type_checker.yml'
     },
 
     'fasta_check': {
@@ -116,6 +116,16 @@ class TestValidator(TestCase):
             if os.path.exists(f):
                 os.remove(f)
 
+    def format_data_structure(self, source):
+        if isinstance(source, dict):
+            return {k: self.format_data_structure(v) for k, v in source.items()}
+        elif isinstance(source, list):
+            return [self.format_data_structure(v) for v in source]
+        elif isinstance(source, str):
+            return source.format(resource_dir=self.resource_dir)
+        else:
+            return source
+
     def run_collect_results(self, validator_to_run):
         validator_to_run._collect_validation_workflow_results()
         # Drop report paths from comparison (test will fail if missing)
@@ -130,7 +140,7 @@ class TestValidator(TestCase):
 
     def test__collect_validation_workflow_results_with_metadata_json(self):
         self.run_collect_results(self.validator_json)
-        assert self.validator_json.results == expected_validation_results
+        assert self.validator_json.results == self.format_data_structure(expected_validation_results)
 
     def test__collect_validation_workflow_results_with_metadata_xlsx(self):
         expected_results = deepcopy(expected_validation_results)
@@ -168,7 +178,7 @@ class TestValidator(TestCase):
         ]
 
         self.run_collect_results(self.validator)
-        assert self.validator.results == expected_results
+        assert self.validator.results == self.format_data_structure(expected_results)
 
     def test_create_report(self):
         self.validator._collect_validation_workflow_results()
