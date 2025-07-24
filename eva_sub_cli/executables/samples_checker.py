@@ -5,7 +5,7 @@ from ebi_eva_common_pyutils.logger import logging_config
 
 import yaml
 
-from eva_sub_cli.file_utils import open_gzip_if_required
+from eva_sub_cli.file_utils import open_gzip_if_required, detect_vcf_evidence_type
 from eva_sub_cli.metadata import EvaMetadataJson
 
 logger = logging_config.get_logger(__name__)
@@ -64,18 +64,39 @@ def compare_all_analysis(metadata, files_per_analysis):
             file_path: get_samples_from_vcf(file_path)
             for file_path in files_per_analysis.get(analysis_alias, [])
         }
-        (
-            has_difference, more_per_submitted_files_metadata,
-            more_submitted_files_metadata, more_metadata_submitted_files
-        ) = compare_names_in_files_and_samples(sample_name_in_analysis, sample_name_per_file)
-        overall_differences = overall_differences or has_difference
-        results_per_analysis_alias[analysis_alias] = {
-            'difference': has_difference,
-            'more_per_submitted_files_metadata': more_per_submitted_files_metadata,
-            'more_submitted_files_metadata': more_submitted_files_metadata,
-            'more_metadata_submitted_files': more_metadata_submitted_files
-        }
+
+        if need_to_check_samples(sample_name_per_file):
+            (
+                has_difference, more_per_submitted_files_metadata,
+                more_submitted_files_metadata, more_metadata_submitted_files
+            ) = compare_names_in_files_and_samples(sample_name_in_analysis, sample_name_per_file)
+            overall_differences = overall_differences or has_difference
+            results_per_analysis_alias[analysis_alias] = {
+                'difference': has_difference,
+                'more_per_submitted_files_metadata': more_per_submitted_files_metadata,
+                'more_submitted_files_metadata': more_submitted_files_metadata,
+                'more_metadata_submitted_files': more_metadata_submitted_files
+            }
+        else:
+            results_per_analysis_alias[analysis_alias] = {
+                'difference': False,
+                'more_per_submitted_files_metadata': [],
+                'more_submitted_files_metadata': [],
+                'more_metadata_submitted_files': []
+            }
+
+
     return overall_differences, results_per_analysis_alias
+
+
+def need_to_check_samples(sample_name_per_file):
+    no_samples_in_vcf = all(len(v) == 0 for v in sample_name_per_file.values())
+    if no_samples_in_vcf:
+        evidence_types_for_vcf_files = [detect_vcf_evidence_type(vcf_file) for vcf_file in sample_name_per_file.keys()]
+        if set(evidence_types_for_vcf_files) == {'allele_frequency'}:
+            return False
+
+    return True
 
 
 def associate_vcf_path_with_analysis(metadata, vcf_files):

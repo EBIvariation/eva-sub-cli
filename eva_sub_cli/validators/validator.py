@@ -8,13 +8,12 @@ from functools import lru_cache, cached_property
 import yaml
 from ebi_eva_common_pyutils.command_utils import run_command_with_output
 from ebi_eva_common_pyutils.config import WritableConfig
+from ebi_eva_common_pyutils.logger import logging_config, AppLogger
 
 from eva_sub_cli import ETC_DIR, SUB_CLI_CONFIG_FILE, __version__
 from eva_sub_cli.file_utils import backup_file_or_directory, resolve_single_file_path
 from eva_sub_cli.metadata import EvaMetadataJson
 from eva_sub_cli.report import generate_html_report, generate_text_report
-from ebi_eva_common_pyutils.logger import logging_config, AppLogger
-
 from eva_sub_cli.validators.validation_results_parsers import parse_assembly_check_log, parse_assembly_check_report, \
     parse_biovalidator_validation_results, convert_metadata_sheet, convert_metadata_row, convert_metadata_attribute, \
     parse_vcf_check_report, parse_metadata_property
@@ -154,12 +153,13 @@ class Validator(AppLogger):
         """ Checks if all the validation are passed """
         return all((
             all((value.get('pass', False) is True for key, value in self.results.items() if
-                 key in ['vcf_check', 'assembly_check', 'fasta_check', 'sample_check', 'metadata_check'])),
+                 key in ['vcf_check', 'assembly_check', 'fasta_check', 'sample_check', 'metadata_check', 'evidence_type_check'])),
             any((
                 self.results['shallow_validation']['requested'] is False,
                 self.results['shallow_validation'].get('required', True) is False
             ))
         ))
+
 
     def _collect_validation_workflow_results(self):
         # Collect information from the output and summarise in the config
@@ -168,6 +168,7 @@ class Validator(AppLogger):
         self._collect_vcf_check_results()
         self._collect_assembly_check_results()
         self._load_sample_check_results()
+        self._load_evidence_check_results()
         self._load_fasta_check_results()
         self._collect_metadata_results()
 
@@ -196,6 +197,12 @@ class Validator(AppLogger):
         # sample check result
         self.results['sample_check']['pass'] = self.results.get('sample_check', {}).get('overall_differences',
                                                                                         True) is False
+
+        # evidence type check result
+        self.results['evidence_type_check']['pass'] = (bool(self.results.get('evidence_type_check')) and
+                                                       all('evidence_type' in v and v['evidence_type'] is not None
+                                                      for k, v in self.results.get('evidence_type_check', {}).items()
+                                                      if isinstance(v, dict)))
 
         # metadata check result
         metadata_xlsx_result = len(self.results.get('metadata_check', {}).get('spreadsheet_errors', []) or []) == 0
@@ -246,7 +253,11 @@ class Validator(AppLogger):
     def _sample_check_yaml(self):
         return resolve_single_file_path(os.path.join(self.output_dir, 'other_validations', 'sample_checker.yml'))
 
-    def _collect_vcf_check_results(self,):
+    @cached_property
+    def _evidence_type_check_yaml(self):
+        return resolve_single_file_path(os.path.join(self.output_dir, 'other_validations', 'evidence_type_checker.yml'))
+
+    def _collect_vcf_check_results(self):
         # detect output files for vcf check
         self.results['vcf_check'] = {}
         for vcf_file in self.vcf_files:
@@ -256,9 +267,11 @@ class Validator(AppLogger):
             vcf_check_text_report = self._vcf_check_text_report(vcf_name)
 
             if vcf_check_log and vcf_check_text_report:
-                valid, warning_count, error_count, critical_count, error_list, critical_list = parse_vcf_check_report(vcf_check_text_report)
+                valid, warning_count, error_count, critical_count, error_list, critical_list = parse_vcf_check_report(
+                    vcf_check_text_report)
             else:
-                valid, warning_count, error_count, critical_count, error_list, critical_list = (False, 0, 0, 1, [], ['Process failed'])
+                valid, warning_count, error_count, critical_count, error_list, critical_list = (False, 0, 0, 1, [],
+                                                                                                ['Process failed'])
             self.results['vcf_check'][vcf_name] = {
                 'report_path': vcf_check_text_report,
                 'valid': valid,
@@ -315,6 +328,17 @@ class Validator(AppLogger):
         with open(self._sample_check_yaml) as open_yaml:
             self.results['sample_check'] = yaml.safe_load(open_yaml)
         self.results['sample_check']['report_path'] = self._sample_check_yaml
+
+    def _load_evidence_check_results(self):
+        self.results['evidence_type_check'] = {}
+        if self._evidence_type_check_yaml:
+            with open(self._evidence_type_check_yaml) as open_yaml:
+                self.results['evidence_type_check'] = yaml.safe_load(open_yaml)
+            self.results['evidence_type_check']['report_path'] = self._evidence_type_check_yaml
+
+        self._update_metadata_with_evidence_type()
+
+
 
     def _collect_metadata_results(self):
         self.results['metadata_check'] = {}
@@ -441,7 +465,7 @@ class Validator(AppLogger):
                         file_dict['md5'] = file_path_2_md5.get(file_path) or \
                                            file_name_2_md5.get(file_dict.get('fileName')) or ''
                         file_dict['fileSize'] = file_path_2_file_size.get(file_path) or \
-                                           file_name_2_file_size.get(file_dict.get('fileName')) or ''
+                                                file_name_2_file_size.get(file_dict.get('fileName')) or ''
                         file_rows.append(file_dict)
                 else:
                     self.error('No file found in metadata and multiple analysis alias exist: '
@@ -449,6 +473,29 @@ class Validator(AppLogger):
                 metadata.set_files(file_rows)
             except Exception as e:
                 # Skip adding the md5
+                self.error('Error while loading or parsing metadata json: ' + str(e))
+            metadata.write(self.metadata_json_post_validation)
+        else:
+            self.error(f'Cannot locate the metadata in JSON format in {os.path.join(self.output_dir, "metadata.json")}')
+
+
+    def _update_metadata_with_evidence_type(self):
+        if self.metadata_json_post_validation:
+            metadata = EvaMetadataJson(self.metadata_json_post_validation)
+            try:
+                analysis_data = []
+                if metadata.analyses:
+                    for analysis in metadata.analyses:
+                        analysis_alias = analysis['analysisAlias']
+                        analysis['evidenceType'] = self.results['evidence_type_check'][analysis_alias][
+                            'evidence_type'] if analysis_alias in self.results['evidence_type_check'] else None
+                        analysis_data.append(analysis)
+                else:
+                    self.error('No analyses found in metadata')
+
+                metadata.set_analyses(analysis_data)
+            except Exception as e:
+                # Skip adding the results in case of any exception or error
                 self.error('Error while loading or parsing metadata json: ' + str(e))
             metadata.write(self.metadata_json_post_validation)
         else:
@@ -498,16 +545,18 @@ class Validator(AppLogger):
         return []
 
     def create_reports(self):
+        is_consent_statement_needed = self._check_consent_statement_is_needed_for_submission()
+
         report_html = generate_html_report(self.results, self.validation_date, self.submission_dir,
                                            self.get_vcf_fasta_analysis_mapping(),
-                                           self.project_title)
+                                           self.project_title, is_consent_statement_needed)
         html_path = os.path.join(self.output_dir, 'report.html')
         with open(html_path, "w") as f:
             f.write(report_html)
 
         report_text = generate_text_report(self.results, self.validation_date, self.submission_dir,
                                            self.get_vcf_fasta_analysis_mapping(),
-                                           self.project_title)
+                                           self.project_title, is_consent_statement_needed)
         text_path = os.path.join(self.output_dir, 'report.txt')
         with open(text_path, "w") as f:
             f.write(report_text)
@@ -516,3 +565,11 @@ class Validator(AppLogger):
         self.info(f'View the full report in your browser: {html_path}')
         self.info(f'Or view a text version: {text_path}')
         return html_path, text_path
+
+    def _check_consent_statement_is_needed_for_submission(self):
+        if self.metadata_json_post_validation:
+            metadata = EvaMetadataJson(self.metadata_json_post_validation)
+            return metadata.project.get('taxId') == 9606 and any(
+                v['evidence_type'] == 'genotype' for k, v in self.results['evidence_type_check'].items() if k != 'pass')
+
+        return False

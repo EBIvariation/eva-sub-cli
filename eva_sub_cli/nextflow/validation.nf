@@ -28,6 +28,7 @@ params.executable = [
 // python scripts - installed as part of eva-sub-cli
 params.python_scripts = [
     "samples_checker": "samples_checker.py",
+    "evidence_type_checker": "evidence_type_checker.py",
     "fasta_checker": "check_fasta_insdc.py",
     "xlsx2json": "xlsx2json.py",
     "semantic_checker": "check_metadata_semantics.py",
@@ -99,6 +100,7 @@ workflow {
         metadata_json_validation(metadata_json)
         metadata_semantic_check(metadata_json)
         sample_name_concordance(metadata_json, vcf_files.collect())
+        evidence_type_check(metadata_json)
         insdc_checker(metadata_json, fasta_to_vcfs)
     }
 }
@@ -261,6 +263,25 @@ process sample_name_concordance {
     script:
     """
     $params.python_scripts.samples_checker --metadata_json $metadata_json --vcf_files $vcf_files --output_yaml sample_checker.yml > sample_checker.log 2>&1
+    """
+}
+
+
+process evidence_type_check {
+    publishDir output_dir,
+            overwrite: true,
+            mode: "copy"
+
+    input:
+    path(metadata_json)
+
+    output:
+    path "evidence_type_checker.yml", emit: evidence_type_checker_yml
+    path "evidence_type_checker.log", emit: evidence_type_checker_log
+
+    script:
+    """
+    $params.python_scripts.evidence_type_checker --metadata_json $metadata_json --output_yaml evidence_type_checker.yml > evidence_type_checker.log 2>&1
     """
 }
 

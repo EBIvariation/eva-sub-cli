@@ -57,6 +57,7 @@ class SemanticMetadataChecker(AppLogger):
         self.check_existing_biosamples()
         self.check_all_analysis_run_accessions()
         self.check_analysis_alias_coherence()
+        self.check_all_analysis_contain_samples()
 
     def check_all_project_accessions(self):
         """Check that ENA project accessions exist and are public."""
@@ -288,3 +289,15 @@ class SemanticMetadataChecker(AppLogger):
                     property=json_path,
                     description=f'{",".join(list2_list1)} present in {list2_desc} not in {list1_desc}'
                 )
+
+    def check_all_analysis_contain_samples(self):
+        sample_analysis_aliases_set = set()
+        for sample in self.metadata.get(SAMPLE_KEY, []):
+            for analysis_alias in sample.get(ANALYSIS_ALIAS_KEY, []):
+                sample_analysis_aliases_set.add(analysis_alias)
+
+        for idx, analysis in enumerate(self.metadata.get(ANALYSIS_KEY, [])):
+            analysis_alias = analysis.get(ANALYSIS_ALIAS_KEY)
+            if analysis_alias and analysis_alias not in sample_analysis_aliases_set:
+                json_path = f'/{ANALYSIS_KEY}/{idx}'
+                self.add_error(property=json_path, description=f'No sample found for the analysis. Should have at the least one sample.')

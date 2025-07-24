@@ -168,6 +168,14 @@
             "type": "string",
             "description": "Reference against which the analysis was performed. ENA or NCBI accession (starting with GCA) accepted."
           },
+          "evidenceType": {
+            "type": "string",
+            "description": "The type of evidence (allele frequencies or genotypes) provided in the VCF files of the analysis",
+            "enum": [
+              "genotype",
+              "allele_frequency"
+            ]
+          },
           "referenceFasta": {
             "type": "string",
             "description": "The path to the reference in fasta format that was used to create the VCF. (This is a local path)"
