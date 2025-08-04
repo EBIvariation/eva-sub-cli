@@ -113,6 +113,19 @@ def vcf_check_errors_is_critical(error):
     return True
 
 
+def parse_bcftools_norm_report(norm_report):
+    total = split = realigned = skipped = 0
+    error_list = []
+    with open(norm_report) as open_file:
+        for line in open_file:
+            if line.startswith('Lines   total/split/realigned/skipped:'):
+                # Lines   total/split/realigned/skipped:  2/0/1/0
+                total, split, realigned, skipped = line.strip().split()[-1].split('/')
+            else:
+                error_list.append(line.strip())
+    return error_list, int(total), int(split), int(realigned), int(skipped)
+
+
 def parse_biovalidator_validation_results(metadata_check_file):
     """
     Read the biovalidator's report and extract the list of validation errors
