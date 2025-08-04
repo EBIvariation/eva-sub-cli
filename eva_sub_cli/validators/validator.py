@@ -16,7 +16,7 @@ from eva_sub_cli.metadata import EvaMetadataJson
 from eva_sub_cli.report import generate_html_report, generate_text_report
 from eva_sub_cli.validators.validation_results_parsers import parse_assembly_check_log, parse_assembly_check_report, \
     parse_biovalidator_validation_results, convert_metadata_sheet, convert_metadata_row, convert_metadata_attribute, \
-    parse_vcf_check_report, parse_metadata_property
+    parse_vcf_check_report, parse_metadata_property, parse_bcftools_norm_report
 
 VALIDATION_OUTPUT_DIR = "validation_output"
 VALIDATION_RESULTS_KEY = 'validation_results'
@@ -167,6 +167,7 @@ class Validator(AppLogger):
             self._collect_trim_down_metrics()
         self._collect_vcf_check_results()
         self._collect_assembly_check_results()
+        self._collect_norm_check_results()
         self._load_sample_check_results()
         self._load_evidence_check_results()
         self._load_fasta_check_results()
@@ -249,6 +250,10 @@ class Validator(AppLogger):
             os.path.join(self.output_dir, 'assembly_check', vcf_name + '*text_assembly_report*')
         )
 
+    @lru_cache
+    def _normalisation_log(self, vcf_name):
+        return resolve_single_file_path(os.path.join(self.output_dir, 'normalisation', vcf_name + '_bcftools_norm.log'))
+
     @cached_property
     def _sample_check_yaml(self):
         return resolve_single_file_path(os.path.join(self.output_dir, 'other_validations', 'sample_checker.yml'))
@@ -310,6 +315,25 @@ class Validator(AppLogger):
                 'total': total
             }
 
+    def _collect_norm_check_results(self):
+        self.results['norm_check'] = {}
+        for vcf_file in self.vcf_files:
+            vcf_name = os.path.basename(vcf_file)
+            normalisation_log = self._normalisation_log(vcf_name)
+            if normalisation_log:
+                error_list, nb_total, nb_split, nb_realigned, nb_skipped = parse_bcftools_norm_report(normalisation_log)
+            else:
+                error_list, nb_total, nb_split, nb_realigned, nb_skipped = (['Process failed'], 0, 0, 0, 0)
+            self.results['norm_check'][vcf_name] = {
+                'report_path': normalisation_log,
+                'error_list': error_list,
+                'nb_error': len(error_list),
+                'nb_total': nb_total,
+                'nb_split': nb_split,
+                'nb_realigned': nb_realigned,
+                'nb_skipped': nb_skipped
+            }
+
     def _load_fasta_check_results(self):
         for fasta_file in self.fasta_files:
             fasta_file_name = os.path.basename(fasta_file)
@@ -337,8 +361,6 @@ class Validator(AppLogger):
             self.results['evidence_type_check']['report_path'] = self._evidence_type_check_yaml
 
         self._update_metadata_with_evidence_type()
-
-
 
     def _collect_metadata_results(self):
         self.results['metadata_check'] = {}
