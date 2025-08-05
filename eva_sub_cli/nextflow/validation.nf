@@ -191,14 +191,14 @@ process check_vcf_normalised {
 
     output:
     // TODO should we output the normalised file?
-    path "normalisation/*.log", emit: normalisation_log
+    path "norm_check/*.log", emit: normalisation_log
 
 	script:
 	"""
 	trap 'if [[ \$? == 1 ]]; then exit 0; fi' EXIT
 
-	mkdir normalisation
-    $params.executable.bcftools norm --no-version -cw -f $fasta -O u $vcf 2> normalisation/${vcf.getBaseName()}_bcftools_norm.log
+	mkdir norm_check
+    $params.executable.bcftools norm --no-version -cw -f $fasta -O u $vcf 2> norm_check/${vcf.getBaseName()}_bcftools_norm.log
     """
 }
 

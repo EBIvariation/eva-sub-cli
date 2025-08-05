@@ -29,7 +29,8 @@ For requirements, please refer to the EVA website (https://www.ebi.ac.uk/eva/?Su
 
 VCF VALIDATION RESULTS
 Checks whether each file is compliant with the VCF specification (http://samtools.github.io/hts-specs/VCFv4.4.pdf).
-Also checks whether the variants' reference alleles match against the reference assembly.
+Also checks whether the variants' reference alleles match against the reference assembly, and whether the file can be
+normalised (if necessary) using bcftools norm (https://samtools.github.io/bcftools/bcftools.html#norm).
 
 {% for file_name in vcf_files %}
 {% if file_name != "pass"%}

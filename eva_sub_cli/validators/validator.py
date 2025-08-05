@@ -153,7 +153,7 @@ class Validator(AppLogger):
         """ Checks if all the validation are passed """
         return all((
             all((value.get('pass', False) is True for key, value in self.results.items() if
-                 key in ['vcf_check', 'assembly_check', 'fasta_check', 'sample_check', 'metadata_check', 'evidence_type_check'])),
+                 key in ['vcf_check', 'assembly_check', 'fasta_check', 'sample_check', 'norm_check', 'metadata_check', 'evidence_type_check'])),
             any((
                 self.results['shallow_validation']['requested'] is False,
                 self.results['shallow_validation'].get('required', True) is False
@@ -189,6 +189,11 @@ class Validator(AppLogger):
         asm_nb_error_result = all((asm_check.get('nb_error', 1) == 0
                                    for vcf_name, asm_check in self.results.get('assembly_check', {}).items()))
         self.results['assembly_check']['pass'] = asm_nb_mismatch_result and asm_nb_error_result
+
+        # norm_check result
+        norm_check_result = all((norm_check.get('nb_error', 1) == 0
+                                 for vcf_name, norm_check in self.results.get('norm_check', {}).items()))
+        self.results['norm_check']['pass'] = norm_check_result
 
         # fasta_check result
         fasta_check_result = all((fa_file_check.get('all_insdc', False) is True
@@ -252,7 +257,7 @@ class Validator(AppLogger):
 
     @lru_cache
     def _normalisation_log(self, vcf_name):
-        return resolve_single_file_path(os.path.join(self.output_dir, 'normalisation', vcf_name + '_bcftools_norm.log'))
+        return resolve_single_file_path(os.path.join(self.output_dir, 'norm_check', vcf_name + '_bcftools_norm.log'))
 
     @cached_property
     def _sample_check_yaml(self):
