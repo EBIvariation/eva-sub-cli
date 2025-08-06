@@ -40,10 +40,15 @@ To upgrade to the newest version, run `pip install --upgrade eva-sub-cli`.
 
 ## 3. From source natively
 
+Advanced users who want to manage their dependencies in a more granular way can install from source natively.
 This installation method requires the following:
 * Python 3.8+
 * [Nextflow](https://www.nextflow.io/docs/latest/getstarted.html) 21.10+
 * [biovalidator](https://github.com/elixir-europe/biovalidator) 2.1.0+
 * [vcf-validator](https://github.com/EBIvariation/vcf-validator) 0.9.7+
+* [bcftools](https://www.htslib.org/download/) 1.14+
 
-Install each of these and ensure they are included in your PATH. Then install the latest eva-sub-cli release as previously described.
+Install each of these and ensure they are included in your PATH. Then install the latest eva-sub-cli release from [PyPI](https://pypi.org/project/eva-sub-cli/):
+```bash
+pip install eva-sub-cli
+```
