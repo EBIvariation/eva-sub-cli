@@ -8,6 +8,9 @@ WORKDIR /opt
 # Install JAVA and Node
 RUN apt update && apt install -y default-jdk nodejs npm
 
+# Install bcftools
+RUN apt install -y bcftools
+
 # Install VCF validator
 RUN curl -LJo /usr/local/bin/vcf_validator  https://github.com/EBIvariation/vcf-validator/releases/download/v${vcf_validator_version}/vcf_validator_linux \
     && curl -LJo /usr/local/bin/vcf_assembly_checker  https://github.com/EBIvariation/vcf-validator/releases/download/v${vcf_validator_version}/vcf_assembly_checker_linux \
