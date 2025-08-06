@@ -158,7 +158,7 @@ class TestDockerValidator(TestCase):
             {'analysisAlias': 'AA', 'fileName': 'input_passed.vcf', 'fileType': 'vcf',
              'md5': '96a80c9368cc3c37095c86fbe6044fb2', 'fileSize': 45050}
         ]
-        expected_metadata_val = 'must match pattern "^PRJ(EB|NA)\\d+$"'
+        expected_metadata_val = 'must match pattern "^PRJ(E|D|N)[A-Z][0-9]+$"'
         expected_semantic_val = {'description': 'SAME123 does not exist or is private',
                                           'property': '/sample/0/bioSampleAccession'}
 
