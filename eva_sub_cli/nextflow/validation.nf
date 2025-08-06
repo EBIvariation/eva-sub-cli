@@ -195,10 +195,10 @@ process check_vcf_normalised {
 
 	script:
 	"""
-	trap 'if [[ \$? == 1 ]]; then exit 0; fi' EXIT
-
 	mkdir norm_check
-    $params.executable.bcftools norm --no-version -cw -f $fasta -O u $vcf 2> norm_check/${vcf.getBaseName()}_bcftools_norm.log
+	# Trap exit code so failures can be reported
+    $params.executable.bcftools norm --no-version -cw -f $fasta -O u $vcf 2> norm_check/${vcf}_bcftools_norm.log \
+        || echo "exit code \$?"
     """
 }
 
