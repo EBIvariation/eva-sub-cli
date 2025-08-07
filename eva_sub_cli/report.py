@@ -19,7 +19,7 @@ def generate_report(validation_results, validation_date, submission_dir, vcf_fas
                     consent_statement_required, subdir, template_file):
     results_for_report = {k: v for k, v in validation_results.items() if k != 'ready_for_submission_to_eva'}
     vcf_files = sorted(set([file_name
-                            for check in results_for_report if check in ["vcf_check", "assembly_check"]
+                            for check in results_for_report if check in ["vcf_check", "assembly_check", "norm_check"]
                             for file_name in results_for_report[check]
                             ]))
     fasta_files = sorted([file_name for file_name in results_for_report['fasta_check']])

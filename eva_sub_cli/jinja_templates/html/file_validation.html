@@ -6,6 +6,8 @@
             {{ assembly_check(result) }}
         {% elif check_type == "vcf_check" %}
             {{ vcf_check(result) }}
+        {% elif check_type == "norm_check" %}
+            {{ norm_check(result) }}
         {% endif %}
     {% endfor %}
 {%- endmacro %}
@@ -90,4 +92,33 @@
     {% endif %}
 {%- endmacro %}
 
+{% macro norm_check(norm_check_result) %}
+    {% set error_count = norm_check_result.get("nb_error", 0) %}
+    {% set expand_icon = "" %}
+    {% if error_count > 0 %}
+        {% set expand_icon = "&#9654;" %}
+        {% set icon = "&#10060;" %}
+        {% set row_class = "report-section fail collapsible" %}
+    {% else %}
+        {% set icon = "&#10004;" %}
+        {% set row_class = "report-section pass" %}
+    {% endif %}
+    <div class='{{ row_class }}'><span class="expand_icon">{{ expand_icon }}</span> {{ icon }} Normalisation check: {{ error_count }} errors ({{ norm_check_result.get("nb_total", 0) }} total lines: {{ norm_check_result.get("nb_split", 0) }} split, {{ norm_check_result.get("nb_realigned", 0) }} realigned, {{ norm_check_result.get("nb_skipped", 0) }} skipped)</div>
+    {% set error_list = norm_check_result.get("error_list") %}
 
+    {% if error_list%}
+        <div class="error-list">
+            <div class="error-description">First 10 errors are below. <strong>Full report:</strong> {{ norm_check_result.get('report_path', '') }}</div>
+            <table>
+                <tr>
+                    <th>Category</th><th>Error</th>
+                </tr>
+                {% for error in error_list[:10] %}
+                    <tr>
+                        <td><strong>Error</strong></td><td> {{ error }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    {% endif %}
+{%- endmacro %}
