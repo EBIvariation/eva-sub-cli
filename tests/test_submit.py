@@ -79,8 +79,10 @@ class TestSubmit(unittest.TestCase):
         assert is_submission_dir_writable(self.test_sub_dir)
         assert not os.path.exists(self.config_file)
         sub_config = WritableConfig(self.config_file, version='version1.0')
+        sub_config.set('metadata_json', value=os.path.join(self.resource_dir, 'EVA_Submission_test.json'))
         sub_config.set(READY_FOR_SUBMISSION_TO_EVA, value=True)
         sub_config.write()
+        self.submitter = StudySubmitter(submission_dir=self.test_sub_dir, submission_config=sub_config)
 
         test_submission_ws_client = SubmissionWSClient()
 
