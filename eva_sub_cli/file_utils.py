@@ -35,6 +35,30 @@ def is_vcf_file(file_path):
         return file_path.endswith('.vcf') or file_path.endswith('.vcf.gz')
     return False
 
+def associate_vcf_path_with_analysis(metadata, vcf_files):
+    """
+    Match the files names associated with analysis provided in the metadata with the given file path
+
+    :param vcf_files the list of full path to the vcf files
+    :param files_per_analysis: dictionary of the analysis and their associated VCF file names
+    :returns dictionary of analysis and their associated vcf file path
+    """
+    result_files_per_analysis = dict()
+    for analysis in metadata.files_per_analysis:
+        result_files_per_analysis[analysis] = []
+    for vcf_file in vcf_files:
+        analysis_aliases = metadata.get_analysis_for_vcf_file(vcf_file)
+        if len(analysis_aliases) == 1:
+            result_files_per_analysis[analysis_aliases[0]].append(vcf_file)
+        elif len(analysis_aliases) == 0:
+            logger.error(f'No analysis found for vcf {vcf_file}')
+            if 'No analysis' not in result_files_per_analysis:
+                result_files_per_analysis['No analysis'] = []
+            result_files_per_analysis['No analysis'].append(vcf_file)
+        else:
+            logger.error(f'More than one analysis were match to vcf {vcf_file}')
+
+    return result_files_per_analysis
 
 def detect_vcf_evidence_type(vcf_file):
     """

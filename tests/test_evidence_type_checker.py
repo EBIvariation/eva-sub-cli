@@ -21,7 +21,12 @@ class TestEvidenceTypeChecker(TestCase):
         metadata_json = os.path.join(working_dir, 'metadata.json')
         # Change to working_dir so filenames in metadata.json are resolvable
         os.chdir(working_dir)
-        self.run_and_assert_evidence_type_check(metadata_json)
+        vcf_files = [
+            os.path.join(working_dir, file_name)
+            for file_name in ['example1.vcf.gz', 'example2.vcf', 'example3.vcf']
+        ]
+
+        self.run_and_assert_evidence_type_check(metadata_json, vcf_files)
 
     def test_evidence_check_absolute_paths(self):
         working_dir = os.path.join(self.resource_dir, 'sample_checker')
@@ -39,18 +44,17 @@ class TestEvidenceTypeChecker(TestCase):
         updated_metadata = os.path.join(working_dir, 'updated_metadata.json')
         metadata.write(updated_metadata)
 
-        self.run_and_assert_evidence_type_check(updated_metadata)
+        self.run_and_assert_evidence_type_check(updated_metadata, vcf_files)
 
         if os.path.exists(updated_metadata):
             os.remove(updated_metadata)
 
-    def run_and_assert_evidence_type_check(self, metadata_json):
-        check_evidence_type(metadata_json, self.output_yaml)
-        failing_vcf = os.path.join(self.resource_dir,'sample_checker','example1.vcf.gz.tbi')
+    def run_and_assert_evidence_type_check(self, metadata_json, vcf_files):
+        check_evidence_type(metadata_json, vcf_files, self.output_yaml)
         expected_results = {
             'VD1': {
-                'errors': f'VCF file evidence type could not be determined: {failing_vcf}',
-                'evidence_type': None
+                'evidence_type': 'genotype',
+                'errors': None
             },
             'VD2': {
                 'evidence_type': 'genotype',
