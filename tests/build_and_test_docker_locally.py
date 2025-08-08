@@ -141,13 +141,14 @@ class TestDockerValidator(TestCase):
         expected_metadata_val = 'Validation passed successfully.'
         expected_semantic_val = {'description': 'SAME123 does not exist or is private',
                                  'property': '/sample/0/bioSampleAccession'}
+        expected_evidence_type_val = {'AA': {'evidence_type': 'genotype', 'errors': None}}
         expected_metadata_files_json = [
             {'analysisAlias': 'AA', 'fileName': 'input_passed.vcf', 'fileType': 'vcf',
              'md5': '96a80c9368cc3c37095c86fbe6044fb2', 'fileSize': 45050}
         ]
 
         self.assert_validation_results(self.validator, expected_sample_checker, expected_metadata_files_json,
-                                       expected_metadata_val, expected_semantic_val)
+                                       expected_metadata_val, expected_semantic_val, expected_evidence_type_val)
 
     def test_validate_with_xlsx(self):
         self.xlsx_validator.validate()
@@ -156,13 +157,14 @@ class TestDockerValidator(TestCase):
         expected_metadata_val = 'Validation passed successfully.'
         expected_semantic_val = {'description': 'SAME123 does not exist or is private',
                                  'property': '/sample/0/bioSampleAccession'}
+        expected_evidence_type_val = {'AA': {'evidence_type': 'genotype', 'errors': None}}
         expected_metadata_files_json = [
             {'analysisAlias': 'AA', 'fileName': 'input_passed.vcf',
              'md5': '96a80c9368cc3c37095c86fbe6044fb2', 'fileSize': 45050}
         ]
 
         self.assert_validation_results(self.xlsx_validator, expected_sample_checker, expected_metadata_files_json,
-                                       expected_metadata_val, expected_semantic_val)
+                                       expected_metadata_val, expected_semantic_val, expected_evidence_type_val)
 
     def get_submission_json_metadata(self):
         return {
@@ -230,7 +232,7 @@ class TestDockerValidator(TestCase):
         return docker_cmd
 
     def assert_validation_results(self, validator, expected_sample_checker, expected_metadata_files_json,
-                                  expected_metadata_val, expected_semantic_val):
+                                  expected_metadata_val, expected_semantic_val, expected_evidence_type_val):
         vcf_format_dir = os.path.join(validator.output_dir, 'vcf_format')
         self.assertTrue(os.path.exists(vcf_format_dir))
 
@@ -260,7 +262,10 @@ class TestDockerValidator(TestCase):
             self.assertEqual('[info] Percentage of matches: 100%\n', assembly_check_logs[5])
 
         # Assert Samples concordance
-        self.assert_sample_checker(validator._sample_check_yaml, expected_sample_checker)
+        self.assert_yaml_file(validator._sample_check_yaml, expected_sample_checker)
+
+        # assert evidence type check
+        self.assert_yaml_file(validator._evidence_type_check_yaml, expected_evidence_type_val)
 
         with open(validator.metadata_json_post_validation) as open_file:
             json_data = json.load(open_file)
@@ -278,10 +283,10 @@ class TestDockerValidator(TestCase):
             semantic_output = yaml.safe_load(open_yaml)
             assert semantic_output[0] == expected_semantic_val
 
-    def assert_sample_checker(self, sample_checker_file, expected_checker):
-        self.assertTrue(os.path.isfile(sample_checker_file))
-        with open(sample_checker_file) as open_yaml:
-            self.assert_same_dict_and_unordered_list(yaml.safe_load(open_yaml), expected_checker)
+    def assert_yaml_file(self, yaml_file, expected_data):
+        self.assertTrue(os.path.isfile(yaml_file))
+        with open(yaml_file) as open_yaml:
+            self.assert_same_dict_and_unordered_list(yaml.safe_load(open_yaml), expected_data)
 
     def assert_same_dict_and_unordered_list(self, o1, o2):
         if isinstance(o1, dict) and isinstance(o2, dict):

@@ -5,7 +5,7 @@ from ebi_eva_common_pyutils.logger import logging_config
 
 import yaml
 
-from eva_sub_cli.file_utils import open_gzip_if_required, detect_vcf_evidence_type
+from eva_sub_cli.file_utils import open_gzip_if_required, detect_vcf_evidence_type, associate_vcf_path_with_analysis
 from eva_sub_cli.metadata import EvaMetadataJson
 
 logger = logging_config.get_logger(__name__)
@@ -97,32 +97,6 @@ def need_to_check_samples(sample_name_per_file):
             return False
 
     return True
-
-
-def associate_vcf_path_with_analysis(metadata, vcf_files):
-    """
-    Match the files names associated with analysis provided in the metadata with the file path given on the command
-    line.
-    :param vcf_files the list of full path to the vcf files
-    :param files_per_analysis: dictionary of the analysis and their associated VCF file names
-    :returns dictionary of analysis and their associated vcf file path
-    """
-    result_files_per_analysis = dict()
-    for analysis in metadata.files_per_analysis:
-        result_files_per_analysis[analysis] = []
-    for vcf_file in vcf_files:
-        analysis_aliases = metadata.get_analysis_for_vcf_file(vcf_file)
-        if len(analysis_aliases) == 1:
-            result_files_per_analysis[analysis_aliases[0]].append(vcf_file)
-        elif len(analysis_aliases) == 0:
-            logger.error(f'No analysis found for vcf {vcf_file}')
-            if 'No analysis' not in result_files_per_analysis:
-                result_files_per_analysis['No analysis'] = []
-            result_files_per_analysis['No analysis'].append(vcf_file)
-        else:
-            logger.error(f'More than one analysis were match to vcf {vcf_file}')
-
-    return result_files_per_analysis
 
 
 def write_result_yaml(output_yaml, overall_differences, results_per_analysis_alias):

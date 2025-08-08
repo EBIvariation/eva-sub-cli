@@ -100,7 +100,7 @@ workflow {
         metadata_json_validation(metadata_json)
         metadata_semantic_check(metadata_json)
         sample_name_concordance(metadata_json, vcf_files.collect())
-        evidence_type_check(metadata_json)
+        evidence_type_check(metadata_json, vcf_files.collect())
         insdc_checker(metadata_json, fasta_to_vcfs)
     }
 }
@@ -274,6 +274,7 @@ process evidence_type_check {
 
     input:
     path(metadata_json)
+    path(vcf_files)
 
     output:
     path "evidence_type_checker.yml", emit: evidence_type_checker_yml
@@ -281,7 +282,7 @@ process evidence_type_check {
 
     script:
     """
-    $params.python_scripts.evidence_type_checker --metadata_json $metadata_json --output_yaml evidence_type_checker.yml > evidence_type_checker.log 2>&1
+    $params.python_scripts.evidence_type_checker --metadata_json $metadata_json --vcf_files $vcf_files --output_yaml evidence_type_checker.yml > evidence_type_checker.log 2>&1
     """
 }
 
