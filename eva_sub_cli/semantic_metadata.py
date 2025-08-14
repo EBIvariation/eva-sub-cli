@@ -249,7 +249,7 @@ class SemanticMetadataChecker(AppLogger):
             self.add_error(json_path, f'Existing sample {accession} does not have a valid collection date')
 
         found_geo_loc = False
-        for key in ['geographic location (country and/or sea)', 'geo loc name']:
+        for key in ['geographic location (country and/or sea)', 'geo loc name', 'geo_loc_name']:
             if key in sample_data['characteristics'] and sample_data['characteristics'][key][0]['text']:
                 found_geo_loc = True
         if not found_geo_loc:

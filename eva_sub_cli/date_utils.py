@@ -1,10 +1,11 @@
 import datetime
 
 # Values coming from https://www.ebi.ac.uk/ena/browser/view/ERC000011
-not_provided_check_list = ['not provided', 'not collected', 'restricted access', 'missing: control sample',
-                           'missing: sample group', 'missing: synthetic construct', 'missing: lab stock',
-                           'missing: third party data', 'missing: data agreement established pre-2023',
-                           'missing: endangered species', 'missing: human-identifiable']
+not_provided_check_list = ['not applicable', 'not collected', 'not provided', 'restricted access',
+                           'missing: control sample', 'missing: sample group', 'missing: synthetic construct',
+                           'missing: lab stock', 'missing: third party data',
+                           'missing: data agreement established pre-2023', 'missing: endangered species',
+                           'missing: human-identifiable', 'missing']
 
 
 def check_date(date):
