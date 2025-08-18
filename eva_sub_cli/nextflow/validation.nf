@@ -197,7 +197,7 @@ process check_vcf_normalised {
 	"""
 	mkdir norm_check
 	# Trap exit code so failures can be reported
-    $params.executable.bcftools norm --no-version -cw -f $fasta -O u $vcf 2> norm_check/${vcf}_bcftools_norm.log \
+    $params.executable.bcftools norm --no-version -cw -f $fasta -O u $vcf 1> /dev/null 2> norm_check/${vcf}_bcftools_norm.log \
         || echo "exit code \$?"
     """
 }
