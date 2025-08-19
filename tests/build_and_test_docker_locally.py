@@ -233,13 +233,12 @@ class TestDockerValidator(TestCase):
 
     def assert_validation_results(self, validator, expected_sample_checker, expected_metadata_files_json,
                                   expected_metadata_val, expected_semantic_val, expected_evidence_type_val):
+        # Assert VCF format check
         vcf_format_dir = os.path.join(validator.output_dir, 'vcf_format')
         self.assertTrue(os.path.exists(vcf_format_dir))
-
-        vcf_format_log_file = os.path.join(vcf_format_dir, 'input_passed.vcf.vcf_format.log')
-        self.assertTrue(os.path.exists(vcf_format_log_file))
-
-        with open(vcf_format_log_file) as vcf_format_log_file:
+        vcf_format_log_path = os.path.join(vcf_format_dir, 'input_passed.vcf.vcf_format.log')
+        self.assertTrue(os.path.exists(vcf_format_log_path))
+        with open(vcf_format_log_path) as vcf_format_log_file:
             vcf_format_logs = vcf_format_log_file.readlines()
             self.assertEqual('[info] According to the VCF specification, the input file is valid\n',
                              vcf_format_logs[2])
@@ -249,17 +248,23 @@ class TestDockerValidator(TestCase):
                 self.assertEqual('According to the VCF specification, the input file is valid\n',
                                  text_report_content[0])
 
-        # assert assembly report
+        # Assert assembly report check
         assembly_check_dir = os.path.join(validator.output_dir, 'assembly_check')
         self.assertTrue(os.path.exists(assembly_check_dir))
-
-        assembly_check_log_file = os.path.join(assembly_check_dir, 'input_passed.vcf.assembly_check.log')
-        self.assertTrue(os.path.exists(assembly_check_log_file))
-
-        with open(assembly_check_log_file) as assembly_check_log_file:
+        assembly_check_log_path = os.path.join(assembly_check_dir, 'input_passed.vcf.assembly_check.log')
+        self.assertTrue(os.path.exists(assembly_check_log_path))
+        with open(assembly_check_log_path) as assembly_check_log_file:
             assembly_check_logs = assembly_check_log_file.readlines()
             self.assertEqual('[info] Number of matches: 247/247\n', assembly_check_logs[4])
             self.assertEqual('[info] Percentage of matches: 100%\n', assembly_check_logs[5])
+
+        # Assert normalisation check
+        norm_check_dir = os.path.join(validator.output_dir, 'norm_check')
+        self.assertTrue(os.path.exists(norm_check_dir))
+        norm_check_log_path = os.path.join(norm_check_dir, 'input_passed.vcf_bcftools_norm.log')
+        with open(norm_check_log_path) as norm_check_log_file:
+            norm_check_logs = norm_check_log_file.readlines()
+            self.assertEqual('[E::faidx_adjust_position] The sequence "1" was not found\n', norm_check_logs[0])
 
         # Assert Samples concordance
         self.assert_yaml_file(validator._sample_check_yaml, expected_sample_checker)

@@ -23,7 +23,8 @@ params.metadata_xlsx = null
 params.executable = [
     "vcf_validator": "vcf_validator",
     "vcf_assembly_checker": "vcf_assembly_checker",
-    "biovalidator": "biovalidator"
+    "biovalidator": "biovalidator",
+    "bcftools": "bcftools"
 ]
 // python scripts - installed as part of eva-sub-cli
 params.python_scripts = [
@@ -83,10 +84,10 @@ workflow {
     // VCF checks
     check_vcf_valid(vcf_and_ref_ch)
     check_vcf_reference(vcf_and_ref_ch)
+    check_vcf_normalised(vcf_and_ref_ch)
 
     generate_file_size_and_md5_digests(vcf_files)
     collect_file_size_and_md5(generate_file_size_and_md5_digests.out.file_size_and_digest_info.collect())
-
 
     // Metadata conversion
     if (params.metadata_xlsx && !params.metadata_json){
@@ -174,6 +175,30 @@ process check_vcf_reference {
 
     mkdir -p assembly_check
     $params.executable.vcf_assembly_checker -i $vcf -f $fasta $report_opt -r summary,text  -o assembly_check --require-genbank > assembly_check/${vcf}.assembly_check.log 2>&1
+    """
+}
+
+/*
+ * Check that the VCF file can be normalised using bcftools
+ */
+process check_vcf_normalised {
+	publishDir output_dir,
+            overwrite: true,
+            mode: "copy"
+
+    input:
+    tuple path(vcf), path(fasta), path(report)
+
+    output:
+    // TODO should we output the normalised file?
+    path "norm_check/*.log", emit: normalisation_log
+
+	script:
+	"""
+	mkdir norm_check
+	# Trap exit code so failures can be reported
+    $params.executable.bcftools norm --no-version -cw -f $fasta -O u $vcf 1> /dev/null 2> norm_check/${vcf}_bcftools_norm.log \
+        || echo "exit code \$?"
     """
 }
 

@@ -70,7 +70,8 @@
     <h2>VCF validation results</h2>
     <div class="description">
         Checks whether each file is compliant with the <a href="http://samtools.github.io/hts-specs/VCFv4.4.pdf" target=”_blank”>VCF specification</a>.
-        Also checks whether the variants' reference alleles match against the reference assembly.
+        Also checks whether the variants' reference alleles match against the reference assembly,
+        and whether the file can be normalised (if necessary) using <a href="https://samtools.github.io/bcftools/bcftools.html#norm" target="blank">bcftools norm</a>.
     </div>
     {% for file_name in vcf_files %}
         {% if file_name != "pass"%}

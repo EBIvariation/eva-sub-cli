@@ -65,7 +65,8 @@ For requirements, please refer to the EVA website (https://www.ebi.ac.uk/eva/?Su
 -
 VCF VALIDATION RESULTS
 Checks whether each file is compliant with the VCF specification (http://samtools.github.io/hts-specs/VCFv4.4.pdf).
-Also checks whether the variants' reference alleles match against the reference assembly.
+Also checks whether the variants' reference alleles match against the reference assembly, and whether the file can be
+normalised (if necessary) using bcftools norm (https://samtools.github.io/bcftools/bcftools.html#norm).
 	input_fail.vcf
 		❌ Assembly check: 26/36 (72.22%)
 		First 10 errors per category are below. Full report: /path/to/assembly_failed/report
@@ -83,9 +84,16 @@ Also checks whether the variants' reference alleles match against the reference 
 		First 10 errors per category are below. Full report: /path/to/vcf_failed/report
 			Critical error: Line 4: Error in meta-data section.
 			Non-critical error: Sample #11, field AD does not match the meta specification Number=R (expected 2 value(s)). AD=..
+		❌ Normalisation check: 4 errors (152 total lines: 0 split, 0 realigned, 0 skipped)
+		First 10 errors are below. Full report: /path/to/vcf_failed/norm/log
+			Error: NON_ACGTN_ALT	chr1	49338976	]chr1:49277505]T
+			Error: NON_ACGTN_ALT	chr1	49997014	TAT[chr1:50014208[
+			Error: NON_ACGTN_ALT	chr1	50014208	]chr1:49997014]ATT
+			Error: NON_ACGTN_ALT	chr1	191611692	[chr8:41723769[A
 	input_passed.vcf
 		✔ Assembly check: 247/247 (100.0%)
 		✔ VCF check: 0 critical errors, 0 non-critical errors
+		✔ Normalisation check: 0 errors (152 total lines: 0 split, 0 realigned, 0 skipped)
 -
 SAMPLE NAME CONCORDANCE CHECK
 Checks whether information in the metadata is concordant with that contained in the VCF files, in particular sample names.
