@@ -132,5 +132,5 @@ class TestFastaChecker(TestCase):
     @pytest.mark.integration
     def test_get_containing_assemblies(self):
         results = get_containing_assemblies('6ac8f815bf8e845bb3031b73f812c012')
-        assert len(results) == 14
+        assert len(results) == 15
         assert 'GCA_000001405.29' in results
