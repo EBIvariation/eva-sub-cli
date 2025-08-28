@@ -130,6 +130,7 @@ def get_project_and_vcf_fasta_mapping_from_metadata_json(metadata_json, mapping_
 
 def get_sub_cli_version():
     if version.parse(eva_sub_cli.__version__).is_devrelease:
+        print(version.parse(eva_sub_cli.__version__).base_version)
         major, minor, patch = map(int, version.parse(eva_sub_cli.__version__).base_version.split('.'))
         if patch > 0:
             patch -= 1
