@@ -160,7 +160,7 @@ def get_metadata_xlsx_template_link():
     sub_cli_version = get_sub_cli_version()
     sub_cli_tags = get_sub_cli_github_tags()
     if sub_cli_version in sub_cli_tags:
-        return f'https://raw.githubusercontent.com/EBIvariation/eva-sub-cli/v{sub_cli_version}/eva-sub-cli/eva_sub_cli/etc/EVA_Submission_template.xlsx'
+        return f'https://raw.githubusercontent.com/EBIvariation/eva-sub-cli/refs/tags/v{sub_cli_version}/eva_sub_cli/etc/EVA_Submission_template.xlsx'
     else:
         return 'https://raw.githubusercontent.com/EBIvariation/eva-sub-cli/main/eva_sub_cli/etc/EVA_Submission_template.xlsx'
 
