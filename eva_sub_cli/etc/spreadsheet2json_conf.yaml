@@ -93,7 +93,7 @@ Sample:
     Subject: subject
     Derived From: derivedFrom
     Taxonomy ID: taxId
-    Scientific Name: scientificName
+    Scientific Name: scientific name
     Common Name: commonName
     mating_type: mating_type
     sex: sex
@@ -107,7 +107,7 @@ Sample:
     culture_collection: culture_collection
     specimen_voucher: specimen_voucher
     collected_by: collected_by
-    collection_date: collection_date
+    collection_date: collection date
     geographic location (country and/or sea): geographic location (country and/or sea)
     geographic location (region and locality): geographic location (region and locality)
     host: host

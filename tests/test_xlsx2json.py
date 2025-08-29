@@ -221,7 +221,7 @@ class TestXlsReader(TestCase):
                             "taxId": [
                                 {"text": "9447"}
                             ],
-                            "scientificName": [
+                            "scientific name": [
                                 {"text": "Lemur catta"}
                             ],
                             "sex": [
@@ -233,7 +233,7 @@ class TestXlsReader(TestCase):
                             "species": [
                                 {"text": "Lemur catta"}
                             ],
-                            'collection_date': [
+                            'collection date': [
                                 {'text': '2021-03-12'}
                             ]
                         }
