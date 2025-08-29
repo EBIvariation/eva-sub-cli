@@ -55,7 +55,8 @@ class TestXlsReader(TestCase):
         with open(output_json) as open_file:
             json_data = json.load(open_file)
             # assert json file is created with expected data
-            assert sorted(json_data.keys()) == ['analysis', 'files', 'project', 'sample', 'submitterDetails']
+            assert sorted(json_data.keys()) == ['$schema', 'analysis', 'files', 'project', 'sample', 'submitterDetails']
+            json_data.pop('$schema', None)
             self.assertEqual(self.get_expected_json(), json_data)
 
         # assert json schema
@@ -94,7 +95,7 @@ class TestXlsReader(TestCase):
         assert os.path.exists(output_json)
         with open(output_json) as open_file:
             json_data = json.load(open_file)
-            assert sorted(json_data.keys()) == ['analysis', 'files', 'project', 'sample', 'submitterDetails']
+            assert sorted(json_data.keys()) == ['$schema', 'analysis', 'files', 'project', 'sample', 'submitterDetails']
             # required field taxId is missing
             assert 'taxId' not in json_data['project']
             # novel sample is missing scientific name in characteristics and sample name
@@ -220,19 +221,19 @@ class TestXlsReader(TestCase):
                             "taxId": [
                                 {"text": "9447"}
                             ],
-                            "scientificName": [
+                            "scientific name": [
                                 {"text": "Lemur catta"}
                             ],
                             "sex": [
                                 {"text": "Female"}
                             ],
-                            "tissueType": [
+                            "tissue_type": [
                                 {"text": "skin"}
                             ],
                             "species": [
                                 {"text": "Lemur catta"}
                             ],
-                            'collectionDate': [
+                            'collection date': [
                                 {'text': '2021-03-12'}
                             ]
                         }

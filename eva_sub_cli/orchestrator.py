@@ -130,7 +130,10 @@ def get_project_and_vcf_fasta_mapping_from_metadata_json(metadata_json, mapping_
 
 def get_sub_cli_version():
     if version.parse(eva_sub_cli.__version__).is_devrelease:
-        major, minor, patch = map(int, version.parse(eva_sub_cli.__version__).base_version.split('.'))
+        version_values = [int(v) for v in version.parse(eva_sub_cli.__version__).base_version.split('.')]
+        major = version_values[0]
+        minor = version_values[1] if len(version_values) > 1 else 0
+        patch = version_values[2] if len(version_values) > 2 else 0
         if patch > 0:
             patch -= 1
         elif minor > 0:
@@ -160,7 +163,7 @@ def get_metadata_xlsx_template_link():
     sub_cli_version = get_sub_cli_version()
     sub_cli_tags = get_sub_cli_github_tags()
     if sub_cli_version in sub_cli_tags:
-        return f'https://raw.githubusercontent.com/EBIvariation/eva-sub-cli/v{sub_cli_version}/eva-sub-cli/eva_sub_cli/etc/EVA_Submission_template.xlsx'
+        return f'https://raw.githubusercontent.com/EBIvariation/eva-sub-cli/refs/tags/v{sub_cli_version}/eva_sub_cli/etc/EVA_Submission_template.xlsx'
     else:
         return 'https://raw.githubusercontent.com/EBIvariation/eva-sub-cli/main/eva_sub_cli/etc/EVA_Submission_template.xlsx'
 

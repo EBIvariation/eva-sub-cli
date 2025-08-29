@@ -306,7 +306,7 @@ class TestOrchestrator(unittest.TestCase):
                 patch('eva_sub_cli.orchestrator.get_sub_cli_github_tags') as sub_cli_tags:
             sub_cli_version.return_value = '1.1.6'
             sub_cli_tags.return_value = ['1.1.6']
-            assert get_metadata_xlsx_template_link() == 'https://raw.githubusercontent.com/EBIvariation/eva-sub-cli/v1.1.6/eva-sub-cli/eva_sub_cli/etc/EVA_Submission_template.xlsx'
+            assert get_metadata_xlsx_template_link() == 'https://raw.githubusercontent.com/EBIvariation/eva-sub-cli/refs/tags/v1.1.6/eva_sub_cli/etc/EVA_Submission_template.xlsx'
 
             sub_cli_version.return_value = '1.1.5'
             sub_cli_tags.return_value = ['1.1.6']

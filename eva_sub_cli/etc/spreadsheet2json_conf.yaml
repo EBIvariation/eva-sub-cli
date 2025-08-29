@@ -81,6 +81,8 @@ Sample:
   required:
     Analysis Alias: analysisAlias
     Sample Name in VCF: sampleInVCF
+  # Sample property names taken from ERC000011 where present
+  # See https://www.ebi.ac.uk/biosamples/schema-store/registry/schemas/ERC000011
   optional:
     Sample Accession: bioSampleAccession
     BioSample Name: bioSampleName
@@ -91,37 +93,37 @@ Sample:
     Subject: subject
     Derived From: derivedFrom
     Taxonomy ID: taxId
-    Scientific Name: scientificName
+    Scientific Name: scientific name
     Common Name: commonName
-    mating_type: matingType
+    mating_type: mating_type
     sex: sex
     population: population
-    cell_type: cellType
-    dev_stage: devStage
+    cell_type: cell_type
+    dev_stage: dev_stage
     germline: germline
-    tissue_lib: tissueLib
-    tissue_type: tissueType
-    bio_material: BioMaterial
-    culture_collection: cultureCollection
-    specimen_voucher: specimenVoucher
-    collected_by: collectedBy
-    collection_date: collectionDate
-    geographic location (country and/or sea): geographicLocationCountrySea
-    geographic location (region and locality): geographicLocationRegion
+    tissue_lib: tissue_lib
+    tissue_type: tissue_type
+    bio_material: bio_material
+    culture_collection: culture_collection
+    specimen_voucher: specimen_voucher
+    collected_by: collected_by
+    collection_date: collection date
+    geographic location (country and/or sea): geographic location (country and/or sea)
+    geographic location (region and locality): geographic location (region and locality)
     host: host
-    identified_by: identifiedBy
-    isolation_source: isolationSource
-    lat_lon: latLon
-    lab_host: LabHost
-    environmental_sample: environmentalSample
+    identified_by: identified_by
+    isolation_source: isolation_source
+    lat_lon: lat_lon
+    lab_host: lab_host
+    environmental_sample: environmental_sample
     cultivar: cultivar
     ecotype: ecotype
     isolate: isolate
     strain: strain
-    sub_species: subSpecies
+    sub_species: sub_species
     variety: variety
-    sub_strain: subStrain
-    cell_line: cellType
+    sub_strain: sub_strain
+    cell_line: cell_line
     serotype: serotype
     serovar: serovar
   cast:
