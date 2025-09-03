@@ -2,7 +2,7 @@ import os.path
 from unittest import TestCase
 
 from eva_sub_cli.validators.validation_results_parsers import vcf_check_errors_is_critical, parse_assembly_check_log, \
-    parse_assembly_check_report
+    parse_assembly_check_report, parse_bcftools_norm_report
 
 
 class TestValidationParsers(TestCase):
@@ -42,3 +42,15 @@ class TestValidationParsers(TestCase):
         assert nb_mismatch == 12
         assert error_list == ['Chromosome scaffold_chr1 is not present in FASTA file']
         assert nb_error == 1
+
+    def test_parse_bcftools_norm_report(self):
+        normalisation_report = os.path.join(self.resource_dir, 'norm_check', 'invalid.vcf_bcftools_norm.log')
+        error_list, nb_total, nb_split, nb_realigned, nb_skipped = parse_bcftools_norm_report(normalisation_report)
+        assert error_list == [
+            "NON_ACGTN_ALT	chr1	49338976	]chr1:49277505]T",
+            "NON_ACGTN_ALT	chr1	49997014	TAT[chr1:50014208[",
+            "NON_ACGTN_ALT	chr1	50014208	]chr1:49997014]ATT",
+            "NON_ACGTN_ALT	chr1	191611692	[chr8:41723769[A"
+        ]
+        assert nb_total == 152
+        assert nb_split == nb_realigned == nb_skipped == 0

@@ -158,7 +158,8 @@
     <h2>VCF validation results</h2>
     <div class="description">
         Checks whether each file is compliant with the <a href="http://samtools.github.io/hts-specs/VCFv4.4.pdf" target=”_blank”>VCF specification</a>.
-        Also checks whether the variants' reference alleles match against the reference assembly.
+        Also checks whether the variants' reference alleles match against the reference assembly,
+        and whether the file can be normalised (if necessary) using <a href="https://samtools.github.io/bcftools/bcftools.html#norm" target="blank">bcftools norm</a>.
     </div>
         <h3>input_fail.vcf</h3>
     <div class='report-section fail collapsible'><span class="expand_icon">&#9654;</span> &#10060; Assembly check: 26/36 (72.22%)</div>
@@ -215,9 +216,31 @@
                     </tr>
             </table>
         </div>
+    <div class='report-section fail collapsible'><span class="expand_icon">&#9654;</span> &#10060; Normalisation check: 4 errors (152 total lines: 0 split, 0 realigned, 0 skipped)</div>
+        <div class="error-list">
+            <div class="error-description">First 10 errors are below. <strong>Full report:</strong> /path/to/vcf_failed/norm/log</div>
+            <table>
+                <tr>
+                    <th>Category</th><th>Error</th>
+                </tr>
+                    <tr>
+                        <td><strong>Error</strong></td><td> NON_ACGTN_ALT	chr1	49338976	]chr1:49277505]T</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Error</strong></td><td> NON_ACGTN_ALT	chr1	49997014	TAT[chr1:50014208[</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Error</strong></td><td> NON_ACGTN_ALT	chr1	50014208	]chr1:49997014]ATT</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Error</strong></td><td> NON_ACGTN_ALT	chr1	191611692	[chr8:41723769[A</td>
+                    </tr>
+            </table>
+        </div>
         <h3>input_passed.vcf</h3>
     <div class='report-section pass'><span class="expand_icon"></span> &#10004; Assembly check: 247/247 (100.0%)</div>
     <div class='report-section pass'><span class="expand_icon"></span> &#10004; VCF check: 0 critical errors, 0 non-critical errors </div>
+    <div class='report-section pass'><span class="expand_icon"></span> &#10004; Normalisation check: 0 errors (152 total lines: 0 split, 0 realigned, 0 skipped)</div>
 </section>
 <section>
     <h2>Sample name concordance check</h2>

@@ -6,6 +6,8 @@
             {{ assembly_check(result) }}
         {% elif check_type == "vcf_check" %}
             {{ vcf_check(result) }}
+        {% elif check_type == "norm_check" %}
+            {{ norm_check(result) }}
         {% endif %}
     {% endfor %}
 {%- endmacro %}
@@ -53,6 +55,24 @@
 		{% endfor %}
 		{% for error in mismatch_list[:10] %}
 			Mismatch error: {{ error }}
+		{% endfor %}
+	{% endif %}
+{%- endmacro %}
+
+{% macro norm_check(norm_check_result) %}
+    {% set error_count = norm_check_result.get("nb_error", 0) %}
+    {% if error_count > 0 %}
+        {% set icon = "\u274C" %}
+    {% else %}
+        {% set icon = "\u2714" %}
+    {% endif %}
+		{{ icon }} Normalisation check: {{ error_count }} errors ({{ norm_check_result.get("nb_total", 0) }} total lines: {{ norm_check_result.get("nb_split", 0) }} split, {{ norm_check_result.get("nb_realigned", 0) }} realigned, {{ norm_check_result.get("nb_skipped", 0) }} skipped)
+
+	{% set error_list = norm_check_result.get("error_list") %}
+	{% if error_list%}
+		First 10 errors are below. Full report: {{ norm_check_result.get('report_path', '') }}
+		{% for error in error_list[:10] %}
+			Error: {{ error }}
 		{% endfor %}
 	{% endif %}
 {%- endmacro %}

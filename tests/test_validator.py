@@ -16,6 +16,10 @@ expected_validation_results = {
         'input_passed.vcf': {'error_list': [], 'mismatch_list': [], 'nb_mismatch': 0, 'nb_error': 0,
                              'match': 247, 'total': 247}
     },
+    'norm_check': {
+        'input_passed.vcf': {'error_list': [], 'nb_error': 0, 'nb_realigned': 0, 'nb_skipped': 0, 'nb_split': 0,
+                             'nb_total': 152,
+                             'report_path': '{resource_dir}/validation_reports/validation_output/norm_check/input_passed.vcf_bcftools_norm.log'}},
     'sample_check': {
         'overall_differences': False,
         'results_per_analysis': {
