@@ -1,6 +1,7 @@
 import re
 
 from ebi_eva_common_pyutils.logger import logging_config
+from pysam.libcvcf import defaultdict
 
 logger = logging_config.get_logger(__name__)
 
@@ -116,14 +117,51 @@ def vcf_check_errors_is_critical(error):
 def parse_bcftools_norm_report(norm_report):
     total = split = realigned = skipped = 0
     error_list = []
+    warning_dict = defaultdict(list)
+    message_list = []
     with open(norm_report) as open_file:
         for line in open_file:
             if line.startswith('Lines   total/split/realigned/skipped:'):
                 # Lines   total/split/realigned/skipped:  2/0/1/0
                 total, split, realigned, skipped = line.strip().split()[-1].split('/')
             else:
-                error_list.append(line.strip())
-    return error_list, int(total), int(split), int(realigned), int(skipped)
+                level, error_type, field, message = categorise_bcftools_log_line(line)
+                if level == 'error':
+                    error_list.append((field, message))
+                elif level == 'warning':
+                    warning_dict[field].append(message)
+                else:
+                    message_list.append(line.strip())
+    error_list = [
+        combine_bcftools_error_and_warnings(error, warning_dict.get(field)) for field, error in error_list
+    ]
+    return error_list, message_list, int(total), int(split), int(realigned), int(skipped)
+
+def combine_bcftools_error_and_warnings(error, warning_list):
+    return error + ' reason could be ' + ' or '.join(warning_list)
+
+
+def categorise_bcftools_log_line(text: str):
+    match = re.match(r"^\[(E|W)::(.*?)\](.*)$", text)
+    level = error_type = field = message = None
+    if match:
+        level, error_type, message = match.groups()
+        error_type = error_type.strip()
+        message = message.strip()
+
+        # Categorize FORMAT vs INFO issues
+        field = None
+        if "FORMAT" in message:
+            field = "FORMAT"
+        elif "INFO" in message:
+            field = "INFO"
+
+        if level == "E":
+            level = "error"
+        elif level == "W":
+            level = "warning"
+
+    return level, error_type, field, message
 
 
 def parse_biovalidator_validation_results(metadata_check_file):

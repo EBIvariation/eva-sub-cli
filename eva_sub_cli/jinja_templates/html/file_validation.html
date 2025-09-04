@@ -106,7 +106,7 @@
     <div class='{{ row_class }}'><span class="expand_icon">{{ expand_icon }}</span> {{ icon }} Normalisation check: {{ error_count }} errors ({{ norm_check_result.get("nb_total", 0) }} total lines: {{ norm_check_result.get("nb_split", 0) }} split, {{ norm_check_result.get("nb_realigned", 0) }} realigned, {{ norm_check_result.get("nb_skipped", 0) }} skipped)</div>
     {% set error_list = norm_check_result.get("error_list") %}
 
-    {% if error_list%}
+    {% if error_list %}
         <div class="error-list">
             <div class="error-description">First 10 errors are below. <strong>Full report:</strong> {{ norm_check_result.get('report_path', '') }}</div>
             <table>

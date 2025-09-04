@@ -43,10 +43,10 @@ class TestValidationParsers(TestCase):
         assert error_list == ['Chromosome scaffold_chr1 is not present in FASTA file']
         assert nb_error == 1
 
-    def test_parse_bcftools_norm_report(self):
-        normalisation_report = os.path.join(self.resource_dir, 'norm_check', 'invalid.vcf_bcftools_norm.log')
-        error_list, nb_total, nb_split, nb_realigned, nb_skipped = parse_bcftools_norm_report(normalisation_report)
-        assert error_list == [
+    def test_parse_bcftools_norm_message(self):
+        normalisation_report = os.path.join(self.resource_dir, 'norm_check', 'message.vcf_bcftools_norm.log')
+        error_list, message_list, nb_total, nb_split, nb_realigned, nb_skipped = parse_bcftools_norm_report(normalisation_report)
+        assert message_list == [
             "NON_ACGTN_ALT	chr1	49338976	]chr1:49277505]T",
             "NON_ACGTN_ALT	chr1	49997014	TAT[chr1:50014208[",
             "NON_ACGTN_ALT	chr1	50014208	]chr1:49997014]ATT",
@@ -54,3 +54,20 @@ class TestValidationParsers(TestCase):
         ]
         assert nb_total == 152
         assert nb_split == nb_realigned == nb_skipped == 0
+
+
+    def test_parse_bcftools_norm_error(self):
+        normalisation_report = os.path.join(self.resource_dir, 'norm_check', 'error1.vcf_bcftools_norm.log')
+        error_list, message_list, nb_total, nb_split, nb_realigned, nb_skipped = parse_bcftools_norm_report(normalisation_report)
+        assert error_list == [
+            "Invalid BCF, the INFO tag id=1 is too large at Chr1A:1143838 reason could be INFO 'PR' is not defined in the header, assuming Type=String"
+        ]
+
+        normalisation_report = os.path.join(self.resource_dir, 'norm_check', 'error2.vcf_bcftools_norm.log')
+        error_list, message_list, nb_total, nb_split, nb_realigned, nb_skipped = parse_bcftools_norm_report(
+            normalisation_report)
+        assert error_list == [
+            "Invalid BCF, the FORMAT tag id=3 at 4:107353368 not present in the header reason could be FORMAT 'GT' at 4:107353368 is not defined in the header, assuming Type=String"
+        ]
+
+

@@ -326,12 +326,13 @@ class Validator(AppLogger):
             vcf_name = os.path.basename(vcf_file)
             normalisation_log = self._normalisation_log(vcf_name)
             if normalisation_log:
-                error_list, nb_total, nb_split, nb_realigned, nb_skipped = parse_bcftools_norm_report(normalisation_log)
+                error_list, message_list, nb_total, nb_split, nb_realigned, nb_skipped = parse_bcftools_norm_report(normalisation_log)
             else:
-                error_list, nb_total, nb_split, nb_realigned, nb_skipped = (['Process failed'], 0, 0, 0, 0)
+                error_list, message_list, nb_total, nb_split, nb_realigned, nb_skipped = (['Process failed'], [], 0, 0, 0, 0)
             self.results['norm_check'][vcf_name] = {
                 'report_path': normalisation_log,
                 'error_list': error_list,
+                'message_list': message_list,
                 'nb_error': len(error_list),
                 'nb_total': nb_total,
                 'nb_split': nb_split,

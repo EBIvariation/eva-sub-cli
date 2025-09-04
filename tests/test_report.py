@@ -62,6 +62,7 @@ common_validation_results = {
     'norm_check': {
         'input_passed.vcf': {
             'error_list': [],
+            'message_list': [],
             'nb_error': 0,
             'nb_realigned': 0,
             'nb_skipped': 0,
@@ -70,15 +71,18 @@ common_validation_results = {
             'report_path': '/path/to/vcf_passed/norm/log'
         },
         'input_fail.vcf': {
-            'error_list': ['NON_ACGTN_ALT\tchr1\t49338976\t]chr1:49277505]T',
-                           'NON_ACGTN_ALT\tchr1\t49997014\tTAT[chr1:50014208[',
-                           'NON_ACGTN_ALT\tchr1\t50014208\t]chr1:49997014]ATT',
-                           'NON_ACGTN_ALT\tchr1\t191611692\t[chr8:41723769[A'],
-            'nb_error': 4,
+            'error_list': ["Invalid BCF, the INFO tag id=1 is too large at Chr1A:1143838 reason could be INFO 'PR' is not defined in the header, assuming Type=String"],
+            'message_list': [
+                'NON_ACGTN_ALT\tchr1\t49338976\t]chr1:49277505]T',
+                'NON_ACGTN_ALT\tchr1\t49997014\tTAT[chr1:50014208[',
+                'NON_ACGTN_ALT\tchr1\t50014208\t]chr1:49997014]ATT',
+                'NON_ACGTN_ALT\tchr1\t191611692\t[chr8:41723769[A'
+            ],
+            'nb_error': 1,
             'nb_realigned': 0,
             'nb_skipped': 0,
             'nb_split': 0,
-            'nb_total': 152,
+            'nb_total': 0,
             'report_path': '/path/to/vcf_failed/norm/log'
         },
         'pass': False,

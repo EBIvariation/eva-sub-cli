@@ -1,0 +1,4 @@
+[W::vcf_parse_info] INFO 'PR' is not defined in the header, assuming Type=String
+[W::vcf_parse_format] FORMAT 'GT' at Chr1A:1143838 is not defined in the header, assuming Type=String
+[E::vcf_format] Invalid BCF, the INFO tag id=1 is too large at Chr1A:1143838
+[flush_buffer] Error: cannot write to normalised_vcfs/error.vcf.gz

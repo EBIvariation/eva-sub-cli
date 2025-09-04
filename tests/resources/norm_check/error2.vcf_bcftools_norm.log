@@ -1,0 +1,3 @@
+[W::vcf_parse_format] FORMAT 'GT' at 4:107353368 is not defined in the header, assuming Type=String
+[E::vcf_format] Invalid BCF, the FORMAT tag id=3 at 4:107353368 not present in the header
+[flush_buffer] Error: cannot write to normalised_vcfs/4_107353368.vcf.gz

@@ -31,7 +31,7 @@
         </div>
     <div class="title">
         <h1>Validation Report</h1>
-        <h6>eva-sub-cli vcligeneratedversion</h6>
+        <h6>eva-sub-cli v0.4.13.dev8+g9e51afa.d20250904</h6>
     </div>
 </header>
     <section>
@@ -252,7 +252,7 @@
                     </tr>
             </table>
         </div>
-    <div class='report-section fail collapsible'><span class="expand_icon">&#9654;</span> &#10060; Normalisation check: 4 errors (152 total lines: 0 split, 0 realigned, 0 skipped)</div>
+    <div class='report-section fail collapsible'><span class="expand_icon">&#9654;</span> &#10060; Normalisation check: 1 errors (0 total lines: 0 split, 0 realigned, 0 skipped)</div>
         <div class="error-list">
             <div class="error-description">First 10 errors are below. <strong>Full report:</strong> /path/to/vcf_failed/norm/log</div>
             <table>
@@ -260,16 +260,7 @@
                     <th>Category</th><th>Error</th>
                 </tr>
                     <tr>
-                        <td><strong>Error</strong></td><td> NON_ACGTN_ALT	chr1	49338976	]chr1:49277505]T</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Error</strong></td><td> NON_ACGTN_ALT	chr1	49997014	TAT[chr1:50014208[</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Error</strong></td><td> NON_ACGTN_ALT	chr1	50014208	]chr1:49997014]ATT</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Error</strong></td><td> NON_ACGTN_ALT	chr1	191611692	[chr8:41723769[A</td>
+                        <td><strong>Error</strong></td><td> Invalid BCF, the INFO tag id=1 is too large at Chr1A:1143838 reason could be INFO 'PR' is not defined in the header, assuming Type=String</td>
                     </tr>
             </table>
         </div>
