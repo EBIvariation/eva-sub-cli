@@ -19,9 +19,18 @@ from eva_sub_cli.validators.validation_results_parsers import parse_assembly_che
     parse_vcf_check_report, parse_metadata_property
 
 VALIDATION_OUTPUT_DIR = "validation_output"
-VALIDATION_RESULTS_KEY = 'validation_results'
 VALIDATION_RESULTS_FILE = 'validation_results.yaml'
 READY_FOR_SUBMISSION_TO_EVA = 'ready_for_submission_to_eva'
+
+# Includes vcf_validator and evidence type checks
+VCF_CHECK = 'vcf_check'
+# Includes vcf_assembly and INSDC check
+ASSEMBLY_CHECK = 'assembly_check'
+# Includes metadata syntax and semantic checks
+METADATA_CHECK = 'metadata_check'
+# Includes sample concordance check
+SAMPLE_CHECK = 'sample_check'
+ALL_VALIDATION_TASKS = [VCF_CHECK, ASSEMBLY_CHECK, METADATA_CHECK, SAMPLE_CHECK]
 
 logger = logging_config.get_logger(__name__)
 
@@ -29,9 +38,10 @@ logger = logging_config.get_logger(__name__)
 class Validator(AppLogger):
 
     def __init__(self, mapping_file, submission_dir, project_title=None, metadata_json=None, metadata_xlsx=None,
-                 shallow_validation=False, submission_config: WritableConfig = None):
+                 validation_tasks=ALL_VALIDATION_TASKS, shallow_validation=False, submission_config: WritableConfig = None):
         # validator write to the validation output directory
         # If the submission_config is not set it will also be written to the VALIDATION_OUTPUT_DIR
+        self.tasks = validation_tasks
         self.submission_dir = submission_dir
         self.output_dir = os.path.join(submission_dir, VALIDATION_OUTPUT_DIR)
         self.validation_result_file = os.path.join(submission_dir, VALIDATION_RESULTS_FILE)

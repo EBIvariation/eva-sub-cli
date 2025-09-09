@@ -27,7 +27,7 @@ from eva_sub_cli.submit import StudySubmitter, SUB_CLI_CONFIG_KEY_SUBMISSION_ID,
     SUB_CLI_CONFIG_KEY_SUBMISSION_UPLOAD_URL
 from eva_sub_cli.validators.docker_validator import DockerValidator
 from eva_sub_cli.validators.native_validator import NativeValidator
-from eva_sub_cli.validators.validator import READY_FOR_SUBMISSION_TO_EVA
+from eva_sub_cli.validators.validator import READY_FOR_SUBMISSION_TO_EVA, ALL_VALIDATION_TASKS
 
 VALIDATE = 'validate'
 SUBMIT = 'submit'
@@ -261,8 +261,8 @@ def check_validation_required(tasks, sub_config, username=None, password=None):
 
 
 def orchestrate_process(submission_dir, vcf_files, reference_fasta, metadata_json, metadata_xlsx,
-                        tasks, executor, username=None, password=None, shallow_validation=False, nextflow_config=None,
-                        **kwargs):
+                        tasks, executor, validation_tasks=ALL_VALIDATION_TASKS, username=None, password=None,
+                        shallow_validation=False, nextflow_config=None, **kwargs):
     # load config
     config_file_path = os.path.join(submission_dir, SUB_CLI_CONFIG_FILE)
     sub_config = WritableConfig(config_file_path, version=__version__)
@@ -290,12 +290,13 @@ def orchestrate_process(submission_dir, vcf_files, reference_fasta, metadata_jso
     if VALIDATE in tasks:
         if executor == DOCKER:
             validator = DockerValidator(vcf_files_mapping, submission_dir, project_title, metadata_json, metadata_xlsx,
-                                        shallow_validation=shallow_validation, submission_config=sub_config)
+                                        validation_tasks=validation_tasks, shallow_validation=shallow_validation,
+                                        submission_config=sub_config)
         # default to native execution
         else:
             validator = NativeValidator(vcf_files_mapping, submission_dir, project_title, metadata_json, metadata_xlsx,
-                                        shallow_validation=shallow_validation, submission_config=sub_config,
-                                        nextflow_config=nextflow_config)
+                                        validation_tasks=validation_tasks, shallow_validation=shallow_validation,
+                                        submission_config=sub_config, nextflow_config=nextflow_config)
         with validator:
             validator.validate_and_report()
             if not metadata_json:
