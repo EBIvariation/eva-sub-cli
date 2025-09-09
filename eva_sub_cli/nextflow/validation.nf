@@ -105,19 +105,19 @@ workflow {
 	collect_file_size_and_md5(generate_file_size_and_md5_digests.out.file_size_and_digest_info.collect())
 
 	// Task-specific processing
-    if (VCF_CHECK in params.tasks) {
+    if (params.tasks.contains(VCF_CHECK)) {
         check_vcf_valid(vcf_and_ref_ch)
         evidence_type_check(metadata_json, vcf_files.collect())
 	}
-	if (ASSEMBLY_CHECK in params.tasks) {
+	if (params.tasks.contains(ASSEMBLY_CHECK)) {
 		check_vcf_reference(vcf_and_ref_ch)
 		insdc_checker(metadata_json, fasta_to_vcfs)
 	}
-	if (METADATA_CHECK in params.tasks) {
+	if (params.tasks.contains(METADATA_CHECK)) {
 		metadata_json_validation(metadata_json)
 		metadata_semantic_check(metadata_json)
 	}
-	if (SAMPLE_CHECK in params.tasks) {
+	if (params.tasks.contains(SAMPLE_CHECK)) {
 		sample_name_concordance(metadata_json, vcf_files.collect())
 	}
 }
