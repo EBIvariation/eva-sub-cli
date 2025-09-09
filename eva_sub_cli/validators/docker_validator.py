@@ -44,7 +44,7 @@ class DockerValidator(Validator):
         docker_cmd = ''.join([
             f"{self.docker_path} exec {self.container_name} nextflow run eva_sub_cli/nextflow/validation.nf ",
             f"--base_dir {container_validation_dir} ",
-            f"--tasks {self.tasks} "
+            f"--tasks {','.join(self.tasks)} "
             f"--vcf_files_mapping {self.mapping_file} ",
             f"--metadata_xlsx {self.metadata_xlsx} ",
             f"--conversion_configuration_name {self._get_xlsx_conversion_configuration_name()} "
