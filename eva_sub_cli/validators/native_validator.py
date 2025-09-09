@@ -3,7 +3,7 @@ import subprocess
 
 from ebi_eva_common_pyutils.logger import logging_config
 
-from eva_sub_cli.validators.validator import Validator
+from eva_sub_cli.validators.validator import Validator, ALL_VALIDATION_TASKS
 
 logger = logging_config.get_logger(__name__)
 
@@ -11,12 +11,14 @@ logger = logging_config.get_logger(__name__)
 class NativeValidator(Validator):
 
     def __init__(self, mapping_file, submission_dir, project_title, metadata_json=None, metadata_xlsx=None,
-                 metadata_xlsx_version=None, shallow_validation=False, vcf_validator_path='vcf_validator',
+
+                 metadata_xlsx_version=None, validation_tasks=ALL_VALIDATION_TASKS, shallow_validation=False, vcf_validator_path='vcf_validator',
                  assembly_checker_path='vcf_assembly_checker', biovalidator_path='biovalidator',
                  submission_config=None, nextflow_config=None):
         super().__init__(mapping_file, submission_dir, project_title, metadata_json=metadata_json,
                          metadata_xlsx=metadata_xlsx, metadata_xlsx_version=metadata_xlsx_version,
-                         shallow_validation=shallow_validation, submission_config=submission_config)
+                         validation_tasks=validation_tasks, shallow_validation=shallow_validation,
+                         submission_config=submission_config)
         self.nextflow_config = nextflow_config
         self.vcf_validator_path = vcf_validator_path
         self.assembly_checker_path = assembly_checker_path
@@ -51,6 +53,7 @@ class NativeValidator(Validator):
                                         'nextflow/validation.nf')
         return ''.join([
             f"nextflow run {path_to_workflow}",
+            f"--tasks {self.tasks} "
             f" --vcf_files_mapping {self.mapping_file}",
             f" {metadata_flag}",
             f" --output_dir {self.output_dir}",
