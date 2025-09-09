@@ -50,7 +50,7 @@ class NativeValidator(Validator):
                                         'nextflow/validation.nf')
         return ''.join([
             f"nextflow run {path_to_workflow}",
-            f"--tasks {self.tasks} "
+            f" --tasks {','.join(self.tasks)} "
             f" --vcf_files_mapping {self.mapping_file}",
             f" {metadata_flag}",
             f" --output_dir {self.output_dir}",

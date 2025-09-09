@@ -349,7 +349,6 @@ class Validator(AppLogger):
         self._update_metadata_with_evidence_type()
 
 
-
     def _collect_metadata_results(self):
         self.results['metadata_check'] = {}
         self._load_spreadsheet_conversion_errors()
