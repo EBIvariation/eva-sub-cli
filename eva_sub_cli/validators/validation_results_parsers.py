@@ -1,7 +1,7 @@
 import re
+from collections import defaultdict
 
 from ebi_eva_common_pyutils.logger import logging_config
-from pysam.libcvcf import defaultdict
 
 logger = logging_config.get_logger(__name__)
 
