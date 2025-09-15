@@ -15,7 +15,7 @@ All installation methods require Python 3.8 or above.
 
 ## 1. Conda
 
-View a [video tutorial on conda installation here](https://embl-ebi.cloud.panopto.eu/Panopto/Pages/Viewer.aspx?id=aa82710e-4401-4074-b6b0-b346016bb14e).
+View our [video tutorial on conda installation](https://embl-ebi.cloud.panopto.eu/Panopto/Pages/Viewer.aspx?id=aa82710e-4401-4074-b6b0-b346016bb14e).
 
 The most straightforward way to install eva-sub-cli and its dependencies is through conda.
 For instance, the following commands install eva-sub-cli in a new environment called `eva`, activate the environment, and print
@@ -30,7 +30,7 @@ To upgrade to the newest version, run `conda update eva-sub-cli`.
 
 ## 2. Pip
 
-View a [video tutorial on pip installation here](https://embl-ebi.cloud.panopto.eu/Panopto/Pages/Viewer.aspx?id=2e6828ed-31c2-4621-8eb5-b34701484aae).
+View our [video tutorial on pip installation](https://embl-ebi.cloud.panopto.eu/Panopto/Pages/Viewer.aspx?id=2e6828ed-31c2-4621-8eb5-b34701484aae).
 
 You can also install eva-sub-cli using pip. 
 The following commands will create a new virtual environment called `eva`, activate the environment, and install eva-sub-cli:
