@@ -40,13 +40,13 @@ source ./eva/bin/activate
 pip install eva-sub-cli
 ```
 
-For external (non-Python) dependencies, you will need to install them either [via Docker](#docker) or [natively](#native).
-These methods are described below.
-
-Once you've done this, you can verify the installation by printing the help message:
+You can verify the installation by printing the help message:
 ```bash
 eva-sub-cli.py --help
 ```
+
+For external (non-Python) dependencies, you will need to install them either [via Docker](#docker) or [natively](#native).
+These methods are described below.
 
 To upgrade to the newest version of the tool, run `pip install --upgrade eva-sub-cli`.
 
