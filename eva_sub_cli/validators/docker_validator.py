@@ -7,7 +7,7 @@ import time
 from ebi_eva_common_pyutils.logger import logging_config
 from retry import retry
 
-from eva_sub_cli.validators.validator import Validator
+from eva_sub_cli.validators.validator import Validator, ALL_VALIDATION_TASKS
 
 logger = logging_config.get_logger(__name__)
 
@@ -19,11 +19,11 @@ container_validation_output_dir = 'vcf_validation_output'
 
 class DockerValidator(Validator):
 
-    def __init__(self, mapping_file, submission_dir, project_title, metadata_json=None,
-                 metadata_xlsx=None, shallow_validation=False, docker_path='docker', submission_config=None,
-                 container_image=None, container_tag=None, container_name=None):
-        super().__init__(mapping_file, submission_dir, project_title,
-                         metadata_json=metadata_json, metadata_xlsx=metadata_xlsx,
+    def __init__(self, mapping_file, submission_dir, project_title, metadata_json=None, metadata_xlsx=None,
+                 validation_tasks=ALL_VALIDATION_TASKS, shallow_validation=False, docker_path='docker',
+                 submission_config=None, container_image=None, container_tag=None, container_name=None):
+        super().__init__(mapping_file, submission_dir, project_title, metadata_json=metadata_json,
+                         metadata_xlsx=metadata_xlsx, validation_tasks=validation_tasks,
                          shallow_validation=shallow_validation, submission_config=submission_config)
         self.docker_path = docker_path
         submission_basename = re.sub('[^a-zA-Z0-9]', '', os.path.basename(submission_dir))
@@ -42,6 +42,7 @@ class DockerValidator(Validator):
         docker_cmd = ''.join([
             f"{self.docker_path} exec {self.container_name} nextflow run eva_sub_cli/nextflow/validation.nf ",
             f"--base_dir {container_validation_dir} ",
+            f"--tasks {','.join(self.tasks)} "
             f"--vcf_files_mapping {self.mapping_file} ",
             f"--metadata_xlsx {self.metadata_xlsx} " if self.metadata_xlsx and not self.metadata_json
                                                      else f"--metadata_json {self.metadata_json} ",

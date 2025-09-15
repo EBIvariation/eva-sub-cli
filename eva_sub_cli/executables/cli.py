@@ -1,14 +1,7 @@
 import sys
 
-import eva_sub_cli
-from eva_sub_cli.exceptions.metadata_template_version_exception import MetadataTemplateVersionException, \
-    MetadataTemplateVersionNotFoundException
-from eva_sub_cli.exceptions.submission_not_found_exception import SubmissionNotFoundException
-from eva_sub_cli.exceptions.submission_status_exception import SubmissionStatusException
-
 if not sys.warnoptions:
     import warnings
-
     warnings.simplefilter("ignore")
 
 import logging
@@ -16,9 +9,15 @@ import os
 from argparse import ArgumentParser
 from ebi_eva_common_pyutils.logger import logging_config
 
+import eva_sub_cli
 from eva_sub_cli import orchestrator
-from eva_sub_cli.orchestrator import VALIDATE, SUBMIT, DOCKER, NATIVE
+from eva_sub_cli.exceptions.metadata_template_version_exception import MetadataTemplateVersionException, \
+    MetadataTemplateVersionNotFoundException
+from eva_sub_cli.exceptions.submission_status_exception import SubmissionStatusException
+from eva_sub_cli.exceptions.submission_not_found_exception import SubmissionNotFoundException
 from eva_sub_cli.file_utils import is_submission_dir_writable, DirLockError, DirLock
+from eva_sub_cli.orchestrator import VALIDATE, SUBMIT, DOCKER, NATIVE
+from eva_sub_cli.validators.validator import ALL_VALIDATION_TASKS
 
 
 def validate_command_line_arguments(args, argparser):
@@ -70,6 +69,9 @@ def parse_args(cmd_line_args):
                            help='Select a task to perform (default SUBMIT). VALIDATE will run the validation'
                                 ' regardless of the outcome of previous runs. SUBMIT will run validate only if'
                                 ' the validation was not performed successfully before and then run the submission.')
+    argparser.add_argument('--validation_tasks', nargs='+', choices=ALL_VALIDATION_TASKS, default=ALL_VALIDATION_TASKS,
+                           type=str.lower, help='Select only a subset of the validation tasks to run. Note that all '
+                                                'tasks need to be successful for the validation to pass')
     argparser.add_argument('--executor', choices=[DOCKER, NATIVE], default=NATIVE, type=str.lower,
                            help='Select the execution type for running validation (default native)')
     credential_group = argparser.add_argument_group('Credentials', 'Specify the ENA Webin credentials you want to use '
@@ -102,7 +104,6 @@ def main():
 
     try:
         # lock the submission directory
-
         with DirLock(os.path.join(args.submission_dir)) as lock:
             # Create the log file
             logging_config.add_file_handler(os.path.join(args.submission_dir, 'eva_submission.log'), logging.DEBUG)
