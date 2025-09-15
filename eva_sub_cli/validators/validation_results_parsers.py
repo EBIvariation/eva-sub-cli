@@ -138,7 +138,7 @@ def parse_bcftools_norm_report(norm_report):
     return error_list, message_list, int(total), int(split), int(realigned), int(skipped)
 
 def combine_bcftools_error_and_warnings(error, warning_list):
-    return error + ' reason could be ' + ' or '.join(warning_list)
+    return error + ' (Reason could be: ' + ' or '.join(warning_list) + ')'
 
 
 def categorise_bcftools_log_line(text: str):
