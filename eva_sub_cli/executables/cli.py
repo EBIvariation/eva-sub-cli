@@ -70,7 +70,8 @@ def parse_args(cmd_line_args):
                                 ' regardless of the outcome of previous runs. SUBMIT will run validate only if'
                                 ' the validation was not performed successfully before and then run the submission.')
     argparser.add_argument('--validation_tasks', nargs='+', choices=ALL_VALIDATION_TASKS, default=ALL_VALIDATION_TASKS,
-                           type=str.lower, help='Select only a subset of the validation tasks to run.')
+                           type=str.lower, help='Select only a subset of the validation tasks to run. Note that all '
+                                                'tasks need to be successful for the validation to pass')
     argparser.add_argument('--executor', choices=[DOCKER, NATIVE], default=NATIVE, type=str.lower,
                            help='Select the execution type for running validation (default native)')
     credential_group = argparser.add_argument_group('Credentials', 'Specify the ENA Webin credentials you want to use '
