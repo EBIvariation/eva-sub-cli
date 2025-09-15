@@ -3,8 +3,8 @@
 There are two main ways to install eva-sub-cli, either through [conda](#1-conda) or [pip](#2-pip).
 Conda is the most straightforward and recommended method, as it will install all dependencies for you.
 
-Otherwise you can install using pip, in which case you can handle dependencies either using Docker or natively (i.e. 
-installing by yourself).
+Otherwise you can install using pip, in which case you will need to handle non-Python dependencies separately.
+You can do this either using Docker or natively (i.e. installing by yourself).
 Note that pip using Docker is currently the only installation method available for Windows users.
 
 We encourage users to install the most recent version, as we are constantly improving the tool. You can check that you
