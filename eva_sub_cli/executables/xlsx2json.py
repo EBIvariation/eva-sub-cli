@@ -179,15 +179,19 @@ class XlsxParser:
         return rows
 
     def get_project_json_data(self):
+        json_key = self.xlsx_conf[WORKSHEETS_KEY_NAME][PROJECT]
+
         project_data = self.get_rows()
         if len(project_data) > 1:
             logger.warning(f"{PROJECT} worksheet expects a single row of info but more than one found in the file. "
                            f"Only the first row's data will be taken into consideration")
+        elif len(project_data) == 0:
+            logger.error(f"{PROJECT} worksheet expects a single row of info but no info is found in the file.")
+            return {json_key: {}}
 
         first_row = project_data[0]
         first_row.pop('row_num')
 
-        json_key = self.xlsx_conf[WORKSHEETS_KEY_NAME][PROJECT]
         json_value = {self.translate_header(PROJECT, k): v for k, v in first_row.items() if v is not None}
         return {json_key: json_value}
 

@@ -151,4 +151,7 @@ def main():
     except MetadataTemplateVersionNotFoundException as mte:
         print(mte)
         exit_status = 70
+    except Exception as ex:
+        print(ex)
+        exit_status = 71
     return exit_status

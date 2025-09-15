@@ -6,6 +6,7 @@ from collections import defaultdict
 
 import requests
 from ebi_eva_common_pyutils.config import WritableConfig
+from ebi_eva_common_pyutils.ena_utils import download_xml_from_ena
 from ebi_eva_common_pyutils.logger import logging_config
 from openpyxl.reader.excel import load_workbook
 from packaging import version
@@ -109,6 +110,10 @@ def get_project_and_vcf_fasta_mapping_from_metadata_json(metadata_json, mapping_
     metadata = EvaMetadataJson(metadata_json)
 
     project_title = metadata.project.get('title')
+    if not project_title:
+        project_accession = metadata.project.get('projectAccession')
+        if project_accession:
+            project_title = get_project_title(project_accession)
 
     vcf_fasta_report_mapping = []
     if mapping_req:
@@ -190,9 +195,13 @@ def get_project_and_vcf_fasta_mapping_from_metadata_xlsx(metadata_xlsx, mapping_
 
     project_sheet = workbook['Project']
     project_headers = {}
-    for cell in project_sheet[1]:
+    for cell in project_sheet[3]:
         project_headers[cell.value] = cell.column
-    project_title = project_sheet.cell(row=2, column=project_headers['Project Title']).value
+    project_title = project_sheet.cell(row=4, column=project_headers['Project Title']).value
+    if not project_title:
+        project_accession = project_sheet.cell(row=4, column=project_headers['Project Accession']).value
+        if project_accession:
+            project_title = get_project_title(project_accession)
 
     vcf_fasta_report_mapping = []
     if mapping_req:
@@ -224,6 +233,25 @@ def get_project_and_vcf_fasta_mapping_from_metadata_xlsx(metadata_xlsx, mapping_
                 vcf_fasta_report_mapping.append([file_name, reference_fasta, ''])
 
     return project_title, vcf_fasta_report_mapping
+
+
+@retry(tries=4, delay=2, backoff=1.2, jitter=(1, 3))
+def get_project_title(project_accession):
+    try:
+        xml_root = download_xml_from_ena(f'https://www.ebi.ac.uk/ena/browser/api/xml/{project_accession}')
+        project_title = next(iter(xml_root.xpath('/PROJECT_SET/PROJECT/TITLE/text()')), None)
+        if project_title:
+            return project_title
+        else:
+            raise Exception(f"{project_accession} does not exist in ENA or is private")
+    except HTTPError as e:
+        # We cannot currently differentiate between the service returning an error and the accession not existing
+        if e.response.status_code == 500:
+            raise Exception(f"{project_accession} does not exist in ENA or is private")
+        else:
+            raise Exception(f"{project_accession} does not exist in ENA or is private")
+    except Exception as e:
+        raise Exception(f'Unexpected error occurred while getting project details from ENA for {project_accession}')
 
 
 def check_validation_required(tasks, sub_config, username=None, password=None):

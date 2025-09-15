@@ -17,6 +17,7 @@ PROJECT_KEY = 'project'
 ANALYSIS_KEY = 'analysis'
 SAMPLE_KEY = 'sample'
 FILES_KEY = 'files'
+PROJECT_ACCESSION_KEY = 'projectAccession'
 PARENT_PROJECT_KEY = 'parentProject'
 CHILD_PROJECTS_KEY = 'childProjects'
 PEER_PROJECTS_KEY = 'peerProjects'
@@ -51,13 +52,21 @@ class SemanticMetadataChecker(AppLogger):
             yaml.safe_dump(data=self.errors, stream=open_yaml)
 
     def check_all(self):
-        self.check_all_project_accessions()
-        self.check_all_taxonomy_codes()
+        if PROJECT_ACCESSION_KEY in self.metadata[PROJECT_KEY]:
+            self.check_project_exists_and_public_in_ena()
+        else:
+            self.check_all_project_accessions()
+            self.check_all_taxonomy_codes()
+
         self.check_all_scientific_names()
         self.check_existing_biosamples()
         self.check_all_analysis_run_accessions()
         self.check_analysis_alias_coherence()
         self.check_all_analysis_contain_samples()
+
+    def check_project_exists_and_public_in_ena(self):
+        project = self.metadata[PROJECT_KEY]
+        self.check_project_accession(project[PROJECT_ACCESSION_KEY], f'/{PROJECT_KEY}/{PROJECT_ACCESSION_KEY}')
 
     def check_all_project_accessions(self):
         """Check that ENA project accessions exist and are public."""
