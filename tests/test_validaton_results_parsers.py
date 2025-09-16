@@ -60,14 +60,18 @@ class TestValidationParsers(TestCase):
         normalisation_report = os.path.join(self.resource_dir, 'norm_check', 'error1.vcf_bcftools_norm.log')
         error_list, message_list, nb_total, nb_split, nb_realigned, nb_skipped = parse_bcftools_norm_report(normalisation_report)
         assert error_list == [
-            "Invalid BCF, the INFO tag id=1 is too large at Chr1A:1143838 reason could be INFO 'PR' is not defined in the header, assuming Type=String"
+            "Invalid BCF, the INFO tag id=1 is too large at Chr1A:1143838 "
+            "(Reason could be: INFO 'PR' is not defined in the header, assuming Type=String)"
         ]
+
 
         normalisation_report = os.path.join(self.resource_dir, 'norm_check', 'error2.vcf_bcftools_norm.log')
         error_list, message_list, nb_total, nb_split, nb_realigned, nb_skipped = parse_bcftools_norm_report(
             normalisation_report)
         assert error_list == [
-            "Invalid BCF, the FORMAT tag id=3 at 4:107353368 not present in the header reason could be FORMAT 'GT' at 4:107353368 is not defined in the header, assuming Type=String"
+            "Invalid BCF, the FORMAT tag id=3 at 4:107353368 not present in the header "
+            "(Reason could be: FORMAT 'GT' at 4:107353368 is not defined in the header, assuming Type=String)"
         ]
+
 
 
