@@ -90,12 +90,9 @@ normalised (if necessary) using bcftools norm (https://samtools.github.io/bcftoo
 		First 10 errors per category are below. Full report: /path/to/vcf_failed/report
 			Critical error: Line 4: Error in meta-data section.
 			Non-critical error: Sample #11, field AD does not match the meta specification Number=R (expected 2 value(s)). AD=..
-		❌ Normalisation check: 4 errors (152 total lines: 0 split, 0 realigned, 0 skipped)
+		❌ Normalisation check: 1 errors (0 total lines: 0 split, 0 realigned, 0 skipped)
 		First 10 errors are below. Full report: /path/to/vcf_failed/norm/log
-			Error: NON_ACGTN_ALT	chr1	49338976	]chr1:49277505]T
-			Error: NON_ACGTN_ALT	chr1	49997014	TAT[chr1:50014208[
-			Error: NON_ACGTN_ALT	chr1	50014208	]chr1:49997014]ATT
-			Error: NON_ACGTN_ALT	chr1	191611692	[chr8:41723769[A
+			Error: Invalid BCF, the INFO tag id=1 is too large at Chr1A:1143838 reason could be INFO 'PR' is not defined in the header, assuming Type=String
 	input_passed.vcf
 		✔ Assembly check: 247/247 (100.0%)
 		✔ VCF check: 0 critical errors, 0 non-critical errors
