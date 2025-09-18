@@ -132,6 +132,9 @@ process trim_down_vcf {
 * Validate the VCF file format
 */
 process check_vcf_valid {
+
+    label 'long_time', 'med_mem'
+
     publishDir output_dir,
             overwrite: false,
             mode: "copy"
@@ -155,6 +158,9 @@ process check_vcf_valid {
 * Validate the VCF reference allele
 */
 process check_vcf_reference {
+
+    label 'long_time', 'med_mem'
+
     publishDir output_dir,
             overwrite: true,
             mode: "copy"
@@ -178,6 +184,9 @@ process check_vcf_reference {
 }
 
 process generate_file_size_and_md5_digests {
+
+    label 'med_time', 'med_mem'
+
     input:
     path(vcf_file)
 
@@ -192,6 +201,9 @@ process generate_file_size_and_md5_digests {
 }
 
 process collect_file_size_and_md5 {
+
+    label 'med_time', 'med_mem'
+
     publishDir output_dir,
             overwrite: true,
             mode: "copy"
@@ -210,6 +222,10 @@ process collect_file_size_and_md5 {
 
 
 process convert_xlsx_2_json {
+
+    label 'short_time', 'small_mem'
+
+
     publishDir output_dir,
             overwrite: true,
             mode: "copy"
@@ -231,6 +247,9 @@ process convert_xlsx_2_json {
 }
 
 process metadata_json_validation {
+
+    label 'short_time', 'small_mem'
+
     publishDir output_dir,
             overwrite: true,
             mode: "copy"
@@ -248,6 +267,9 @@ process metadata_json_validation {
 }
 
 process sample_name_concordance {
+
+    label 'default_time', 'default_mem'
+
     publishDir output_dir,
             overwrite: true,
             mode: "copy"
@@ -268,6 +290,9 @@ process sample_name_concordance {
 
 
 process evidence_type_check {
+
+    label 'default_time', 'default_mem'
+
     publishDir output_dir,
             overwrite: true,
             mode: "copy"
@@ -288,6 +313,9 @@ process evidence_type_check {
 
 
 process insdc_checker {
+
+    label 'long_time', 'default_mem'
+
     publishDir output_dir,
             overwrite: true,
             mode: "copy"
@@ -308,6 +336,9 @@ process insdc_checker {
 
 
 process metadata_semantic_check {
+
+    label 'default_time', 'default_mem'
+
     publishDir output_dir,
             overwrite: true,
             mode: "copy"
