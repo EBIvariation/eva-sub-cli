@@ -30,12 +30,22 @@ def validate_command_line_arguments(args, argparser):
     if args.vcf_files:
         for vcf_file in args.vcf_files:
             if not os.path.isfile(vcf_file):
-                print(f"vcf_file {vcf_file} is not a file")
+                print(f"VCF file {vcf_file} is not a file")
                 fail = True
 
-    if args.args.reference_fasta:
+    if args.reference_fasta:
         if not os.path.isfile(args.reference_fasta):
-            print(f"vcf_file {args.reference_fasta} is not a file")
+            print(f"Fasta file {args.reference_fasta} is not a file")
+            fail = True
+
+    if args.metadata_xlsx:
+        if not os.path.isfile(args.metadata_xlsx):
+            print(f"Spreadsheet file {args.metadata_xlsx} is not a file")
+            fail = True
+
+    if args.metadata_json:
+        if not os.path.isfile(args.metadata_json):
+            print(f"JSON file {args.metadata_json} is not a file")
             fail = True
 
     if SUBMIT in args.tasks and (

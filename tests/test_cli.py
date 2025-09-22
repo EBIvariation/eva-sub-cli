@@ -9,6 +9,7 @@ from unittest.mock import patch, Mock
 
 from eva_sub_cli import orchestrator
 from eva_sub_cli.executables import cli
+from tests.test_utils import touch
 
 
 class TestCli(TestCase):
@@ -41,11 +42,17 @@ class TestCli(TestCase):
                 all_lines[0].endswith('[eva_sub_cli.orchestrator][DEBUG] test\n')
 
     def test_validate_args(self):
+        vcf_file = os.path.join(self.submission_dir,'test.vcf')
+        fasta_file = os.path.join(self.submission_dir, 'test.fasta')
+        json_file = os.path.join(self.submission_dir, 'test.json')
+        touch(vcf_file)
+        touch(fasta_file)
+        touch(json_file)
         cmd_args = [
             '--submission_dir', self.submission_dir,
-            '--vcf_files', 'test.vcf',
-            '--reference_fasta', 'test.fasta',
-            '--metadata_json', 'test.json',
+            '--vcf_files', vcf_file,
+            '--reference_fasta', fasta_file,
+            '--metadata_json', json_file,
             '--tasks', 'validate',
             '--executor', 'native',
             '--debug'
