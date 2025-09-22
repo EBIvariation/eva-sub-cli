@@ -1,4 +1,5 @@
 import os.path
+import shutil
 from copy import deepcopy
 from unittest import TestCase
 
@@ -93,6 +94,7 @@ class TestValidator(TestCase):
     output_dir = os.path.join(resource_dir, 'validation_reports')
     mapping_file = os.path.join(output_dir, 'vcf_files_mapping.csv')
     metadata_xlsx_file = os.path.join(resource_dir, 'EVA_Submission_test.xlsx')
+    metadata_json_file = os.path.join(resource_dir, 'metadata_with_filename.json')
 
     def setUp(self) -> None:
         # create vcf mapping file
@@ -102,7 +104,10 @@ class TestValidator(TestCase):
                             [os.path.join(self.fasta_files, 'input_passed.fa')],
                             [os.path.join(self.assembly_reports, 'input_passed.txt')])
         self.validator = Validator(self.mapping_file, self.output_dir, metadata_xlsx=self.metadata_xlsx_file)
-        self.validator_json = Validator(self.mapping_file, self.output_dir)
+        self.validator_json = Validator(self.mapping_file, self.output_dir, metadata_json=self.metadata_json_file)
+        # Backup metadata json file so can restore after tests
+        self.backup_metadata_json = f'{self.metadata_json_file}.backup'
+        shutil.copy(self.metadata_json_file, self.backup_metadata_json)
 
     def tearDown(self) -> None:
         files_from_tests = [
@@ -115,6 +120,8 @@ class TestValidator(TestCase):
         for f in files_from_tests:
             if os.path.exists(f):
                 os.remove(f)
+        # Restore metadata json file
+        shutil.move(self.backup_metadata_json, self.metadata_json_file)
 
     def format_data_structure(self, source):
         if isinstance(source, dict):
@@ -329,3 +336,39 @@ class TestValidator(TestCase):
             os.remove(updated_metadata)
         # Reset metadata_json in case other tests need it
         self.validator_json.metadata_json = prev_metadata_json_value
+
+    def test__update_metadata_with_evidence_type_success(self):
+        self.validator_json.results['evidence_type_check'] = {
+            'AA': {
+                'errors': None,
+                'evidence_type': 'allele_frequency'
+            },
+            'report_path': '{resource_dir}/validation_reports/validation_output/other_validations/evidence_type_checker.yml'
+        }
+        self.validator_json._update_metadata_with_evidence_type()
+
+        # Analysis updated with evidence type
+        updated_metadata = EvaMetadataJson(self.validator_json.metadata_json_post_validation)
+        assert updated_metadata.analyses[0]['evidenceType'] == 'allele_frequency'
+
+    def test__update_metadata_with_evidence_type_failure(self):
+        self.validator_json.results['evidence_type_check'] = {
+            'AA': {
+                'errors': ['VCF file evidence type could not be determined'],
+                'evidence_type': None
+            },
+            'report_path': '{resource_dir}/validation_reports/validation_output/other_validations/evidence_type_checker.yml'
+        }
+        self.validator_json._update_metadata_with_evidence_type()
+
+        # Nothing added to analysis
+        updated_metadata = EvaMetadataJson(self.validator_json.metadata_json_post_validation)
+        assert 'evidenceType' not in updated_metadata.analyses[0]
+
+    def test__update_metadata_with_evidence_type_did_not_run(self):
+        self.validator_json.results['evidence_type_check'] = {}
+        self.validator_json._update_metadata_with_evidence_type()
+
+        # Nothing added to analysis
+        updated_metadata = EvaMetadataJson(self.validator_json.metadata_json_post_validation)
+        assert 'evidenceType' not in updated_metadata.analyses[0]
