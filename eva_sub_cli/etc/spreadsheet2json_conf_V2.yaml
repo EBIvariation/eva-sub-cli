@@ -1,0 +1,138 @@
+#Configuration for defining which fields in which worksheets to be parsed in an Excel file
+#
+#At the top level, "worksheets" defines a list of worksheets (titles) to be parsed.
+#Then for each worksheet, you define which fields to be parsed from this worksheet.
+#These fields are either "required", "optional" and/or header_row. "required" fields must be found
+#in the worksheet so that this worksheet is valid. Otherwise this worksheet is not
+#valid. The field names must match those values in the header row in the worksheet.
+#
+#This is a YAML file
+
+# List of worksheets to be parsed.
+worksheets:
+  Submitter Details: submitterDetails
+  Project: project
+  Analysis: analysis
+  Sample: sample
+  Files: files
+
+Submitter Details:
+  required:
+    Last Name: lastName
+    First Name: firstName
+    Email Address: email
+    Laboratory: laboratory
+    Center: centre
+  optional:
+    Address: address
+
+# List of field for Projects
+Project:
+  required:
+    Project Title: title
+    Description: description
+    Center: centre
+    Taxonomy ID: taxId
+  optional:
+    Publication(s): publications
+    Parent Project: parentProject
+    Child Project(s): childProjects
+    Peer Project(s): peerProjects
+    Link(s): links
+    Hold Date: holdDate
+    Collaborator(s): collaborators
+    Strain: strain
+    Breed: breed
+    Broker: broker
+  cast:
+    Publication(s): list
+    Child Project(s): list
+    Peer Project(s): list
+    Link(s): list
+    Hold Date: date
+
+Analysis:
+  required:
+    Analysis Title: analysisTitle
+    Analysis Alias: analysisAlias
+    Description: description
+    Experiment Type: experimentType
+    Reference: referenceGenome
+  optional:
+    Reference Fasta Path: referenceFasta
+    Platform: platform
+    Software: software
+    Pipeline Description: pipelineDescriptions
+    Imputation: imputation
+    Phasing: phasing
+    Centre: centre
+    Date: date
+    Link(s): links
+    Run Accession(s): runAccessions
+  cast:
+    Run Accession(s): list
+    Imputation: boolean
+    Phasing: boolean
+    Date: date
+    Software: list
+
+Sample:
+  header_row: 3
+  required:
+    Analysis Alias: analysisAlias
+    Sample Name in VCF: sampleInVCF
+  # Sample property names taken from ERC000011 where present
+  # See https://www.ebi.ac.uk/biosamples/schema-store/registry/schemas/ERC000011
+  optional:
+    Sample Accession: bioSampleAccession
+    BioSample Name: bioSampleName
+    Title: title
+    Description: description
+    Unique Name: uniqueName
+    Prefix: prefix
+    Subject: subject
+    Derived From: derivedFrom
+    Taxonomy ID: taxId
+    Scientific Name: scientific name
+    Common Name: commonName
+    mating_type: mating_type
+    sex: sex
+    population: population
+    cell_type: cell_type
+    dev_stage: dev_stage
+    germline: germline
+    tissue_lib: tissue_lib
+    tissue_type: tissue_type
+    bio_material: bio_material
+    culture_collection: culture_collection
+    specimen_voucher: specimen_voucher
+    collected_by: collected_by
+    collection_date: collection date
+    geographic location (country and/or sea): geographic location (country and/or sea)
+    geographic location (region and locality): geographic location (region and locality)
+    host: host
+    identified_by: identified_by
+    isolation_source: isolation_source
+    lat_lon: lat_lon
+    lab_host: lab_host
+    environmental_sample: environmental_sample
+    cultivar: cultivar
+    ecotype: ecotype
+    isolate: isolate
+    strain: strain
+    sub_species: sub_species
+    variety: variety
+    sub_strain: sub_strain
+    cell_line: cell_line
+    serotype: serotype
+    serovar: serovar
+  cast:
+    Sample ID: string
+    BioSample Name: string
+    collection_date: date
+
+
+Files:
+  required:
+    Analysis Alias: analysisAlias
+    File Name: fileName

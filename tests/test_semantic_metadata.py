@@ -74,7 +74,7 @@ class TestSemanticMetadata(TestCase):
         checker = SemanticMetadataChecker(metadata)
         with patch('eva_sub_cli.semantic_metadata.download_xml_from_ena') as m_ena_download:
             m_ena_download.side_effect = [True, HTTPError('problem downloading', response=Response())]
-            checker.check_project_exists_and_public_in_ena()
+            checker.check_all_project_accessions()
             self.assertEqual(checker.errors, [])
 
     def test_check_project_exists_and_public_in_ena_false(self):
@@ -86,7 +86,7 @@ class TestSemanticMetadata(TestCase):
         checker = SemanticMetadataChecker(metadata)
         with patch('eva_sub_cli.semantic_metadata.download_xml_from_ena') as m_ena_download:
             m_ena_download.side_effect = [HTTPError('problem downloading', response=Response())]
-            checker.check_project_exists_and_public_in_ena()
+            checker.check_all_project_accessions()
             self.assertEqual(checker.errors, [
                 {'property': '/project/projectAccession',
                  'description': 'Project PRJEBXYZ99 does not exist in ENA or is private'}

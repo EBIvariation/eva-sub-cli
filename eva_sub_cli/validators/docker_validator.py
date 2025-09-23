@@ -20,10 +20,10 @@ container_validation_output_dir = 'vcf_validation_output'
 class DockerValidator(Validator):
 
     def __init__(self, mapping_file, submission_dir, project_title, metadata_json=None,
-                 metadata_xlsx=None, shallow_validation=False, docker_path='docker', submission_config=None,
-                 container_image=None, container_tag=None, container_name=None):
-        super().__init__(mapping_file, submission_dir, project_title,
-                         metadata_json=metadata_json, metadata_xlsx=metadata_xlsx,
+                 metadata_xlsx=None, metadata_xlsx_version=None, shallow_validation=False, docker_path='docker',
+                 submission_config=None, container_image=None, container_tag=None, container_name=None):
+        super().__init__(mapping_file, submission_dir, project_title, metadata_json=metadata_json,
+                         metadata_xlsx=metadata_xlsx, metadata_xlsx_version=metadata_xlsx_version,
                          shallow_validation=shallow_validation, submission_config=submission_config)
         self.docker_path = docker_path
         submission_basename = re.sub('[^a-zA-Z0-9]', '', os.path.basename(submission_dir))
@@ -43,8 +43,8 @@ class DockerValidator(Validator):
             f"{self.docker_path} exec {self.container_name} nextflow run eva_sub_cli/nextflow/validation.nf ",
             f"--base_dir {container_validation_dir} ",
             f"--vcf_files_mapping {self.mapping_file} ",
-            f"--metadata_xlsx {self.metadata_xlsx} " if self.metadata_xlsx and not self.metadata_json
-                                                     else f"--metadata_json {self.metadata_json} ",
+            f"--metadata_xlsx {self.metadata_xlsx} --conversion_configuration {self._get_xlsx_conversion_configuration()} "
+            if self.metadata_xlsx and not self.metadata_json else f"--metadata_json {self.metadata_json} ",
             f"--shallow_validation true " if self.shallow_validation else "",
             f"--output_dir {container_validation_output_dir}"
         ])

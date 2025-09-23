@@ -4,12 +4,11 @@ from copy import deepcopy
 from datetime import datetime
 
 import yaml
-from requests import HTTPError
-
-from retry import retry
 from ebi_eva_common_pyutils.biosamples_communicators import NoAuthHALCommunicator
 from ebi_eva_common_pyutils.ena_utils import download_xml_from_ena, get_scientific_name_and_common_name
 from ebi_eva_common_pyutils.logger import AppLogger
+from requests import HTTPError
+from retry import retry
 
 from eva_sub_cli.date_utils import check_date
 
@@ -30,7 +29,8 @@ ANALYSIS_ALIAS_KEY = 'analysisAlias'
 ANALYSIS_RUNS_KEY = 'runAccessions'
 
 # Samples created before this date are not required to have collection date or geographic location
-threshold_2023 = datetime(2023,1,1)
+threshold_2023 = datetime(2023, 1, 1)
+
 
 def cast_list(l, type_to_cast=str):
     for e in l:
@@ -52,25 +52,19 @@ class SemanticMetadataChecker(AppLogger):
             yaml.safe_dump(data=self.errors, stream=open_yaml)
 
     def check_all(self):
-        if PROJECT_ACCESSION_KEY in self.metadata[PROJECT_KEY]:
-            self.check_project_exists_and_public_in_ena()
-        else:
-            self.check_all_project_accessions()
-            self.check_all_taxonomy_codes()
-
+        self.check_all_project_accessions()
+        self.check_all_taxonomy_codes()
         self.check_all_scientific_names()
         self.check_existing_biosamples()
         self.check_all_analysis_run_accessions()
         self.check_analysis_alias_coherence()
         self.check_all_analysis_contain_samples()
 
-    def check_project_exists_and_public_in_ena(self):
-        project = self.metadata[PROJECT_KEY]
-        self.check_project_accession(project[PROJECT_ACCESSION_KEY], f'/{PROJECT_KEY}/{PROJECT_ACCESSION_KEY}')
-
     def check_all_project_accessions(self):
         """Check that ENA project accessions exist and are public."""
         project = self.metadata[PROJECT_KEY]
+        if PROJECT_ACCESSION_KEY in project:
+            self.check_project_accession(project[PROJECT_ACCESSION_KEY], f'/{PROJECT_KEY}/{PROJECT_ACCESSION_KEY}')
         if PARENT_PROJECT_KEY in project:
             self.check_project_accession(project[PARENT_PROJECT_KEY], f'/{PROJECT_KEY}/{PARENT_PROJECT_KEY}')
         for idx, accession in enumerate(project.get(CHILD_PROJECTS_KEY, [])):
@@ -234,9 +228,9 @@ class SemanticMetadataChecker(AppLogger):
     def _should_bypass_error(self, sample_data, error):
         try:
             try:
-                created_dated = datetime.strptime(sample_data['create'],'%Y-%m-%dT%H:%M:%S.%fZ')
+                created_dated = datetime.strptime(sample_data['create'], '%Y-%m-%dT%H:%M:%S.%fZ')
             except ValueError:
-                created_dated = datetime.strptime(sample_data['create'],'%Y-%m-%dT%H:%M:%SZ')
+                created_dated = datetime.strptime(sample_data['create'], '%Y-%m-%dT%H:%M:%SZ')
             if created_dated < threshold_2023 and (
                     'collection date' in error or
                     'geographic location (country and/or sea)' in error
@@ -309,4 +303,5 @@ class SemanticMetadataChecker(AppLogger):
             analysis_alias = analysis.get(ANALYSIS_ALIAS_KEY)
             if analysis_alias and analysis_alias not in sample_analysis_aliases_set:
                 json_path = f'/{ANALYSIS_KEY}/{idx}'
-                self.add_error(property=json_path, description=f'No sample found for the analysis. Should have at the least one sample.')
+                self.add_error(property=json_path,
+                               description=f'No sample found for the analysis. Should have at the least one sample.')

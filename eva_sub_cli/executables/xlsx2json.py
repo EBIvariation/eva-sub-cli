@@ -187,6 +187,7 @@ class XlsxParser:
                            f"Only the first row's data will be taken into consideration")
         elif len(project_data) == 0:
             logger.error(f"{PROJECT} worksheet expects a single row of info but no info is found in the file.")
+            self.add_error(f"{PROJECT} worksheet expects a single row of info but no info is found in the file.")
             return {json_key: {}}
 
         first_row = project_data[0]

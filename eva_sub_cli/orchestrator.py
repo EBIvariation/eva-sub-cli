@@ -6,7 +6,6 @@ from collections import defaultdict
 
 import requests
 from ebi_eva_common_pyutils.config import WritableConfig
-from ebi_eva_common_pyutils.ena_utils import download_xml_from_ena
 from ebi_eva_common_pyutils.logger import logging_config
 from openpyxl.reader.excel import load_workbook
 from packaging import version
@@ -26,6 +25,7 @@ from eva_sub_cli.metadata import EvaMetadataJson
 from eva_sub_cli.submission_ws import SubmissionWSClient
 from eva_sub_cli.submit import StudySubmitter, SUB_CLI_CONFIG_KEY_SUBMISSION_ID, \
     SUB_CLI_CONFIG_KEY_SUBMISSION_UPLOAD_URL
+from eva_sub_cli.utils import get_project_title_from_ena
 from eva_sub_cli.validators.docker_validator import DockerValidator
 from eva_sub_cli.validators.native_validator import NativeValidator
 from eva_sub_cli.validators.validator import READY_FOR_SUBMISSION_TO_EVA
@@ -113,7 +113,7 @@ def get_project_and_vcf_fasta_mapping_from_metadata_json(metadata_json, mapping_
     if not project_title:
         project_accession = metadata.project.get('projectAccession')
         if project_accession:
-            project_title = get_project_title(project_accession)
+            project_title = get_project_title_from_ena(project_accession)
 
     vcf_fasta_report_mapping = []
     if mapping_req:
@@ -173,7 +173,7 @@ def get_metadata_xlsx_template_link():
         return 'https://raw.githubusercontent.com/EBIvariation/eva-sub-cli/main/eva_sub_cli/etc/EVA_Submission_template.xlsx'
 
 
-def verify_metadata_xlsx_version(metadata_xlsx, min_req_version):
+def verify_and_get_metadata_xlsx_version(metadata_xlsx, min_req_version):
     workbook = load_workbook(metadata_xlsx)
     instructions_sheet = workbook['PLEASE READ FIRST']
     xlsx_sheet_version_value = instructions_sheet[3][0].value
@@ -189,6 +189,8 @@ def verify_metadata_xlsx_version(metadata_xlsx, min_req_version):
             f"No version information found in metadata xlsx sheet {metadata_xlsx}. "
             f"Please download the correct template from EVA github project {get_metadata_xlsx_template_link()}")
 
+    return xlsx_version
+
 
 def get_project_and_vcf_fasta_mapping_from_metadata_xlsx(metadata_xlsx, mapping_req=False):
     workbook = load_workbook(metadata_xlsx)
@@ -201,7 +203,7 @@ def get_project_and_vcf_fasta_mapping_from_metadata_xlsx(metadata_xlsx, mapping_
     if not project_title:
         project_accession = project_sheet.cell(row=4, column=project_headers['Project Accession']).value
         if project_accession:
-            project_title = get_project_title(project_accession)
+            project_title = get_project_title_from_ena(project_accession)
 
     vcf_fasta_report_mapping = []
     if mapping_req:
@@ -233,25 +235,6 @@ def get_project_and_vcf_fasta_mapping_from_metadata_xlsx(metadata_xlsx, mapping_
                 vcf_fasta_report_mapping.append([file_name, reference_fasta, ''])
 
     return project_title, vcf_fasta_report_mapping
-
-
-@retry(tries=4, delay=2, backoff=1.2, jitter=(1, 3))
-def get_project_title(project_accession):
-    try:
-        xml_root = download_xml_from_ena(f'https://www.ebi.ac.uk/ena/browser/api/xml/{project_accession}')
-        project_title = next(iter(xml_root.xpath('/PROJECT_SET/PROJECT/TITLE/text()')), None)
-        if project_title:
-            return project_title
-        else:
-            raise Exception(f"{project_accession} does not exist in ENA or is private")
-    except HTTPError as e:
-        # We cannot currently differentiate between the service returning an error and the accession not existing
-        if e.response.status_code == 500:
-            raise Exception(f"{project_accession} does not exist in ENA or is private")
-        else:
-            raise Exception(f"{project_accession} does not exist in ENA or is private")
-    except Exception as e:
-        raise Exception(f'Unexpected error occurred while getting project details from ENA for {project_accession}')
 
 
 def check_validation_required(tasks, sub_config, username=None, password=None):
@@ -301,10 +284,11 @@ def orchestrate_process(submission_dir, vcf_files, reference_fasta, metadata_jso
 
     if metadata_json:
         metadata_json = os.path.abspath(metadata_json)
+    metadata_xlsx_version = None
     if metadata_xlsx:
         metadata_xlsx = os.path.abspath(metadata_xlsx)
         # check metadata xlsx version is not lower than the required min metadata template version
-        verify_metadata_xlsx_version(metadata_xlsx, MINIMUM_METADATA_XLSX_TEMPLATE_VERSION)
+        metadata_xlsx_version = verify_and_get_metadata_xlsx_version(metadata_xlsx, MINIMUM_METADATA_XLSX_TEMPLATE_VERSION)
 
     # Get the provided Project Title and VCF files mapping (VCF, Fasta and Report)
     project_title, vcf_files_mapping = get_project_title_and_create_vcf_files_mapping(
@@ -318,12 +302,13 @@ def orchestrate_process(submission_dir, vcf_files, reference_fasta, metadata_jso
     if VALIDATE in tasks:
         if executor == DOCKER:
             validator = DockerValidator(vcf_files_mapping, submission_dir, project_title, metadata_json, metadata_xlsx,
-                                        shallow_validation=shallow_validation, submission_config=sub_config)
+                                        metadata_xlsx_version, shallow_validation=shallow_validation,
+                                        submission_config=sub_config)
         # default to native execution
         else:
             validator = NativeValidator(vcf_files_mapping, submission_dir, project_title, metadata_json, metadata_xlsx,
-                                        shallow_validation=shallow_validation, submission_config=sub_config,
-                                        nextflow_config=nextflow_config)
+                                        metadata_xlsx_version, shallow_validation=shallow_validation,
+                                        submission_config=sub_config, nextflow_config=nextflow_config)
         with validator:
             validator.validate_and_report()
             if not metadata_json:
