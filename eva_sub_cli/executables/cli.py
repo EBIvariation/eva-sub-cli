@@ -22,24 +22,47 @@ from eva_sub_cli.file_utils import is_submission_dir_writable, DirLockError, Dir
 
 
 def validate_command_line_arguments(args, argparser):
+    fail = False
     if (args.vcf_files and not args.reference_fasta) or (not args.vcf_files and args.reference_fasta):
         print("When using --vcf_files and --reference_fasta, both need to be specified")
-        argparser.print_usage()
-        sys.exit(1)
+        fail = True
+
+    if args.vcf_files:
+        for vcf_file in args.vcf_files:
+            if not os.path.isfile(vcf_file):
+                print(f"VCF file {vcf_file} is not a file")
+                fail = True
+
+    if args.reference_fasta:
+        if not os.path.isfile(args.reference_fasta):
+            print(f"Fasta file {args.reference_fasta} is not a file")
+            fail = True
+
+    if args.metadata_xlsx:
+        if not os.path.isfile(args.metadata_xlsx):
+            print(f"Spreadsheet file {args.metadata_xlsx} is not a file")
+            fail = True
+
+    if args.metadata_json:
+        if not os.path.isfile(args.metadata_json):
+            print(f"JSON file {args.metadata_json} is not a file")
+            fail = True
 
     if SUBMIT in args.tasks and (
             not (args.username or os.environ.get('ENAWEBINACCOUNT')) or
             not (args.password or os.environ.get('ENAWEBINPASSWORD'))):
         print("To submit your data, you need to provide a Webin username and password")
-        argparser.print_usage()
-        sys.exit(1)
+        fail = True
 
     if not is_submission_dir_writable(args.submission_dir):
         print(f"'{args.submission_dir}' does not have write permissions or is not a directory.")
-        sys.exit(1)
+        fail = True
 
     if args.nextflow_config and not os.path.isfile(args.nextflow_config):
         print(f"'{args.nextflow_config}' is not a file or does not exist.")
+        fail = True
+
+    if fail:
         argparser.print_usage()
         sys.exit(1)
 
