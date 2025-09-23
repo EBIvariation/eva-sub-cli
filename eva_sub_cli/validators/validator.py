@@ -335,10 +335,7 @@ class Validator(AppLogger):
             with open(self._evidence_type_check_yaml) as open_yaml:
                 self.results['evidence_type_check'] = yaml.safe_load(open_yaml)
             self.results['evidence_type_check']['report_path'] = self._evidence_type_check_yaml
-
         self._update_metadata_with_evidence_type()
-
-
 
     def _collect_metadata_results(self):
         self.results['metadata_check'] = {}
@@ -478,7 +475,6 @@ class Validator(AppLogger):
         else:
             self.error(f'Cannot locate the metadata in JSON format in {os.path.join(self.output_dir, "metadata.json")}')
 
-
     def _update_metadata_with_evidence_type(self):
         if self.metadata_json_post_validation:
             metadata = EvaMetadataJson(self.metadata_json_post_validation)
@@ -487,8 +483,10 @@ class Validator(AppLogger):
                 if metadata.analyses:
                     for analysis in metadata.analyses:
                         analysis_alias = analysis['analysisAlias']
-                        analysis['evidenceType'] = self.results['evidence_type_check'][analysis_alias][
-                            'evidence_type'] if analysis_alias in self.results['evidence_type_check'] else None
+                        if (analysis_alias in self.results['evidence_type_check']
+                                and self.results['evidence_type_check'][analysis_alias]['evidence_type'] is not None):
+                            analysis['evidenceType'] = self.results['evidence_type_check'][analysis_alias][
+                                'evidence_type']
                         analysis_data.append(analysis)
                 else:
                     self.error('No analyses found in metadata')
