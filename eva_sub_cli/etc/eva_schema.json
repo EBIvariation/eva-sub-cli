@@ -324,18 +324,7 @@
             "description": "BioSample accession of pre-existing sample. Only use for preregistered samples"
           },
           "bioSampleObject": {
-            "type": "object",
-            "anyOf": [
-              {
-                "$ref": "eva-biosamples.json"
-              },
-              {
-                "$ref": "https://www.ebi.ac.uk/biosamples/schema-store/registry/schemas/ERC000011"
-              },
-              {
-                "$ref": "https://www.ebi.ac.uk/biosamples/schemas/certification/plant-miappe.json"
-              }
-            ]
+            "$ref": "https://www.ebi.ac.uk/biosamples/schema-store/registry/schemas/ERC000011"
           }
         }
       }
