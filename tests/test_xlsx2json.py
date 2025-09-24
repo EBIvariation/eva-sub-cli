@@ -14,7 +14,6 @@ class TestXlsReader(TestCase):
     resource_dir = os.path.join(os.path.dirname(__file__), 'resources')
     conf_filename = os.path.join(ETC_DIR, 'spreadsheet2json_conf.yaml')
     eva_schema = os.path.abspath(os.path.join(__file__, "../../eva_sub_cli/etc/eva_schema.json", ))
-    biosample_schema = os.path.abspath(os.path.join(__file__, "../../eva_sub_cli/etc/eva-biosamples.json", ))
 
     def tearDown(self):
         files_from_tests = [
@@ -62,16 +61,9 @@ class TestXlsReader(TestCase):
         # assert json schema
         with open(self.eva_schema) as eva_schema_file:
             eva_json_schema = json.load(eva_schema_file)
-        with open(self.biosample_schema) as biosample_schema_file:
-            biosample_json_schema = json.load(biosample_schema_file)
-
-        # assert created json file sample field conforms to eva-biosamples schema
-        jsonschema.validate(json_data['sample'][3]['bioSampleObject'], biosample_json_schema)
 
         # assert created json file conform to eva_schema
-        resolver = jsonschema.RefResolver.from_schema(eva_json_schema)
-        resolver.store['eva-biosamples.json'] = biosample_json_schema
-        jsonschema.validate(json_data, eva_json_schema, resolver=resolver)
+        jsonschema.validate(json_data, eva_json_schema)
 
     def test_create_xls_template(self):
         metadata_file = os.path.join(self.resource_dir, 'metadata_not_existing.xlsx')
@@ -106,10 +98,6 @@ class TestXlsReader(TestCase):
     def test_json_validation_fails_for_large_project_title_and_project_description(self) -> None:
         with open(self.eva_schema) as eva_schema_file:
             eva_json_schema = json.load(eva_schema_file)
-        with open(self.biosample_schema) as biosample_schema_file:
-            biosample_json_schema = json.load(biosample_schema_file)
-        resolver = jsonschema.RefResolver.from_schema(eva_json_schema)
-        resolver.store['eva-biosamples.json'] = biosample_json_schema
 
         # test fails for title
         json_data = self.get_expected_json()
@@ -117,7 +105,7 @@ class TestXlsReader(TestCase):
 
         assert len(json_data['project']['title']) == 600
         with self.assertRaises(jsonschema.ValidationError):
-            jsonschema.validate(json_data, eva_json_schema, resolver=resolver)
+            jsonschema.validate(json_data, eva_json_schema)
 
         # test fails for description
         json_data = self.get_expected_json()
@@ -125,7 +113,7 @@ class TestXlsReader(TestCase):
 
         assert len(json_data['project']['description']) == 6000
         with self.assertRaises(jsonschema.ValidationError):
-            jsonschema.validate(json_data, eva_json_schema, resolver=resolver)
+            jsonschema.validate(json_data, eva_json_schema)
 
     def build_large_string_of_length(self, length):
         return "A" * length
@@ -235,6 +223,9 @@ class TestXlsReader(TestCase):
                             ],
                             'collection date': [
                                 {'text': '2021-03-12'}
+                            ],
+                            'geographic location (country and/or sea)': [
+                                {'text': 'Afghanistan'}
                             ]
                         }
                     }
