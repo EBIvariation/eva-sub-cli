@@ -5,6 +5,7 @@ from unittest import TestCase
 
 import eva_sub_cli
 from eva_sub_cli.report import generate_html_report, generate_text_report
+from eva_sub_cli.validators.validator import PROCESS_NOT_RUN_YET
 
 validation_results_xlsx = {
     "ready_for_submission_to_eva": False,
@@ -365,12 +366,16 @@ class TestReport(TestCase):
                                                  'expected_report_metadata_xlsx.html')
     expected_report_metadata_json = os.path.join(resource_dir, 'validation_reports',
                                                  'expected_report_metadata_json.html')
+    expected_report_metadata_json_process_not_run = os.path.join(resource_dir, 'validation_reports',
+                                                 'expected_report_metadata_json_process_not_run.html')
     expected_report_metadata_xlsx_shallow = os.path.join(resource_dir, 'validation_reports',
                                                          'expected_shallow_metadata_xlsx_report.html')
     expected_text_report_metadata_xlsx = os.path.join(resource_dir, 'validation_reports',
                                                  'expected_report_metadata_xlsx.txt')
     expected_text_report_metadata_json = os.path.join(resource_dir, 'validation_reports',
                                                  'expected_report_metadata_json.txt')
+    expected_text_report_metadata_json_process_not_run = os.path.join(resource_dir, 'validation_reports',
+                                                      'expected_report_metadata_json_process_not_run.txt')
     expected_text_report_metadata_xlsx_shallow = os.path.join(resource_dir, 'validation_reports',
                                                          'expected_shallow_metadata_xlsx_report.txt')
     test_project_name = "My cool project"
@@ -418,6 +423,21 @@ class TestReport(TestCase):
             self.expected_report_metadata_json
         )
 
+    def test_generate_html_report_metadata_json_metadata_report_not_run_yet(self):
+        validation_result = {}
+        validation_result.update({'vcf_check': {'pass': PROCESS_NOT_RUN_YET}})
+        validation_result.update({'evidence_type_check': {'pass': PROCESS_NOT_RUN_YET}})
+        validation_result.update({'assembly_check': {'pass': PROCESS_NOT_RUN_YET}})
+        validation_result.update({'fasta_check': {'pass': PROCESS_NOT_RUN_YET}})
+        validation_result.update({'metadata_check': {'pass': PROCESS_NOT_RUN_YET}})
+        validation_result.update({'sample_check': {'pass': PROCESS_NOT_RUN_YET}})
+
+        self.check_report_vs_expected(
+            validation_result,
+            'metadata_json_report.html',
+            self.expected_report_metadata_json_process_not_run
+        )
+
     def test_generate_html_report_metadata_xlsx_shallow(self):
         shallow_validation_results_xlsx = copy.deepcopy(validation_results_xlsx)
         shallow_validation_results_xlsx['shallow_validation'] = {
@@ -447,6 +467,22 @@ class TestReport(TestCase):
             validation_results_json,
             'metadata_json_report.txt',
             self.expected_text_report_metadata_json,
+            html=False
+        )
+
+    def test_generate_text_report_metadata_json_report_not_run(self):
+        validation_result = {}
+        validation_result.update({'vcf_check': {'pass': PROCESS_NOT_RUN_YET}})
+        validation_result.update({'evidence_type_check': {'pass': PROCESS_NOT_RUN_YET}})
+        validation_result.update({'assembly_check': {'pass': PROCESS_NOT_RUN_YET}})
+        validation_result.update({'fasta_check': {'pass': PROCESS_NOT_RUN_YET}})
+        validation_result.update({'metadata_check': {'pass': PROCESS_NOT_RUN_YET}})
+        validation_result.update({'sample_check': {'pass': PROCESS_NOT_RUN_YET}})
+
+        self.check_report_vs_expected(
+            validation_result,
+            'metadata_json_report.txt',
+            self.expected_text_report_metadata_json_process_not_run,
             html=False
         )
 

@@ -3,8 +3,11 @@ import shutil
 from copy import deepcopy
 from unittest import TestCase
 
+import yaml
+
 from eva_sub_cli.metadata import EvaMetadataJson
-from eva_sub_cli.validators.validator import Validator, VALIDATION_OUTPUT_DIR
+from eva_sub_cli.validators.validator import Validator, VALIDATION_OUTPUT_DIR, VCF_CHECK, READY_FOR_SUBMISSION_TO_EVA, \
+    PROCESS_NOT_RUN_YET
 from tests.test_utils import create_mapping_file
 
 expected_validation_results = {
@@ -32,8 +35,7 @@ expected_validation_results = {
         'AA': {
             'errors': None,
             'evidence_type': 'allele_frequency'
-        },
-        'report_path': '{resource_dir}/validation_reports/validation_output/other_validations/evidence_type_checker.yml'
+        }
     },
 
     'fasta_check': {
@@ -112,6 +114,7 @@ class TestValidator(TestCase):
     def tearDown(self) -> None:
         files_from_tests = [
             self.mapping_file,
+            os.path.join(self.output_dir, 'validation_results.yaml'),
             os.path.join(self.output_dir, VALIDATION_OUTPUT_DIR, 'other_validations',
                          'metadata_spreadsheet_validation.txt'),
             os.path.join(self.output_dir, VALIDATION_OUTPUT_DIR, 'report.html'),
@@ -136,18 +139,132 @@ class TestValidator(TestCase):
     def run_collect_results(self, validator_to_run):
         validator_to_run._collect_validation_workflow_results()
         # Drop report paths from comparison (test will fail if missing)
-        del validator_to_run.results['metadata_check']['json_report_path']
-        if 'spreadsheet_report_path' in validator_to_run.results['metadata_check']:
-            del validator_to_run.results['metadata_check']['spreadsheet_report_path']
-        del validator_to_run.results['sample_check']['report_path']
-        for file in validator_to_run.results['vcf_check'].values():
-            del file['report_path']
-        for file in validator_to_run.results['assembly_check'].values():
-            del file['report_path']
+        self.drop_report_paths_from_validation_results(validator_to_run.results)
+
+    def drop_report_paths_from_validation_results(self, results):
+        if 'metadata_check' in results:
+            if 'json_report_path' in results['metadata_check']:
+                del results['metadata_check']['json_report_path']
+            if 'spreadsheet_report_path' in results['metadata_check']:
+                del results['metadata_check']['spreadsheet_report_path']
+        if 'sample_check' in results and 'report_path' in results['sample_check']:
+            del results['sample_check']['report_path']
+        if 'vcf_check' in results:
+            for file in results['vcf_check'].values():
+                if type(file) is dict and 'report_path' in file:
+                    del file['report_path']
+        if 'assembly_check' in results:
+            for file in results['assembly_check'].values():
+                if 'report_path' in file:
+                    del file['report_path']
+        if 'evidence_type_check' in results and 'report_path' in results['evidence_type_check']:
+            del results['evidence_type_check']['report_path']
+
+    def save_validation_results_file(self, validator, results):
+        with open(validator.validation_result_file, 'w') as val_res_file:
+            yaml.safe_dump(results, val_res_file)
 
     def test__collect_validation_workflow_results_with_metadata_json(self):
         self.run_collect_results(self.validator_json)
         assert self.validator_json.results == self.format_data_structure(expected_validation_results)
+
+    def test__collect_validation_workflow_results_for_validation_task_no_previous_results_exist(self):
+        expected_vcf_check = self.format_data_structure(expected_validation_results['vcf_check'])
+        expected_evidence_type_check = self.format_data_structure(expected_validation_results['evidence_type_check'])
+
+        # updated tasks to run only VCF_CHECK
+        self.validator_json.tasks = [VCF_CHECK]
+
+        # run collect result and assert
+        self.run_collect_results(self.validator_json)
+        # assert validation results collected only for the given task
+        for key in ['assembly_check', 'sample_check', 'metadata_check']:
+            assert key not in self.validator_json.results
+        assert self.validator_json.results['vcf_check'] == expected_vcf_check
+        assert self.validator_json.results['evidence_type_check'] == expected_evidence_type_check
+
+        # run assess result
+        self.validator_json._assess_validation_results()
+        # assert assessed results
+        assert self.validator_json.results['vcf_check']['pass'] == True
+        assert self.validator_json.results['evidence_type_check']['pass'] == True
+        assert self.validator_json.results['assembly_check']['pass'] == PROCESS_NOT_RUN_YET
+        assert self.validator_json.results['fasta_check']['pass'] == PROCESS_NOT_RUN_YET
+        assert self.validator_json.results['sample_check']['pass'] == PROCESS_NOT_RUN_YET
+        assert self.validator_json.results['metadata_check']['pass'] == PROCESS_NOT_RUN_YET
+        assert self.validator_json.sub_config.get(READY_FOR_SUBMISSION_TO_EVA) == False
+        assert self.validator_json.results[READY_FOR_SUBMISSION_TO_EVA] == False
+
+        # run save result
+        self.validator_json._save_validation_results()
+        # assert saved results
+        expected_vcf_check['pass'] = True
+        expected_evidence_type_check['pass'] = True
+        with open(self.validator_json.validation_result_file, 'r') as val_res_file:
+            saved_results = yaml.safe_load(val_res_file) or {}
+        assert saved_results['vcf_check'] == expected_vcf_check
+        assert saved_results['evidence_type_check'] == expected_evidence_type_check
+        assert saved_results['assembly_check']['pass'] == PROCESS_NOT_RUN_YET
+        assert saved_results['fasta_check']['pass'] == PROCESS_NOT_RUN_YET
+        assert saved_results['sample_check']['pass'] == PROCESS_NOT_RUN_YET
+        assert saved_results['metadata_check']['pass'] == PROCESS_NOT_RUN_YET
+        assert saved_results[READY_FOR_SUBMISSION_TO_EVA] == False
+
+    def test__collect_validation_workflow_results_for_validation_task_and_add_to_previous_results(self):
+        # save validations results except for VCF_CHECK
+        results_to_be_saved = deepcopy(expected_validation_results)
+        del results_to_be_saved['vcf_check']
+        del results_to_be_saved['evidence_type_check']
+        self.save_validation_results_file(self.validator_json, results_to_be_saved)
+
+        # updated tasks to run only VCF_CHECK
+        self.validator_json.tasks = [VCF_CHECK]
+        # run collect result
+        self.validator_json._collect_validation_workflow_results()
+        # run assess result
+        self.validator_json._assess_validation_results()
+        # run save result
+        self.validator_json._save_validation_results()
+
+        # assert saved results
+        expected_results = deepcopy(expected_validation_results)
+        expected_results['vcf_check']['pass'] = True
+        expected_results['evidence_type_check']['pass'] = True
+        expected_results[READY_FOR_SUBMISSION_TO_EVA] = False
+
+        with open(self.validator_json.validation_result_file, 'r') as val_res_file:
+            saved_results = yaml.safe_load(val_res_file) or {}
+        self.drop_report_paths_from_validation_results(saved_results)
+        assert saved_results == self.format_data_structure(expected_results)
+
+    def test__collect_validation_workflow_results_for_validation_task_and_update_previous_results(self):
+        # save modified validations results for VCF_CHECK
+        results_to_be_saved = deepcopy(expected_validation_results)
+        results_to_be_saved['vcf_check'] = {
+            'input_passed.vcf': {'valid': False, 'error_list': ['abc_error'], 'error_count': 10, 'warning_count': 5,
+                                 'critical_count': 6, 'critical_list': ['abc_critical']}}
+        results_to_be_saved['evidence_type_check'] = {'AA': {'errors': ['abc_error'], 'evidence_type': None}}
+        self.save_validation_results_file(self.validator_json, results_to_be_saved)
+
+        # updated tasks to run only VCF_CHECK
+        self.validator_json.tasks = [VCF_CHECK]
+        # run collect result
+        self.validator_json._collect_validation_workflow_results()
+        # run assess result
+        self.validator_json._assess_validation_results()
+        # run save result
+        self.validator_json._save_validation_results()
+
+        # assert saved results
+        expected_results = deepcopy(expected_validation_results)
+        expected_results['vcf_check']['pass'] = True
+        expected_results['evidence_type_check']['pass'] = True
+        expected_results[READY_FOR_SUBMISSION_TO_EVA] = False
+
+        with open(self.validator_json.validation_result_file, 'r') as val_res_file:
+            saved_results = yaml.safe_load(val_res_file) or {}
+        self.drop_report_paths_from_validation_results(saved_results)
+        assert saved_results == self.format_data_structure(expected_results)
 
     def test__collect_validation_workflow_results_with_metadata_xlsx(self):
         expected_results = deepcopy(expected_validation_results)
