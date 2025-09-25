@@ -66,7 +66,7 @@ For requirements, please refer to the EVA website (https://www.ebi.ac.uk/eva/?Su
 VCF VALIDATION RESULTS
 Checks whether each file is compliant with the VCF specification (http://samtools.github.io/hts-specs/VCFv4.4.pdf).
 Also checks whether the variants' reference alleles match against the reference assembly.
-	input_fail.vcf
+    input_fail.vcf
 		❌ Assembly check: 26/36 (72.22%)
 		First 10 errors per category are below. Full report: /path/to/assembly_failed/report
 			Parsing error: The assembly checking could not be completed: Contig 'chr23' not found in assembly report
@@ -83,7 +83,7 @@ Also checks whether the variants' reference alleles match against the reference 
 		First 10 errors per category are below. Full report: /path/to/vcf_failed/report
 			Critical error: Line 4: Error in meta-data section.
 			Non-critical error: Sample #11, field AD does not match the meta specification Number=R (expected 2 value(s)). AD=..
-	input_passed.vcf
+    input_passed.vcf
 		✔ Assembly check: 247/247 (100.0%)
 		✔ VCF check: 0 critical errors, 0 non-critical errors
 -
@@ -102,28 +102,28 @@ Checks whether information in the metadata is concordant with that contained in 
 REFERENCE GENOME INSDC CHECK
 Checks that the reference sequences in the FASTA file used to call the variants are accessioned in INSDC.
 Also checks if the reference assembly accession in the metadata matches the one determined from the FASTA file.
-	metadata_asm_match.fa
+    metadata_asm_match.fa
 		✔ All sequences are INSDC accessioned.
 		✔ Analysis A: Assembly accession in metadata is compatible
-	metadata_asm_not_found.fa
+    metadata_asm_not_found.fa
 		✔ All sequences are INSDC accessioned.
 		❌ No assembly accession found in metadata
 			Full report: /path/to/metadata_asm_not_found.yml
 			Assembly accession found in metadata: Not found
 			Assembly accession(s) compatible with FASTA: GCA_1
-	metadata_asm_not_match.fa
+    metadata_asm_not_match.fa
 		✔ All sequences are INSDC accessioned.
 		❌ Analysis B: Assembly accession in metadata is not compatible
 			Full report: /path/to/metadata_asm_not_match.yml
 			Assembly accession found in metadata: GCA_2
 			Assembly accession(s) compatible with FASTA: GCA_1
-	metadata_error.fa
+    metadata_error.fa
 		Warning: The following results may be incomplete due to problems with external services.
 		Please try again later for complete results.
 		Error message: 500 Server Error: Internal Server Error for url: https://www.ebi.ac.uk/eva/webservices/contig-alias/v1/chromosomes/md5checksum/hjfdoijsfc47hfg0gh9qwjrve
 		✔ All sequences are INSDC accessioned.
 		✔ Analysis C: Assembly accession in metadata is compatible
-	not_all_insdc.fa
+    not_all_insdc.fa
 		❌ Some sequences are not INSDC accessioned
 			First 10 sequences not in INSDC. Full report: /path/to/not_all_insdc_check.yml
 				Sequence name: 2

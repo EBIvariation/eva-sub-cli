@@ -31,6 +31,7 @@ METADATA_CHECK = 'metadata_check'
 # Includes sample concordance check
 SAMPLE_CHECK = 'sample_check'
 ALL_VALIDATION_TASKS = [VCF_CHECK, ASSEMBLY_CHECK, METADATA_CHECK, SAMPLE_CHECK]
+PROCESS_NOT_RUN_YET = 'Process not run yet'
 
 logger = logging_config.get_logger(__name__)
 
@@ -161,9 +162,10 @@ class Validator(AppLogger):
 
     def verify_ready_for_submission_to_eva(self):
         """ Checks if all the validation are passed """
+        required_keys = ['vcf_check', 'assembly_check', 'fasta_check', 'sample_check', 'metadata_check',
+                         'evidence_type_check']
         return all((
-            all((value.get('pass', False) is True for key, value in self.results.items() if
-                 key in ['vcf_check', 'assembly_check', 'fasta_check', 'sample_check', 'metadata_check', 'evidence_type_check'])),
+            all(key in self.results and self.results[key].get('pass', False) is True for key in required_keys),
             any((
                 self.results['shallow_validation']['requested'] is False,
                 self.results['shallow_validation'].get('required', True) is False
@@ -175,49 +177,82 @@ class Validator(AppLogger):
         # Collect information from the output and summarise in the config
         if self.shallow_validation:
             self._collect_trim_down_metrics()
-        self._collect_vcf_check_results()
-        self._collect_assembly_check_results()
-        self._load_sample_check_results()
-        self._load_evidence_check_results()
-        self._load_fasta_check_results()
-        self._collect_metadata_results()
+
+        if VCF_CHECK in self.tasks:
+            self._collect_vcf_check_results()
+            self._load_evidence_check_results()
+
+        if ASSEMBLY_CHECK in self.tasks:
+            self._collect_assembly_check_results()
+            self._load_fasta_check_results()
+
+        if METADATA_CHECK in self.tasks:
+            self._collect_metadata_results()
+
+        if SAMPLE_CHECK in self.tasks:
+            self._load_sample_check_results()
 
     def _assess_validation_results(self):
         """
-            Assess if the validation results are meeting expectations and marks them as "PASS: true" or "PASS: false"
+            Assess if the validation results are meeting expectations and marks them as "PASS: true", "PASS: false"
+            or "PASS: Process not run yet" if the process as not been run yet.
             It assumes all validation have been parsed already.
         """
-        # vcf_check result
-        vcf_check_result = all((vcf_check.get('critical_count', 1) == 0
-                                for vcf_name, vcf_check in self.results.get('vcf_check', {}).items()))
-        self.results['vcf_check']['pass'] = vcf_check_result
+        # read previous validation results
+        existing_results = {}
+        if os.path.exists(self.validation_result_file):
+            with open(self.validation_result_file, 'r') as val_res_file:
+                existing_results = yaml.safe_load(val_res_file) or {}
 
-        # assembly_check result
-        asm_nb_mismatch_result = all((asm_check.get('nb_mismatch', 1) == 0
-                                      for vcf_name, asm_check in self.results.get('assembly_check', {}).items()))
-        asm_nb_error_result = all((asm_check.get('nb_error', 1) == 0
-                                   for vcf_name, asm_check in self.results.get('assembly_check', {}).items()))
-        self.results['assembly_check']['pass'] = asm_nb_mismatch_result and asm_nb_error_result
+        if VCF_CHECK in self.tasks:
+            # vcf_check result
+            vcf_check_result = all((vcf_check.get('critical_count', 1) == 0
+                                    for vcf_name, vcf_check in self.results.get('vcf_check', {}).items()))
+            self.results['vcf_check']['pass'] = vcf_check_result
 
-        # fasta_check result
-        fasta_check_result = all((fa_file_check.get('all_insdc', False) is True
-                                  for fa_file, fa_file_check in self.results.get('fasta_check', {}).items()))
-        self.results['fasta_check']['pass'] = fasta_check_result
+            # evidence type check result
+            self.results['evidence_type_check']['pass'] = (bool(self.results.get('evidence_type_check')) and
+                                                           all('evidence_type' in v and v['evidence_type'] is not None
+                                                               for k, v in
+                                                               self.results.get('evidence_type_check', {}).items()
+                                                               if isinstance(v, dict)))
+        elif VCF_CHECK not in existing_results:
+            self.results.update({'vcf_check': {'pass': PROCESS_NOT_RUN_YET}})
+            self.results.update({'evidence_type_check': {'pass': PROCESS_NOT_RUN_YET}})
 
-        # sample check result
-        self.results['sample_check']['pass'] = self.results.get('sample_check', {}).get('overall_differences',
-                                                                                        True) is False
+        if ASSEMBLY_CHECK in self.tasks:
+            # assembly_check result
+            asm_nb_mismatch_result = all((asm_check.get('nb_mismatch', 1) == 0
+                                          for vcf_name, asm_check in self.results.get('assembly_check', {}).items()))
+            asm_nb_error_result = all((asm_check.get('nb_error', 1) == 0
+                                       for vcf_name, asm_check in self.results.get('assembly_check', {}).items()))
+            self.results['assembly_check']['pass'] = asm_nb_mismatch_result and asm_nb_error_result
 
-        # evidence type check result
-        self.results['evidence_type_check']['pass'] = (bool(self.results.get('evidence_type_check')) and
-                                                       all('evidence_type' in v and v['evidence_type'] is not None
-                                                      for k, v in self.results.get('evidence_type_check', {}).items()
-                                                      if isinstance(v, dict)))
+            # fasta_check result
+            fasta_check_result = all((fa_file_check.get('all_insdc', False) is True
+                                      for fa_file, fa_file_check in self.results.get('fasta_check', {}).items()))
+            self.results['fasta_check']['pass'] = fasta_check_result
+        elif ASSEMBLY_CHECK not in existing_results:
+            self.results.update({'assembly_check': {'pass': PROCESS_NOT_RUN_YET}})
+            self.results.update({'fasta_check': {'pass': PROCESS_NOT_RUN_YET}})
 
-        # metadata check result
-        metadata_xlsx_result = len(self.results.get('metadata_check', {}).get('spreadsheet_errors', []) or []) == 0
-        metadata_json_result = len(self.results.get('metadata_check', {}).get('json_errors', []) or []) == 0
-        self.results['metadata_check']['pass'] = metadata_xlsx_result and metadata_json_result
+        if SAMPLE_CHECK in self.tasks:
+            # sample check result
+            self.results['sample_check']['pass'] = self.results.get('sample_check', {}).get('overall_differences',
+                                                                                            True) is False
+        elif SAMPLE_CHECK not in existing_results:
+            self.results.update({'sample_check': {'pass': PROCESS_NOT_RUN_YET}})
+
+        if METADATA_CHECK in self.tasks:
+            # metadata check result
+            metadata_xlsx_result = len(self.results.get('metadata_check', {}).get('spreadsheet_errors', []) or []) == 0
+            metadata_json_result = len(self.results.get('metadata_check', {}).get('json_errors', []) or []) == 0
+            self.results['metadata_check']['pass'] = metadata_xlsx_result and metadata_json_result
+        elif METADATA_CHECK not in existing_results:
+            self.results.update({'metadata_check': {'pass': PROCESS_NOT_RUN_YET}})
+
+        # take previous result and overwrite with new result
+        self.results = {**existing_results, **self.results}
 
         # update config based on the validation results
         self.sub_config.set(READY_FOR_SUBMISSION_TO_EVA, value=self.verify_ready_for_submission_to_eva())
