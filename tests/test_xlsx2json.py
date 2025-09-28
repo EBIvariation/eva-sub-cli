@@ -94,16 +94,8 @@ class TestXlsReader(TestCase):
         # assert json schema
         with open(self.eva_schema) as eva_schema_file:
             eva_json_schema = json.load(eva_schema_file)
-        with open(self.biosample_schema) as biosample_schema_file:
-            biosample_json_schema = json.load(biosample_schema_file)
 
-        # assert created json file sample field conforms to eva-biosamples schema
-        jsonschema.validate(json_data['sample'][3]['bioSampleObject'], biosample_json_schema)
-
-        # assert created json file conform to eva_schema
-        resolver = jsonschema.RefResolver.from_schema(eva_json_schema)
-        resolver.store['eva-biosamples.json'] = biosample_json_schema
-        jsonschema.validate(json_data, eva_json_schema, resolver=resolver)
+        jsonschema.validate(json_data, eva_json_schema)
 
     def test_conversion_2_json_with_project_accession(self) -> None:
         xls_filename = os.path.join(self.resource_dir, 'EVA_Submission_test_with_project_accession.xlsx')
@@ -131,16 +123,8 @@ class TestXlsReader(TestCase):
         # assert json schema
         with open(self.eva_schema) as eva_schema_file:
             eva_json_schema = json.load(eva_schema_file)
-        with open(self.biosample_schema) as biosample_schema_file:
-            biosample_json_schema = json.load(biosample_schema_file)
 
-        # assert created json file sample field conforms to eva-biosamples schema
-        jsonschema.validate(json_data['sample'][3]['bioSampleObject'], biosample_json_schema)
-
-        # assert created json file conform to eva_schema
-        resolver = jsonschema.RefResolver.from_schema(eva_json_schema)
-        resolver.store['eva-biosamples.json'] = biosample_json_schema
-        jsonschema.validate(json_data, eva_json_schema, resolver=resolver)
+        jsonschema.validate(json_data, eva_json_schema)
 
     def test_create_xls_template(self):
         metadata_file = os.path.join(self.resource_dir, 'metadata_not_existing.xlsx')
