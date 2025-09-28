@@ -75,7 +75,7 @@ class Validator(AppLogger):
         if version.parse(self.metadata_xlsx_version) < version.parse('3.0.0'):
             return os.path.join(ETC_DIR, 'spreadsheet2json_conf_V2.yaml')
         else:
-            return os.path.join(ETC_DIR, 'spreadsheet2json_conf_V2.yaml')
+            return os.path.join(ETC_DIR, 'spreadsheet2json_conf.yaml')
 
     def _find_vcf_and_fasta_files(self):
         vcf_files = []

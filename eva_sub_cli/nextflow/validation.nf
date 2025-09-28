@@ -11,7 +11,7 @@ def helpMessage() {
             --output_dir                output_directory where the reports will be output
             --metadata_json             Json file describing the project, analysis, samples and files
             --metadata_xlsx             Excel file describing the project, analysis, samples and files
-            --conversion_configuration  Configuration file for converting metadata_xlsx to metadata_json. Only needed if not working with the latest version
+            --conversion_configuration  Configuration file for converting metadata_xlsx to metadata_json. This is only needed if you are working with metadata spreadsheet and not json
     """
 }
 

@@ -48,7 +48,7 @@ def get_vcf_files(mapping_file):
 
 
 def get_project_title_and_create_vcf_files_mapping(submission_dir, vcf_files, reference_fasta,
-                                                   metadata_json, metadata_xlsx):
+                                                   metadata_json, metadata_xlsx, metadata_xlsx_version):
     """
     Get project title and mapping between VCF files and reference FASTA files, from three sources: command line
         arguments, metadata JSON file, or metadata XLSX file.
@@ -58,6 +58,7 @@ def get_project_title_and_create_vcf_files_mapping(submission_dir, vcf_files, re
     :param reference_fasta: Reference FASTA from command line, if present
     :param metadata_json: Metadata JSON from command line, if present
     :param metadata_xlsx: Metadata XLSX from command line, if present
+    :param metadata_xlsx_version: Version of metadata XLSX
     :return: Project title and path to the mapping file
     """
     mapping_file = os.path.join(submission_dir, 'vcf_mapping_file.csv')
@@ -72,11 +73,11 @@ def get_project_title_and_create_vcf_files_mapping(submission_dir, vcf_files, re
             if metadata_json:
                 project_title, _ = get_project_and_vcf_fasta_mapping_from_metadata_json(metadata_json, False)
             elif metadata_xlsx:
-                project_title, _ = get_project_and_vcf_fasta_mapping_from_metadata_xlsx(metadata_xlsx, False)
+                project_title, _ = get_project_and_vcf_fasta_mapping_from_metadata_xlsx(metadata_xlsx, metadata_xlsx_version, False)
         elif metadata_json:
             project_title, vcf_files_mapping = get_project_and_vcf_fasta_mapping_from_metadata_json(metadata_json, True)
         elif metadata_xlsx:
-            project_title, vcf_files_mapping = get_project_and_vcf_fasta_mapping_from_metadata_xlsx(metadata_xlsx, True)
+            project_title, vcf_files_mapping = get_project_and_vcf_fasta_mapping_from_metadata_xlsx(metadata_xlsx, metadata_xlsx_version, True)
 
         # Filter out non-vcf files
         vcf_files_mapping = [(vcf, fasta, report) for vcf, fasta, report in vcf_files_mapping if is_vcf_file(vcf)]
@@ -192,18 +193,24 @@ def verify_and_get_metadata_xlsx_version(metadata_xlsx, min_req_version):
     return xlsx_version
 
 
-def get_project_and_vcf_fasta_mapping_from_metadata_xlsx(metadata_xlsx, mapping_req=False):
+def get_project_and_vcf_fasta_mapping_from_metadata_xlsx(metadata_xlsx, metadata_xlsx_version, mapping_req=False):
     workbook = load_workbook(metadata_xlsx)
 
     project_sheet = workbook['Project']
     project_headers = {}
-    for cell in project_sheet[3]:
-        project_headers[cell.value] = cell.column
-    project_title = project_sheet.cell(row=4, column=project_headers['Project Title']).value
-    if not project_title:
-        project_accession = project_sheet.cell(row=4, column=project_headers['Project Accession']).value
-        if project_accession:
-            project_title = get_project_title_from_ena(project_accession)
+
+    if version.parse(metadata_xlsx_version) < version.parse('3.0.0'):
+        for cell in project_sheet[1]:
+            project_headers[cell.value] = cell.column
+        project_title = project_sheet.cell(row=2, column=project_headers['Project Title']).value
+    else:
+        for cell in project_sheet[3]:
+            project_headers[cell.value] = cell.column
+        project_title = project_sheet.cell(row=4, column=project_headers['Project Title']).value
+        if not project_title:
+            project_accession = project_sheet.cell(row=4, column=project_headers['Project Accession']).value
+            if project_accession:
+                project_title = get_project_title_from_ena(project_accession)
 
     vcf_fasta_report_mapping = []
     if mapping_req:
@@ -292,7 +299,7 @@ def orchestrate_process(submission_dir, vcf_files, reference_fasta, metadata_jso
 
     # Get the provided Project Title and VCF files mapping (VCF, Fasta and Report)
     project_title, vcf_files_mapping = get_project_title_and_create_vcf_files_mapping(
-        submission_dir, vcf_files, reference_fasta, metadata_json, metadata_xlsx
+        submission_dir, vcf_files, reference_fasta, metadata_json, metadata_xlsx, metadata_xlsx_version
     )
     vcf_files = get_vcf_files(vcf_files_mapping)
 

@@ -33,6 +33,8 @@ class TestOrchestrator(unittest.TestCase):
     metadata_xlsx = os.path.join(test_sub_dir, 'sub_metadata.xlsx')
     metadata_xlsx_version = '3.0.0'
     metadata_xlsx_with_project_accession = os.path.join(test_sub_dir, 'EVA_Submission_test_with_project_accession.xlsx')
+    metadata_xlsx_version_v2 = '2.0.1'
+    metadata_xlsx_v2 = os.path.join(test_sub_dir, 'EVA_Submission_test_V2.xlsx')
     metadata_xlsx_version_missing = os.path.join(test_sub_dir, 'sub_metadata_version_missing.xlsx')
 
     def setUp(self) -> None:
@@ -41,6 +43,7 @@ class TestOrchestrator(unittest.TestCase):
         os.makedirs(self.test_sub_dir)
         shutil.copy(os.path.join(self.resource_dir, 'EVA_Submission_test.json'), self.metadata_json)
         shutil.copy(os.path.join(self.resource_dir, 'EVA_Submission_test.xlsx'), self.metadata_xlsx)
+        shutil.copy(os.path.join(self.resource_dir, 'EVA_Submission_test_V2.xlsx'), self.metadata_xlsx_v2)
         shutil.copy(os.path.join(self.resource_dir, 'EVA_Submission_test_with_project_accession.xlsx'),
                     self.metadata_xlsx_with_project_accession)
         shutil.copy(os.path.join(self.resource_dir, 'EVA_Submission_test_version_missing.xlsx'),
@@ -103,7 +106,8 @@ class TestOrchestrator(unittest.TestCase):
                                 self.metadata_xlsx, tasks=[VALIDATE], executor=DOCKER)
             m_get_project_title_and_create_vcf_files_mapping.assert_called_once_with(self.test_sub_dir, None, None,
                                                                                      self.metadata_json,
-                                                                                     self.metadata_xlsx)
+                                                                                     self.metadata_xlsx,
+                                                                                     self.metadata_xlsx_version)
             m_get_vcf.assert_called_once_with(self.mapping_file)
             m_docker_validator.assert_any_call(
                 self.mapping_file, self.test_sub_dir, self.project_title, self.metadata_json, self.metadata_xlsx, self.metadata_xlsx_version,
@@ -302,6 +306,24 @@ class TestOrchestrator(unittest.TestCase):
                 self.mapping_file, self.test_sub_dir, self.project_title, None, self.metadata_xlsx,
                 self.metadata_xlsx_version, submission_config=m_config.return_value, shallow_validation=False
             )
+            m_docker_validator().validate_and_report.assert_called_once_with()
+
+    def test_orchestrate_with_metadata_xlsx_v2(self):
+        with patch('eva_sub_cli.orchestrator.WritableConfig') as m_config, \
+                patch('eva_sub_cli.orchestrator.DockerValidator') as m_docker_validator:
+            orchestrate_process(self.test_sub_dir, None, None, None, self.metadata_xlsx_v2,
+                                tasks=[VALIDATE], executor=DOCKER)
+            # Mapping file was created from the metadata_xlsx
+            assert os.path.exists(self.mapping_file)
+            with open(self.mapping_file) as open_file:
+                reader = csv.DictReader(open_file, delimiter=',')
+                for row in reader:
+                    assert 'example' in row['vcf']
+                    assert row['report'] == ''
+            m_docker_validator.assert_any_call(self.mapping_file, self.test_sub_dir, self.project_title, None,
+                                               self.metadata_xlsx_v2, self.metadata_xlsx_version_v2,
+                                               submission_config=m_config.return_value, shallow_validation=False
+                                               )
             m_docker_validator().validate_and_report.assert_called_once_with()
 
     def test_orchestrate_with_metadata_xlsx_having_project_accession(self):
