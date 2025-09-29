@@ -51,6 +51,7 @@ class Validator(AppLogger):
         self.vcf_files = vcf_files
         self.fasta_files = fasta_files
         self.results = {'shallow_validation': {'requested': shallow_validation}}
+        self.previous_validation_results = {}
         self.project_title = project_title
         self.validation_date = datetime.datetime.now()
         self.metadata_json = metadata_json
@@ -101,6 +102,7 @@ class Validator(AppLogger):
         self.verify_files_present()
         self._validate()
         self.clean_up_output_dir()
+        self._load_previous_validation_results()
         self._collect_validation_workflow_results()
         self._assess_validation_results()
         self._save_validation_results()
@@ -172,6 +174,10 @@ class Validator(AppLogger):
             ))
         ))
 
+    def _load_previous_validation_results(self):
+        if os.path.exists(self.validation_result_file):
+            with open(self.validation_result_file, 'r') as val_res_file:
+                self.previous_validation_results = yaml.safe_load(val_res_file) or {}
 
     def _collect_validation_workflow_results(self):
         # Collect information from the output and summarise in the config
@@ -198,11 +204,6 @@ class Validator(AppLogger):
             or "PASS: Process not run yet" if the process as not been run yet.
             It assumes all validation have been parsed already.
         """
-        # read previous validation results
-        existing_results = {}
-        if os.path.exists(self.validation_result_file):
-            with open(self.validation_result_file, 'r') as val_res_file:
-                existing_results = yaml.safe_load(val_res_file) or {}
 
         if VCF_CHECK in self.tasks:
             # vcf_check result
@@ -216,7 +217,7 @@ class Validator(AppLogger):
                                                                for k, v in
                                                                self.results.get('evidence_type_check', {}).items()
                                                                if isinstance(v, dict)))
-        elif VCF_CHECK not in existing_results:
+        elif VCF_CHECK not in self.previous_validation_results:
             self.results.update({'vcf_check': {'pass': PROCESS_NOT_RUN_YET}})
             self.results.update({'evidence_type_check': {'pass': PROCESS_NOT_RUN_YET}})
 
@@ -232,7 +233,7 @@ class Validator(AppLogger):
             fasta_check_result = all((fa_file_check.get('all_insdc', False) is True
                                       for fa_file, fa_file_check in self.results.get('fasta_check', {}).items()))
             self.results['fasta_check']['pass'] = fasta_check_result
-        elif ASSEMBLY_CHECK not in existing_results:
+        elif ASSEMBLY_CHECK not in self.previous_validation_results:
             self.results.update({'assembly_check': {'pass': PROCESS_NOT_RUN_YET}})
             self.results.update({'fasta_check': {'pass': PROCESS_NOT_RUN_YET}})
 
@@ -240,7 +241,7 @@ class Validator(AppLogger):
             # sample check result
             self.results['sample_check']['pass'] = self.results.get('sample_check', {}).get('overall_differences',
                                                                                             True) is False
-        elif SAMPLE_CHECK not in existing_results:
+        elif SAMPLE_CHECK not in self.previous_validation_results:
             self.results.update({'sample_check': {'pass': PROCESS_NOT_RUN_YET}})
 
         if METADATA_CHECK in self.tasks:
@@ -248,11 +249,11 @@ class Validator(AppLogger):
             metadata_xlsx_result = len(self.results.get('metadata_check', {}).get('spreadsheet_errors', []) or []) == 0
             metadata_json_result = len(self.results.get('metadata_check', {}).get('json_errors', []) or []) == 0
             self.results['metadata_check']['pass'] = metadata_xlsx_result and metadata_json_result
-        elif METADATA_CHECK not in existing_results:
+        elif METADATA_CHECK not in self.previous_validation_results:
             self.results.update({'metadata_check': {'pass': PROCESS_NOT_RUN_YET}})
 
         # take previous result and overwrite with new result
-        self.results = {**existing_results, **self.results}
+        self.results = {**self.previous_validation_results, **self.results}
 
         # update config based on the validation results
         self.sub_config.set(READY_FOR_SUBMISSION_TO_EVA, value=self.verify_ready_for_submission_to_eva())

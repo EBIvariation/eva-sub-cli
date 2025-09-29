@@ -168,6 +168,9 @@ class TestValidator(TestCase):
         # updated tasks to run only VCF_CHECK
         self.validator_json.tasks = [VCF_CHECK]
 
+        # load previous validation results
+        self.validator_json._load_previous_validation_results()
+
         # run collect result and assert
         self.run_collect_results(self.validator_json)
         # assert validation results collected only for the given task
@@ -212,6 +215,8 @@ class TestValidator(TestCase):
 
         # updated tasks to run only VCF_CHECK
         self.validator_json.tasks = [VCF_CHECK]
+        # load previous validation results
+        self.validator_json._load_previous_validation_results()
         # run collect result
         self.validator_json._collect_validation_workflow_results()
         # run assess result
@@ -241,6 +246,8 @@ class TestValidator(TestCase):
 
         # updated tasks to run only VCF_CHECK
         self.validator_json.tasks = [VCF_CHECK]
+        # load previous validation results
+        self.validator_json._load_previous_validation_results()
         # run collect result
         self.validator_json._collect_validation_workflow_results()
         # run assess result

@@ -6,6 +6,13 @@
 {% from 'metadata_validation.html' import metadata_validation_report %}
 {% from 'shallow_validation.html' import optional_shallow_validation_report %}
 
+{% macro validation_not_run_yet_message(text="This validation is yet to run") %}
+    {% set icon = "&#9208;" %}   {# pause symbol ⏸ #}
+    {% set row_class = "report-section info" %}
+    {% set expand_icon = "" %}
+    <div class='{{ row_class }}'><span class="expand_icon">{{ expand_icon }}</span> {{ icon }} {{ text }}</div>
+{% endmacro %}
+
 <html lang="EN">
 <head>
     <meta charset="UTF-8">
@@ -65,10 +72,7 @@
     </div>
     {% set status = validation_results.get('metadata_check', {}).get('pass', '') %}
     {% if status == "Process not run yet" %}
-        {% set icon = "&#9208;" %}  {# pause symbol ⏸ #}
-        {% set row_class = "report-section info" %}
-        {% set expand_icon = "" %}
-        <div class='{{ row_class }}'><span class="expand_icon">{{ expand_icon }}</span> {{ icon }} This validation is yet to run </div>
+        {{ validation_not_run_yet_message() }}
     {% else %}
         {{ metadata_validation_report(validation_results) }}
     {% endif %}
@@ -82,10 +86,7 @@
     </div>
     {% set status = validation_results.get('vcf_check', {}).get('pass', '') %}
     {% if status == "Process not run yet" %}
-        {% set icon = "&#9208;" %}  {# pause symbol ⏸ #}
-        {% set row_class = "report-section info" %}
-        {% set expand_icon = "" %}
-        <div class='{{ row_class }}'><span class="expand_icon">{{ expand_icon }}</span> {{ icon }} This validation is yet to run </div>
+        {{ validation_not_run_yet_message() }}
     {% else %}
         {% for file_name in vcf_files %}
             {% if file_name != "pass"%}
@@ -103,10 +104,7 @@
     </div>
     {% set status = validation_results.get('sample_check', {}).get('pass', '') %}
     {% if status == "Process not run yet" %}
-        {% set icon = "&#9208;" %}  {# pause symbol ⏸ #}
-        {% set row_class = "report-section info" %}
-        {% set expand_icon = "" %}
-        <div class='{{ row_class }}'><span class="expand_icon">{{ expand_icon }}</span> {{ icon }} This validation is yet to run </div>
+        {{ validation_not_run_yet_message() }}
     {% else %}
        {{ sample_name_check_report(validation_results)}}
     {% endif %}
@@ -120,10 +118,7 @@
     </div>
     {% set status = validation_results.get('fasta_check', {}).get('pass', '') %}
     {% if status == "Process not run yet" %}
-        {% set icon = "&#9208;" %}  {# pause symbol ⏸ #}
-        {% set row_class = "report-section info" %}
-        {% set expand_icon = "" %}
-        <div class='{{ row_class }}'><span class="expand_icon">{{ expand_icon }}</span> {{ icon }} This validation is yet to run </div>
+       {{ validation_not_run_yet_message() }}
     {% else %}
         {% for file_name in fasta_files %}
             {% if file_name != "pass"%}
