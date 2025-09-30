@@ -223,11 +223,12 @@ class Validator(AppLogger):
             self.results['vcf_check']['pass'] = vcf_check_result
 
             # evidence type check result
-            self.results['evidence_type_check']['pass'] = (bool(self.results.get('evidence_type_check')) and
-                                                           all('evidence_type' in v and v['evidence_type'] is not None
-                                                               for k, v in
-                                                               self.results.get('evidence_type_check', {}).items()
-                                                               if isinstance(v, dict)))
+            self.results['evidence_type_check']['pass'] = (
+                    any(isinstance(v, dict) for v in self.results.get('evidence_type_check', {}).values())
+                    and
+                    all('evidence_type' in v and v['evidence_type'] is not None
+                        for v in self.results.get('evidence_type_check', {}).values()
+                        if isinstance(v, dict)))
         elif VCF_CHECK not in self.results:
             self.results['vcf_check'] = {RUN_STATUS_KEY: PROCESS_NOT_RUN_YET}
             self.results['evidence_type_check'] = {RUN_STATUS_KEY: PROCESS_NOT_RUN_YET}
@@ -235,14 +236,17 @@ class Validator(AppLogger):
         if ASSEMBLY_CHECK in self.tasks:
             # assembly_check result
             asm_nb_mismatch_result = all((asm_check.get('nb_mismatch', 1) == 0
-                                          for vcf_name, asm_check in self.results.get('assembly_check', {}).items()))
+                                          for vcf_name, asm_check in self.results.get('assembly_check', {}).items()
+                                          if isinstance(asm_check, dict)))
             asm_nb_error_result = all((asm_check.get('nb_error', 1) == 0
-                                       for vcf_name, asm_check in self.results.get('assembly_check', {}).items()))
+                                       for vcf_name, asm_check in self.results.get('assembly_check', {}).items()
+                                       if isinstance(asm_check, dict)))
             self.results['assembly_check']['pass'] = asm_nb_mismatch_result and asm_nb_error_result
 
             # fasta_check result
             fasta_check_result = all((fa_file_check.get('all_insdc', False) is True
-                                      for fa_file, fa_file_check in self.results.get('fasta_check', {}).items()))
+                                      for fa_file, fa_file_check in self.results.get('fasta_check', {}).items()
+                                      if isinstance(fa_file_check, dict)))
             self.results['fasta_check']['pass'] = fasta_check_result
         elif ASSEMBLY_CHECK not in self.results:
             self.results['assembly_check'] = {RUN_STATUS_KEY: PROCESS_NOT_RUN_YET}
