@@ -5,6 +5,11 @@
 {% from 'metadata_validation.txt' import metadata_validation_report %}
 {% from 'shallow_validation.txt' import optional_shallow_validation_report %}
 
+{% macro validation_not_run_yet_message(text="Process not run yet") -%}
+{% set icon = "\u23F8" %}
+{{ icon }} {{ text }}
+{%- endmacro %}
+
 VALIDATION REPORT
 eva-sub-cli v{{cli_version}}
 
@@ -25,7 +30,7 @@ For requirements, please refer to the EVA website (https://www.ebi.ac.uk/eva/?Su
 
 {% set status = validation_results.get('metadata_check', {}).get('pass', '') %}
 {% if status == "Process not run yet" %}
-    This validation is yet to run
+      {{ validation_not_run_yet_message() }}
 {% else %}
     {{ metadata_validation_report(validation_results) }}
 {% endif %}
@@ -37,7 +42,7 @@ Also checks whether the variants' reference alleles match against the reference 
 
 {% set status = validation_results.get('vcf_check', {}).get('pass', '') %}
 {% if status == "Process not run yet" %}
-    This validation is yet to run
+    {{ validation_not_run_yet_message() }}
 {% else %}
 {% for file_name in vcf_files %}
 {% if file_name != "pass"%}
@@ -54,7 +59,7 @@ Checks whether information in the metadata is concordant with that contained in 
 
 {% set status = validation_results.get('sample_check', {}).get('pass', '') %}
 {% if status == "Process not run yet" %}
-    This validation is yet to run
+    {{ validation_not_run_yet_message() }}
 {% else %}
     {{ sample_name_check_report(validation_results)}}
 {% endif %}
@@ -67,7 +72,7 @@ Also checks if the reference assembly accession in the metadata matches the one 
 
 {% set status = validation_results.get('fasta_check', {}).get('pass', '') %}
 {% if status == "Process not run yet" %}
-    This validation is yet to run
+    {{ validation_not_run_yet_message() }}
 {% else %}
 {% for file_name in fasta_files %}
 {% if file_name != "pass"%}
