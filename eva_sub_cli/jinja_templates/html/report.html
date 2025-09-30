@@ -6,7 +6,7 @@
 {% from 'metadata_validation.html' import metadata_validation_report %}
 {% from 'shallow_validation.html' import optional_shallow_validation_report %}
 
-{% macro validation_not_run_yet_message(text="This validation is yet to run") %}
+{% macro validation_not_run_yet_message(text="Process not run yet") %}
     {% set icon = "&#9208;" %}   {# pause symbol ⏸ #}
     {% set row_class = "report-section info" %}
     {% set expand_icon = "" %}
