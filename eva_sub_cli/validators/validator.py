@@ -9,6 +9,7 @@ import yaml
 from ebi_eva_common_pyutils.command_utils import run_command_with_output
 from ebi_eva_common_pyutils.config import WritableConfig
 from ebi_eva_common_pyutils.logger import logging_config, AppLogger
+from packaging import version
 
 from eva_sub_cli import ETC_DIR, SUB_CLI_CONFIG_FILE, __version__
 from eva_sub_cli.file_utils import backup_file_or_directory, resolve_single_file_path
@@ -29,7 +30,7 @@ logger = logging_config.get_logger(__name__)
 class Validator(AppLogger):
 
     def __init__(self, mapping_file, submission_dir, project_title=None, metadata_json=None, metadata_xlsx=None,
-                 shallow_validation=False, submission_config: WritableConfig = None):
+                 metadata_xlsx_version=None, shallow_validation=False, submission_config: WritableConfig = None):
         # validator write to the validation output directory
         # If the submission_config is not set it will also be written to the VALIDATION_OUTPUT_DIR
         self.submission_dir = submission_dir
@@ -44,6 +45,7 @@ class Validator(AppLogger):
         self.validation_date = datetime.datetime.now()
         self.metadata_json = metadata_json
         self.metadata_xlsx = metadata_xlsx
+        self.metadata_xlsx_version = metadata_xlsx_version
         self.shallow_validation = shallow_validation
         if submission_config:
             self.sub_config = submission_config
@@ -68,6 +70,12 @@ class Validator(AppLogger):
     def _run_quiet_command(command_description, command, **kwargs):
         return run_command_with_output(command_description, command, stdout_log_level=logging.DEBUG,
                                        stderr_log_level=logging.DEBUG, **kwargs)
+
+    def _get_xlsx_conversion_configuration(self):
+        if version.parse(self.metadata_xlsx_version) < version.parse('3.0.0'):
+            return os.path.join(ETC_DIR, 'spreadsheet2json_conf_V2.yaml')
+        else:
+            return os.path.join(ETC_DIR, 'spreadsheet2json_conf.yaml')
 
     def _find_vcf_and_fasta_files(self):
         vcf_files = []
@@ -153,13 +161,13 @@ class Validator(AppLogger):
         """ Checks if all the validation are passed """
         return all((
             all((value.get('pass', False) is True for key, value in self.results.items() if
-                 key in ['vcf_check', 'assembly_check', 'fasta_check', 'sample_check', 'metadata_check', 'evidence_type_check'])),
+                 key in ['vcf_check', 'assembly_check', 'fasta_check', 'sample_check', 'metadata_check',
+                         'evidence_type_check'])),
             any((
                 self.results['shallow_validation']['requested'] is False,
                 self.results['shallow_validation'].get('required', True) is False
             ))
         ))
-
 
     def _collect_validation_workflow_results(self):
         # Collect information from the output and summarise in the config
@@ -201,8 +209,9 @@ class Validator(AppLogger):
         # evidence type check result
         self.results['evidence_type_check']['pass'] = (bool(self.results.get('evidence_type_check')) and
                                                        all('evidence_type' in v and v['evidence_type'] is not None
-                                                      for k, v in self.results.get('evidence_type_check', {}).items()
-                                                      if isinstance(v, dict)))
+                                                           for k, v in
+                                                           self.results.get('evidence_type_check', {}).items()
+                                                           if isinstance(v, dict)))
 
         # metadata check result
         metadata_xlsx_result = len(self.results.get('metadata_check', {}).get('spreadsheet_errors', []) or []) == 0

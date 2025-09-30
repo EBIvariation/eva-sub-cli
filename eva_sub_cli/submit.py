@@ -103,9 +103,10 @@ class StudySubmitter(AppLogger):
             return
 
         # upload submission
-        self.info(f'Upload data')
+        self.info(f'Start Uploading data')
         self._upload_submission()
+        self.info(f'Data Uploaded successfully')
 
         # Complete the submission
-        self.info(f'Complete submission')
         self._complete_submission()
+        self.info(f'Submission completed successfully')

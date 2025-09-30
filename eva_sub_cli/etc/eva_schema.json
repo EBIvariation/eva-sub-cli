@@ -64,66 +64,81 @@
       }
     },
     "project": {
-      "type": "object",
-      "description": "General information about the Project",
-      "required": [
-        "title",
-        "description",
-        "taxId",
-        "centre"
-      ],
-      "properties": {
-        "title": {
-          "type": "string",
-          "description": "Title of the project",
-          "maxLength": 500
-        },
-        "description": {
-          "type": "string",
-          "description": "Description of the project",
-          "maxLength": 5000
-        },
-        "centre": {
-          "type": "string",
-          "description": "Centre, institute or company submitting the project"
-        },
-        "taxId": {
-          "type": "number",
-          "description": "Taxonomy ID of the species associated with the project (found here: http://www.ncbi.nlm.nih.gov/taxonomy)"
-        },
-        "publications": {
-          "type": "array",
-          "items": true
-        },
-        "parentProject": {
-          "$ref": "#/definitions/projectAccession"
-        },
-        "childProjects": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/projectAccession"
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "projectAccession"
+          ],
+          "properties": {
+            "projectAccession": {
+              "$ref": "#/definitions/projectAccession"
+            }
           }
         },
-        "peerProjects": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/projectAccession"
+        {
+          "type": "object",
+          "description": "General information about the Project",
+          "required": [
+            "title",
+            "description",
+            "taxId",
+            "centre"
+          ],
+          "properties": {
+            "title": {
+              "type": "string",
+              "description": "Title of the project",
+              "maxLength": 500
+            },
+            "description": {
+              "type": "string",
+              "description": "Description of the project",
+              "maxLength": 5000
+            },
+            "centre": {
+              "type": "string",
+              "description": "Centre, institute or company submitting the project"
+            },
+            "taxId": {
+              "type": "number",
+              "description": "Taxonomy ID of the species associated with the project (found here: http://www.ncbi.nlm.nih.gov/taxonomy)"
+            },
+            "publications": {
+              "type": "array",
+              "items": true
+            },
+            "parentProject": {
+              "$ref": "#/definitions/projectAccession"
+            },
+            "childProjects": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/projectAccession"
+              }
+            },
+            "peerProjects": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/projectAccession"
+              }
+            },
+            "links": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "holdDate": {
+              "type": "string",
+              "format": "date",
+              "examples": [
+                "2018-11-13"
+              ]
+            }
           }
-        },
-        "links": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "holdDate": {
-          "type": "string",
-          "format": "date",
-          "examples": [
-            "2018-11-13"
-          ]
         }
-      }
+      ]
     },
     "analysis": {
       "type": "array",

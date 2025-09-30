@@ -7,10 +7,11 @@ def helpMessage() {
     Validate a set of VCF files and metadata to check if they are valid to be submitted to EVA.
 
     Inputs:
-            --vcf_files_mapping     csv file with the mappings for vcf files, fasta and assembly report
-            --output_dir            output_directory where the reports will be output
-            --metadata_json         Json file describing the project, analysis, samples and files
-            --metadata_xlsx         Excel file describing the project, analysis, samples and files
+            --vcf_files_mapping         csv file with the mappings for vcf files, fasta and assembly report
+            --output_dir                output_directory where the reports will be output
+            --metadata_json             Json file describing the project, analysis, samples and files
+            --metadata_xlsx             Excel file describing the project, analysis, samples and files
+            --conversion_configuration  Configuration file for converting metadata_xlsx to metadata_json. This is only needed if you are working with metadata spreadsheet and not json
     """
 }
 
@@ -44,16 +45,15 @@ params.shallow_validation = false
 if (params.help) exit 0, helpMessage()
 
 // Test input files
-if (!params.vcf_files_mapping || !params.output_dir || (!params.metadata_json && !params.metadata_xlsx)) {
+if (!params.vcf_files_mapping || !params.output_dir || (!params.metadata_json && !params.metadata_xlsx) || (!params.metadata_json && params.metadata_xlsx && !params.conversion_configuration)) {
     if (!params.vcf_files_mapping)      log.warn('Provide a csv file with the mappings (vcf, fasta, assembly report) --vcf_files_mapping')
-    if (!params.metadata_xlsx)           log.warn('Provide a json file with the metadata description of the project and analysis --metadata_json')
     if (!params.output_dir)             log.warn('Provide an output directory where the reports will be copied using --output_dir')
     if (!params.metadata_json && !params.metadata_xlsx)   log.warn('Provide a json or Excel file with the metadata description of the project and analysis --metadata_json or --metadata_xlsx')
+    if (params.metadata_xlsx && !params.conversion_configuration)   log.warn('Provide a configuration file to convert the metadata xlsx file to json --conversion_configuration')
     exit 1, helpMessage()
 }
 
 schema_dir = file(projectDir).parent + '/etc'
-conversion_configuration = schema_dir + '/spreadsheet2json_conf.yaml'
 
 def joinBasePath(path) {
     if (path){
@@ -242,7 +242,7 @@ process convert_xlsx_2_json {
     metadata_json = metadata_xlsx.getBaseName() + '.json'
 
     """
-    $params.python_scripts.xlsx2json --metadata_xlsx $metadata_xlsx --metadata_json metadata.json --errors_yaml metadata_conversion_errors.yml --conversion_configuration $conversion_configuration > xlsx2json.log 2>&1
+    $params.python_scripts.xlsx2json --metadata_xlsx $metadata_xlsx --metadata_json metadata.json --errors_yaml metadata_conversion_errors.yml --conversion_configuration $params.conversion_configuration > xlsx2json.log 2>&1
     """
 }
 

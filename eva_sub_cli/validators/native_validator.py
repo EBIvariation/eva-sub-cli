@@ -11,12 +11,12 @@ logger = logging_config.get_logger(__name__)
 class NativeValidator(Validator):
 
     def __init__(self, mapping_file, submission_dir, project_title, metadata_json=None, metadata_xlsx=None,
-                 shallow_validation=False, vcf_validator_path='vcf_validator',
+                 metadata_xlsx_version=None, shallow_validation=False, vcf_validator_path='vcf_validator',
                  assembly_checker_path='vcf_assembly_checker', biovalidator_path='biovalidator',
                  submission_config=None, nextflow_config=None):
         super().__init__(mapping_file, submission_dir, project_title, metadata_json=metadata_json,
-                         metadata_xlsx=metadata_xlsx, shallow_validation=shallow_validation,
-                         submission_config=submission_config)
+                         metadata_xlsx=metadata_xlsx, metadata_xlsx_version=metadata_xlsx_version,
+                         shallow_validation=shallow_validation, submission_config=submission_config)
         self.nextflow_config = nextflow_config
         self.vcf_validator_path = vcf_validator_path
         self.assembly_checker_path = assembly_checker_path
@@ -43,7 +43,8 @@ class NativeValidator(Validator):
 
     def get_validation_cmd(self):
         if self.metadata_xlsx and not self.metadata_json:
-            metadata_flag = f"--metadata_xlsx {self.metadata_xlsx}"
+            metadata_flag = f"--metadata_xlsx {self.metadata_xlsx} "
+            metadata_flag += f"--conversion_configuration {self._get_xlsx_conversion_configuration()}"
         else:
             metadata_flag = f"--metadata_json {self.metadata_json}"
         path_to_workflow = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),

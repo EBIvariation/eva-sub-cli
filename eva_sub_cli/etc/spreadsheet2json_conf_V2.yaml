@@ -28,13 +28,12 @@ Submitter Details:
 
 # List of field for Projects
 Project:
-  header_row: 3
-  optional:
-    Project Accession: projectAccession
+  required:
     Project Title: title
     Description: description
     Center: centre
     Taxonomy ID: taxId
+  optional:
     Publication(s): publications
     Parent Project: parentProject
     Child Project(s): childProjects
