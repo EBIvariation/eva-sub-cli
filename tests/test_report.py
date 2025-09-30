@@ -471,13 +471,14 @@ class TestReport(TestCase):
         )
 
     def test_generate_text_report_metadata_json_report_not_run(self):
-        validation_result = {}
-        validation_result.update({'vcf_check': {'pass': PROCESS_NOT_RUN_YET}})
-        validation_result.update({'evidence_type_check': {'pass': PROCESS_NOT_RUN_YET}})
-        validation_result.update({'assembly_check': {'pass': PROCESS_NOT_RUN_YET}})
-        validation_result.update({'fasta_check': {'pass': PROCESS_NOT_RUN_YET}})
-        validation_result.update({'metadata_check': {'pass': PROCESS_NOT_RUN_YET}})
-        validation_result.update({'sample_check': {'pass': PROCESS_NOT_RUN_YET}})
+        validation_result = {
+            'vcf_check': {'pass': PROCESS_NOT_RUN_YET},
+            'evidence_type_check': {'pass': PROCESS_NOT_RUN_YET},
+            'assembly_check': {'pass': PROCESS_NOT_RUN_YET},
+            'fasta_check': {'pass': PROCESS_NOT_RUN_YET},
+            'metadata_check': {'pass': PROCESS_NOT_RUN_YET},
+            'sample_check': {'pass': PROCESS_NOT_RUN_YET}
+        }
 
         self.check_report_vs_expected(
             validation_result,
