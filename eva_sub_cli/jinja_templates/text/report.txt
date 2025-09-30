@@ -28,7 +28,7 @@ METADATA VALIDATION RESULTS
 Ensures that required fields are present and values are formatted correctly.
 For requirements, please refer to the EVA website (https://www.ebi.ac.uk/eva/?Submit-Data).
 
-{% set status = validation_results.get('metadata_check', {}).get('pass', '') %}
+{% set status = validation_results.get('metadata_check', {}).get('run_status', '') %}
 {% if status == "Process not run yet" %}
       {{ validation_not_run_yet_message() }}
 {% else %}
@@ -40,7 +40,7 @@ VCF VALIDATION RESULTS
 Checks whether each file is compliant with the VCF specification (http://samtools.github.io/hts-specs/VCFv4.4.pdf).
 Also checks whether the variants' reference alleles match against the reference assembly.
 
-{% set status = validation_results.get('vcf_check', {}).get('pass', '') %}
+{% set status = validation_results.get('vcf_check', {}).get('run_status', '') %}
 {% if status == "Process not run yet" %}
     {{ validation_not_run_yet_message() }}
 {% else %}
@@ -57,7 +57,7 @@ Also checks whether the variants' reference alleles match against the reference 
 SAMPLE NAME CONCORDANCE CHECK
 Checks whether information in the metadata is concordant with that contained in the VCF files, in particular sample names.
 
-{% set status = validation_results.get('sample_check', {}).get('pass', '') %}
+{% set status = validation_results.get('sample_check', {}).get('run_status', '') %}
 {% if status == "Process not run yet" %}
     {{ validation_not_run_yet_message() }}
 {% else %}
@@ -70,7 +70,7 @@ REFERENCE GENOME INSDC CHECK
 Checks that the reference sequences in the FASTA file used to call the variants are accessioned in INSDC.
 Also checks if the reference assembly accession in the metadata matches the one determined from the FASTA file.
 
-{% set status = validation_results.get('fasta_check', {}).get('pass', '') %}
+{% set status = validation_results.get('fasta_check', {}).get('run_status', '') %}
 {% if status == "Process not run yet" %}
     {{ validation_not_run_yet_message() }}
 {% else %}
