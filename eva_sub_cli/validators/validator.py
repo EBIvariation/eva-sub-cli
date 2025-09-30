@@ -31,6 +31,8 @@ METADATA_CHECK = 'metadata_check'
 # Includes sample concordance check
 SAMPLE_CHECK = 'sample_check'
 ALL_VALIDATION_TASKS = [VCF_CHECK, ASSEMBLY_CHECK, METADATA_CHECK, SAMPLE_CHECK]
+RUN_STATUS_KEY = 'run_status'
+PROCESS_RUN = 'Process run'
 PROCESS_NOT_RUN_YET = 'Process not run yet'
 
 logger = logging_config.get_logger(__name__)
@@ -207,7 +209,8 @@ class Validator(AppLogger):
         if VCF_CHECK in self.tasks:
             # vcf_check result
             vcf_check_result = all((vcf_check.get('critical_count', 1) == 0
-                                    for vcf_name, vcf_check in self.results.get('vcf_check', {}).items()))
+                                    for vcf_name, vcf_check in self.results.get('vcf_check', {}).items()
+                                    if isinstance(vcf_check, dict)))
             self.results['vcf_check']['pass'] = vcf_check_result
 
             # evidence type check result
@@ -217,8 +220,8 @@ class Validator(AppLogger):
                                                                self.results.get('evidence_type_check', {}).items()
                                                                if isinstance(v, dict)))
         elif VCF_CHECK not in self.results:
-            self.results['vcf_check'] = {'pass': PROCESS_NOT_RUN_YET}
-            self.results['evidence_type_check'] = {'pass': PROCESS_NOT_RUN_YET}
+            self.results['vcf_check'] = {RUN_STATUS_KEY: PROCESS_NOT_RUN_YET}
+            self.results['evidence_type_check'] = {RUN_STATUS_KEY: PROCESS_NOT_RUN_YET}
 
         if ASSEMBLY_CHECK in self.tasks:
             # assembly_check result
@@ -233,15 +236,15 @@ class Validator(AppLogger):
                                       for fa_file, fa_file_check in self.results.get('fasta_check', {}).items()))
             self.results['fasta_check']['pass'] = fasta_check_result
         elif ASSEMBLY_CHECK not in self.results:
-            self.results['assembly_check'] = {'pass': PROCESS_NOT_RUN_YET}
-            self.results['fasta_check'] = {'pass': PROCESS_NOT_RUN_YET}
+            self.results['assembly_check'] = {RUN_STATUS_KEY: PROCESS_NOT_RUN_YET}
+            self.results['fasta_check'] = {RUN_STATUS_KEY: PROCESS_NOT_RUN_YET}
 
         if SAMPLE_CHECK in self.tasks:
             # sample check result
             self.results['sample_check']['pass'] = self.results.get('sample_check', {}).get('overall_differences',
                                                                                             True) is False
         elif SAMPLE_CHECK not in self.results:
-            self.results['sample_check'] = {'pass': PROCESS_NOT_RUN_YET}
+            self.results['sample_check'] = {RUN_STATUS_KEY: PROCESS_NOT_RUN_YET}
 
         if METADATA_CHECK in self.tasks:
             # metadata check result
@@ -249,7 +252,7 @@ class Validator(AppLogger):
             metadata_json_result = len(self.results.get('metadata_check', {}).get('json_errors', []) or []) == 0
             self.results['metadata_check']['pass'] = metadata_xlsx_result and metadata_json_result
         elif METADATA_CHECK not in self.results:
-            self.results['metadata_check'] = {'pass': PROCESS_NOT_RUN_YET}
+            self.results['metadata_check'] = {RUN_STATUS_KEY: PROCESS_NOT_RUN_YET}
 
         # update config based on the validation results
         self.sub_config.set(READY_FOR_SUBMISSION_TO_EVA, value=self.verify_ready_for_submission_to_eva())
@@ -301,7 +304,7 @@ class Validator(AppLogger):
 
     def _collect_vcf_check_results(self):
         # detect output files for vcf check
-        self.results['vcf_check'] = {}
+        self.results['vcf_check'] = {RUN_STATUS_KEY: PROCESS_RUN}
         for vcf_file in self.vcf_files:
             vcf_name = os.path.basename(vcf_file)
 
@@ -326,7 +329,7 @@ class Validator(AppLogger):
 
     def _collect_assembly_check_results(self):
         # detect output files for assembly check
-        self.results['assembly_check'] = {}
+        self.results['assembly_check'] = {RUN_STATUS_KEY: PROCESS_RUN}
         for vcf_file in self.vcf_files:
             vcf_name = os.path.basename(vcf_file)
 
@@ -353,36 +356,35 @@ class Validator(AppLogger):
             }
 
     def _load_fasta_check_results(self):
+        self.results['fasta_check'] = {RUN_STATUS_KEY: PROCESS_RUN}
         for fasta_file in self.fasta_files:
             fasta_file_name = os.path.basename(fasta_file)
             fasta_check = resolve_single_file_path(os.path.join(self.output_dir, 'other_validations',
                                                                 f'{fasta_file_name}_check.yml'))
-            self.results['fasta_check'] = {}
             if not fasta_check:
                 continue
             with open(fasta_check) as open_yaml:
                 self.results['fasta_check'][fasta_file_name] = yaml.safe_load(open_yaml)
 
     def _load_sample_check_results(self):
-        self.results['sample_check'] = {}
         if not self._sample_check_yaml:
             return
         with open(self._sample_check_yaml) as open_yaml:
             self.results['sample_check'] = yaml.safe_load(open_yaml)
         self.results['sample_check']['report_path'] = self._sample_check_yaml
+        self.results['sample_check'].update({RUN_STATUS_KEY: PROCESS_RUN})
 
     def _load_evidence_check_results(self):
-        self.results['evidence_type_check'] = {}
         if self._evidence_type_check_yaml:
             with open(self._evidence_type_check_yaml) as open_yaml:
                 self.results['evidence_type_check'] = yaml.safe_load(open_yaml)
             self.results['evidence_type_check']['report_path'] = self._evidence_type_check_yaml
 
+        self.results['evidence_type_check'].update({RUN_STATUS_KEY: PROCESS_RUN})
         self._update_metadata_with_evidence_type()
 
-
     def _collect_metadata_results(self):
-        self.results['metadata_check'] = {}
+        self.results['metadata_check'] = {RUN_STATUS_KEY: PROCESS_RUN}
         self._load_spreadsheet_conversion_errors()
         self.collect_biovalidator_validation_results()
         self._collect_semantic_metadata_results()
@@ -518,7 +520,6 @@ class Validator(AppLogger):
             metadata.write(self.metadata_json_post_validation)
         else:
             self.error(f'Cannot locate the metadata in JSON format in {os.path.join(self.output_dir, "metadata.json")}')
-
 
     def _update_metadata_with_evidence_type(self):
         if self.metadata_json_post_validation:
