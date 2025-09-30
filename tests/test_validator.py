@@ -7,20 +7,23 @@ import yaml
 
 from eva_sub_cli.metadata import EvaMetadataJson
 from eva_sub_cli.validators.validator import Validator, VALIDATION_OUTPUT_DIR, VCF_CHECK, READY_FOR_SUBMISSION_TO_EVA, \
-    PROCESS_NOT_RUN_YET
+    PROCESS_NOT_RUN_YET, RUN_STATUS_KEY, PROCESS_RUN
 from tests.test_utils import create_mapping_file
 
 expected_validation_results = {
     'shallow_validation': {'requested': False},
     'vcf_check': {
+        'run_status': 'Process run',
         'input_passed.vcf': {'valid': True, 'error_list': [], 'error_count': 0, 'warning_count': 0,
                              'critical_count': 0, 'critical_list': []}
     },
     'assembly_check': {
+        'run_status': 'Process run',
         'input_passed.vcf': {'error_list': [], 'mismatch_list': [], 'nb_mismatch': 0, 'nb_error': 0,
                              'match': 247, 'total': 247}
     },
     'sample_check': {
+        'run_status': 'Process run',
         'overall_differences': False,
         'results_per_analysis': {
             'AA': {
@@ -32,6 +35,7 @@ expected_validation_results = {
         }
     },
     'evidence_type_check': {
+        'run_status': 'Process run',
         'AA': {
             'errors': None,
             'evidence_type': 'allele_frequency'
@@ -39,12 +43,14 @@ expected_validation_results = {
     },
 
     'fasta_check': {
+        'run_status': 'Process run',
         'input_passed.fa': {'all_insdc': False, 'sequences': [
             {'sequence_name': 1, 'insdc': True, 'sequence_md5': '6681ac2f62509cfc220d78751b8dc524'},
             {'sequence_name': 2, 'insdc': False, 'sequence_md5': 'd2b3f22704d944f92a6bc45b6603ea2d'}
         ]},
     },
     'metadata_check': {
+        'run_status': 'Process run',
         'json_errors': [
             {'property': '/files', 'description': "should have required property 'files'"},
             {'property': '/project/title', 'description': "should have required property 'title'"},
@@ -190,27 +196,29 @@ class TestValidator(TestCase):
         self.validator_json._assess_validation_results()
         # assert assessed results
         assert self.validator_json.results['vcf_check']['pass'] == True
+        assert self.validator_json.results['vcf_check'][RUN_STATUS_KEY] == PROCESS_RUN
         assert self.validator_json.results['evidence_type_check']['pass'] == True
-        assert self.validator_json.results['assembly_check']['pass'] == PROCESS_NOT_RUN_YET
-        assert self.validator_json.results['fasta_check']['pass'] == PROCESS_NOT_RUN_YET
-        assert self.validator_json.results['sample_check']['pass'] == PROCESS_NOT_RUN_YET
-        assert self.validator_json.results['metadata_check']['pass'] == PROCESS_NOT_RUN_YET
+        assert self.validator_json.results['evidence_type_check'][RUN_STATUS_KEY] == PROCESS_RUN
+        assert self.validator_json.results['assembly_check'][RUN_STATUS_KEY] == PROCESS_NOT_RUN_YET
+        assert self.validator_json.results['fasta_check'][RUN_STATUS_KEY] == PROCESS_NOT_RUN_YET
+        assert self.validator_json.results['sample_check'][RUN_STATUS_KEY] == PROCESS_NOT_RUN_YET
+        assert self.validator_json.results['metadata_check'][RUN_STATUS_KEY] == PROCESS_NOT_RUN_YET
         assert self.validator_json.sub_config.get(READY_FOR_SUBMISSION_TO_EVA) == False
         assert self.validator_json.results[READY_FOR_SUBMISSION_TO_EVA] == False
 
         # run save result
         self.validator_json._save_validation_results()
         # assert saved results
-        expected_vcf_check['pass'] = True
-        expected_evidence_type_check['pass'] = True
         with open(self.validator_json.validation_result_file, 'r') as val_res_file:
             saved_results = yaml.safe_load(val_res_file) or {}
+        expected_vcf_check['pass'] = True
+        expected_evidence_type_check['pass'] = True
         assert saved_results['vcf_check'] == expected_vcf_check
         assert saved_results['evidence_type_check'] == expected_evidence_type_check
-        assert saved_results['assembly_check']['pass'] == PROCESS_NOT_RUN_YET
-        assert saved_results['fasta_check']['pass'] == PROCESS_NOT_RUN_YET
-        assert saved_results['sample_check']['pass'] == PROCESS_NOT_RUN_YET
-        assert saved_results['metadata_check']['pass'] == PROCESS_NOT_RUN_YET
+        assert saved_results['assembly_check'][RUN_STATUS_KEY] == PROCESS_NOT_RUN_YET
+        assert saved_results['fasta_check'][RUN_STATUS_KEY] == PROCESS_NOT_RUN_YET
+        assert saved_results['sample_check'][RUN_STATUS_KEY] == PROCESS_NOT_RUN_YET
+        assert saved_results['metadata_check'][RUN_STATUS_KEY] == PROCESS_NOT_RUN_YET
         assert saved_results[READY_FOR_SUBMISSION_TO_EVA] == False
 
     def test__collect_validation_workflow_results_for_validation_task_and_add_to_previous_results(self):

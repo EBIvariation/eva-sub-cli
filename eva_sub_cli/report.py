@@ -17,12 +17,16 @@ def get_logo_data():
 
 def generate_report(validation_results, validation_date, submission_dir, vcf_fasta_analysis_mapping, project_title,
                     consent_statement_required, subdir, template_file):
+
+    from eva_sub_cli.validators.validator import RUN_STATUS_KEY
+
     results_for_report = {k: v for k, v in validation_results.items() if k != 'ready_for_submission_to_eva'}
     vcf_files = sorted(set([file_name
                             for check in results_for_report if check in ["vcf_check", "assembly_check"]
                             for file_name in results_for_report[check]
+                            if file_name != RUN_STATUS_KEY
                             ]))
-    fasta_files = sorted([file_name for file_name in results_for_report['fasta_check']])
+    fasta_files = sorted([file_name for file_name in results_for_report['fasta_check'] if file_name != RUN_STATUS_KEY])
     template = Environment(
         loader=FileSystemLoader(os.path.join(current_dir, 'jinja_templates', subdir))
     ).get_template(template_file)
