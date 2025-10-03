@@ -7,11 +7,10 @@ import yaml
 
 from eva_sub_cli.metadata import EvaMetadataJson
 from eva_sub_cli.validators.validator import Validator, VALIDATION_OUTPUT_DIR, VCF_CHECK, READY_FOR_SUBMISSION_TO_EVA, \
-    PROCESS_NOT_RUN_YET, RUN_STATUS_KEY, PROCESS_RUN
+    PROCESS_NOT_RUN_YET, RUN_STATUS_KEY, PROCESS_RUN, METADATA_CHECK, PASS, TRIM_DOWN, SHALLOW_VALIDATION
 from tests.test_utils import create_mapping_file
 
 expected_validation_results = {
-    'shallow_validation': {'requested': False},
     'vcf_check': {
         'run_status': 'Process run',
         'input_passed.vcf': {'valid': True, 'error_list': [], 'error_count': 0, 'warning_count': 0,
@@ -161,10 +160,13 @@ class TestValidator(TestCase):
                     del file['report_path']
         if 'assembly_check' in results:
             for file in results['assembly_check'].values():
-                if 'report_path' in file:
+                if isinstance(file, dict) and 'report_path' in file:
                     del file['report_path']
         if 'evidence_type_check' in results and 'report_path' in results['evidence_type_check']:
             del results['evidence_type_check']['report_path']
+        if SHALLOW_VALIDATION in results:
+            if 'metrics' in results[SHALLOW_VALIDATION]:
+                del results[SHALLOW_VALIDATION]['metrics']
 
     def save_validation_results_file(self, validator, results):
         with open(validator.validation_result_file, 'w') as val_res_file:
@@ -243,6 +245,7 @@ class TestValidator(TestCase):
         expected_results = deepcopy(expected_validation_results)
         expected_results['vcf_check']['pass'] = True
         expected_results['evidence_type_check']['pass'] = True
+        expected_results[TRIM_DOWN] = False
         expected_results[READY_FOR_SUBMISSION_TO_EVA] = False
 
         with open(self.validator_json.validation_result_file, 'r') as val_res_file:
@@ -274,9 +277,40 @@ class TestValidator(TestCase):
         expected_results = deepcopy(expected_validation_results)
         expected_results['vcf_check']['pass'] = True
         expected_results['evidence_type_check']['pass'] = True
+        expected_results[TRIM_DOWN] = False
         expected_results[READY_FOR_SUBMISSION_TO_EVA] = False
 
         with open(self.validator_json.validation_result_file, 'r') as val_res_file:
+            saved_results = yaml.safe_load(val_res_file) or {}
+        self.drop_report_paths_from_validation_results(saved_results)
+        assert saved_results == self.format_data_structure(expected_results)
+
+    def test__collect_validation_workflow_results_for_shallow_validation_no_effect_when_task_not_in_vcf_check_or_assembly_check(
+            self):
+        validator_json_shallow = Validator(self.mapping_file, self.output_dir, validation_tasks=[METADATA_CHECK],
+                                           shallow_validation=True)
+
+        # save validations results except for METADATA_CHECK
+        results_to_be_saved = deepcopy(expected_validation_results)
+        del results_to_be_saved[METADATA_CHECK]
+        self.save_validation_results_file(validator_json_shallow, results_to_be_saved)
+
+        # load previous validation results
+        validator_json_shallow._load_previous_validation_results()
+        # run collect result
+        validator_json_shallow._collect_validation_workflow_results()
+        # run assess result
+        validator_json_shallow._assess_validation_results()
+        # run save result
+        validator_json_shallow._save_validation_results()
+
+        # assert saved results
+        expected_results = deepcopy(expected_validation_results)
+        expected_results[METADATA_CHECK][PASS] = False
+        expected_results[TRIM_DOWN] = False
+        expected_results[READY_FOR_SUBMISSION_TO_EVA] = False
+
+        with open(validator_json_shallow.validation_result_file, 'r') as val_res_file:
             saved_results = yaml.safe_load(val_res_file) or {}
         self.drop_report_paths_from_validation_results(saved_results)
         assert saved_results == self.format_data_structure(expected_results)
