@@ -5,7 +5,7 @@ from unittest import TestCase
 
 import eva_sub_cli
 from eva_sub_cli.report import generate_html_report, generate_text_report
-from eva_sub_cli.validators.validator import PROCESS_NOT_RUN_YET, RUN_STATUS_KEY
+from eva_sub_cli.validators.validator import PROCESS_NOT_RUN_YET, RUN_STATUS_KEY, TRIM_DOWN
 
 validation_results_xlsx = {
     "ready_for_submission_to_eva": False,
@@ -453,8 +453,8 @@ class TestReport(TestCase):
 
     def test_generate_html_report_metadata_xlsx_shallow(self):
         shallow_validation_results_xlsx = copy.deepcopy(validation_results_xlsx)
+        shallow_validation_results_xlsx[TRIM_DOWN] = True
         shallow_validation_results_xlsx['shallow_validation'] = {
-            'required': True, 'requested': True,
             'metrics': {
                 'input_fail.vcf': {'trim_down_vcf_record': 10000, 'number_sequence_found': 24,
                                    'trim_down_required': True},
@@ -502,8 +502,8 @@ class TestReport(TestCase):
 
     def test_generate_text_report_metadata_xlsx_shallow(self):
         shallow_validation_results_xlsx = copy.deepcopy(validation_results_xlsx)
+        shallow_validation_results_xlsx[TRIM_DOWN] = True
         shallow_validation_results_xlsx['shallow_validation'] = {
-            'required': True, 'requested': True,
             'metrics': {
                 'input_fail.vcf': {'trim_down_vcf_record': 10000, 'number_sequence_found': 24,
                                    'trim_down_required': True},
