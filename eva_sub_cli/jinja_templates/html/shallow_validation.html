@@ -2,7 +2,7 @@
 {% macro optional_shallow_validation_report(validation_results) -%}
     {% set results = validation_results.get('shallow_validation', {}) %}
 
-    {% if results.get('required') %}
+    {% if validation_results.get('trim_down') %}
     <section>
         <div class="report-section fail collapsible"> <span class="expand_icon">&#9654;</span>
             &#10060; <b>You requested to run the shallow validation, please run full validation before submitting the data</b>
