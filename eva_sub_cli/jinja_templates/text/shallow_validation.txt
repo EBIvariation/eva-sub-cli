@@ -1,7 +1,7 @@
 {% macro optional_shallow_validation_report(validation_results) -%}
 
 {% set results = validation_results.get('shallow_validation', {}) %}
-{% if results.get('required') %}
+{% if validation_results.get('trim_down') %}
 
 {{ "\u274C" }} You requested to run the shallow validation, please run full validation before submitting the data
 {% for vcf_file in results.get('metrics') %}

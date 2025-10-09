@@ -1,6 +1,6 @@
 
 {% macro file_validation_report(validation_results, file_name) -%}
-    {% for check_type, check_per_file in validation_results.items() %}
+    {% for check_type, check_per_file in validation_results.items() if check_type != "trim_down" %}
         {% set result = check_per_file.get(file_name, {}) %}
         {% if check_type == "assembly_check" %}
             {{ assembly_check(result) }}
