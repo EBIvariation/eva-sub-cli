@@ -5,12 +5,12 @@ from unittest import TestCase
 
 import eva_sub_cli
 from eva_sub_cli.report import generate_html_report, generate_text_report
-from eva_sub_cli.validators.validator import PROCESS_NOT_RUN_YET, RUN_STATUS_KEY, TRIM_DOWN
+from eva_sub_cli.validators.validator import RUN_STATUS_KEY, TRIM_DOWN
 
 validation_results_xlsx = {
     "ready_for_submission_to_eva": False,
     "assembly_check": {
-        'run_status': 'Process run',
+        'run_status': True,
         "input_passed.vcf": {
             "report_path": "/path/to/assembly_passed/report",
             "error_list": [],
@@ -41,7 +41,7 @@ validation_results_xlsx = {
         },
     },
     "vcf_check": {
-        'run_status': 'Process run',
+        'run_status': True,
         "input_passed.vcf": {
             'report_path': '/path/to/vcf_passed/report',
             "error_count": 0,
@@ -61,7 +61,7 @@ validation_results_xlsx = {
         },
     },
     "sample_check": {
-        'run_status': 'Process run',
+        'run_status': True,
         'report_path': '/path/to/sample/report',
         'overall_differences': True,
         'results_per_analysis': {
@@ -90,7 +90,7 @@ validation_results_xlsx = {
     # NB. obviously this doesn't make sense for the number of analyses in this report, but demonstrates the possible
     # outputs for this check.
     "fasta_check": {
-        'run_status': 'Process run',
+        'run_status': True,
         'not_all_insdc.fa': {
             'report_path': '/path/to/not_all_insdc_check.yml',
             'all_insdc': False,
@@ -151,7 +151,7 @@ validation_results_xlsx = {
         }
     },
     'metadata_check': {
-        'run_status': 'Process run',
+        'run_status': True,
         'spreadsheet_errors': [
             {'sheet': 'Files', 'row': '', 'column': '', 'description': 'Sheet "Files" is missing'},
             {'sheet': 'Project', 'row': 2, 'column': 'Project Title',
@@ -175,7 +175,7 @@ validation_results_xlsx = {
     },
 
     'evidence_type_check': {
-        'run_status': 'Process run',
+        'run_status': True,
         'pass': False,
         'Analysis A': {
             'evidence_type': None,
@@ -191,7 +191,7 @@ validation_results_xlsx = {
 validation_results_json = {
     "ready_for_submission_to_eva": False,
     "assembly_check": {
-        'run_status': 'Process run',
+        'run_status': True,
         "input_passed.vcf": {
             "report_path": "/path/to/assembly_passed/report",
             "error_list": [],
@@ -223,7 +223,7 @@ validation_results_json = {
         "pass": False,
     },
     "vcf_check": {
-        'run_status': 'Process run',
+        'run_status': True,
         "input_passed.vcf": {
             'report_path': '/path/to/vcf_passed/report',
             "error_count": 0,
@@ -244,7 +244,7 @@ validation_results_json = {
         "pass": False,
     },
     "sample_check": {
-        'run_status': 'Process run',
+        'run_status': True,
         'report_path': '/path/to/sample/report',
         'overall_differences': True,
         'results_per_analysis': {
@@ -274,7 +274,7 @@ validation_results_json = {
     # NB. obviously this doesn't make sense for the number of analyses in this report, but demonstrates the possible
     # outputs for this check.
     "fasta_check": {
-        'run_status': 'Process run',
+        'run_status': True,
         "pass": False,
         'not_all_insdc.fa': {
             'report_path': '/path/to/not_all_insdc_check.yml',
@@ -336,7 +336,7 @@ validation_results_json = {
         }
     },
     'metadata_check': {
-        'run_status': 'Process run',
+        'run_status': True,
         "pass": False,
         'json_errors': [
             {'property': '.files', 'description': "should have required property 'files'"},
@@ -358,7 +358,7 @@ validation_results_json = {
     },
 
     'evidence_type_check': {
-        'run_status': 'Process run',
+        'run_status': True,
         'pass': False,
         'Analysis A': {
             'evidence_type': None,
@@ -379,17 +379,17 @@ class TestReport(TestCase):
     expected_report_metadata_json = os.path.join(resource_dir, 'validation_reports',
                                                  'expected_report_metadata_json.html')
     expected_report_metadata_json_process_not_run = os.path.join(resource_dir, 'validation_reports',
-                                                 'expected_report_metadata_json_process_not_run.html')
+                                                                 'expected_report_metadata_json_process_not_run.html')
     expected_report_metadata_xlsx_shallow = os.path.join(resource_dir, 'validation_reports',
                                                          'expected_shallow_metadata_xlsx_report.html')
     expected_text_report_metadata_xlsx = os.path.join(resource_dir, 'validation_reports',
-                                                 'expected_report_metadata_xlsx.txt')
+                                                      'expected_report_metadata_xlsx.txt')
     expected_text_report_metadata_json = os.path.join(resource_dir, 'validation_reports',
-                                                 'expected_report_metadata_json.txt')
+                                                      'expected_report_metadata_json.txt')
     expected_text_report_metadata_json_process_not_run = os.path.join(resource_dir, 'validation_reports',
-                                                      'expected_report_metadata_json_process_not_run.txt')
+                                                                      'expected_report_metadata_json_process_not_run.txt')
     expected_text_report_metadata_xlsx_shallow = os.path.join(resource_dir, 'validation_reports',
-                                                         'expected_shallow_metadata_xlsx_report.txt')
+                                                              'expected_shallow_metadata_xlsx_report.txt')
     test_project_name = "My cool project"
     test_validation_date = datetime.datetime(2023, 8, 31, 12, 34, 56)
     test_submission_dir = "/test/submission/dir"
@@ -437,12 +437,12 @@ class TestReport(TestCase):
 
     def test_generate_html_report_metadata_json_metadata_report_not_run_yet(self):
         validation_result = {
-            'vcf_check': {RUN_STATUS_KEY: PROCESS_NOT_RUN_YET},
-            'evidence_type_check': {RUN_STATUS_KEY: PROCESS_NOT_RUN_YET},
-            'assembly_check': {RUN_STATUS_KEY: PROCESS_NOT_RUN_YET},
-            'fasta_check': {RUN_STATUS_KEY: PROCESS_NOT_RUN_YET},
-            'metadata_check': {RUN_STATUS_KEY: PROCESS_NOT_RUN_YET},
-            'sample_check': {RUN_STATUS_KEY: PROCESS_NOT_RUN_YET}
+            'vcf_check': {RUN_STATUS_KEY: False},
+            'evidence_type_check': {RUN_STATUS_KEY: False},
+            'assembly_check': {RUN_STATUS_KEY: False},
+            'fasta_check': {RUN_STATUS_KEY: False},
+            'metadata_check': {RUN_STATUS_KEY: False},
+            'sample_check': {RUN_STATUS_KEY: False}
         }
 
         self.check_report_vs_expected(
@@ -485,12 +485,12 @@ class TestReport(TestCase):
 
     def test_generate_text_report_metadata_json_report_not_run(self):
         validation_result = {
-            'vcf_check': {RUN_STATUS_KEY: PROCESS_NOT_RUN_YET},
-            'evidence_type_check': {RUN_STATUS_KEY: PROCESS_NOT_RUN_YET},
-            'assembly_check': {RUN_STATUS_KEY: PROCESS_NOT_RUN_YET},
-            'fasta_check': {RUN_STATUS_KEY: PROCESS_NOT_RUN_YET},
-            'metadata_check': {RUN_STATUS_KEY: PROCESS_NOT_RUN_YET},
-            'sample_check': {RUN_STATUS_KEY: PROCESS_NOT_RUN_YET}
+            'vcf_check': {RUN_STATUS_KEY: False},
+            'evidence_type_check': {RUN_STATUS_KEY: False},
+            'assembly_check': {RUN_STATUS_KEY: False},
+            'fasta_check': {RUN_STATUS_KEY: False},
+            'metadata_check': {RUN_STATUS_KEY: False},
+            'sample_check': {RUN_STATUS_KEY: False}
         }
 
         self.check_report_vs_expected(
