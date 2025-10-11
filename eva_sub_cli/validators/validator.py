@@ -11,6 +11,7 @@ from ebi_eva_common_pyutils.config import WritableConfig
 from ebi_eva_common_pyutils.logger import logging_config, AppLogger
 from packaging import version
 
+import eva_sub_cli
 from eva_sub_cli import ETC_DIR, SUB_CLI_CONFIG_FILE, __version__
 from eva_sub_cli.file_utils import backup_file_or_directory, resolve_single_file_path
 from eva_sub_cli.metadata import EvaMetadataJson
@@ -23,24 +24,22 @@ VALIDATION_OUTPUT_DIR = "validation_output"
 VALIDATION_RESULTS_FILE = 'validation_results.yaml'
 READY_FOR_SUBMISSION_TO_EVA = 'ready_for_submission_to_eva'
 
-# Includes vcf_validator and evidence type checks
 VCF_CHECK = 'vcf_check'
 EVIDENCE_TYPE_CHECK = 'evidence_type_check'
-# Includes vcf_assembly and INSDC check
 ASSEMBLY_CHECK = 'assembly_check'
 FASTA_CHECK = 'fasta_check'
-# Includes metadata syntax and semantic checks
 METADATA_CHECK = 'metadata_check'
-# Includes sample concordance check
 SAMPLE_CHECK = 'sample_check'
+# Tasks that can be requested by user.
+# Here VCF_CHECK includes both vcf_validator and evidence type check,
+# and ASSEMBLY_CHECK includes both vcf_assembly and INSDC check.
 ALL_VALIDATION_TASKS = [VCF_CHECK, ASSEMBLY_CHECK, METADATA_CHECK, SAMPLE_CHECK]
+# Tasks used for the purpose of reporting results.
 ALL_VALIDATION_TASKS_GRANULAR = [VCF_CHECK, EVIDENCE_TYPE_CHECK, ASSEMBLY_CHECK, FASTA_CHECK, SAMPLE_CHECK,
                                  METADATA_CHECK]
 SHALLOW_VALIDATION = 'shallow_validation'
 TRIM_DOWN = 'trim_down'
 RUN_STATUS_KEY = 'run_status'
-PROCESS_RUN = 'Process run'
-PROCESS_NOT_RUN_YET = 'Process not run yet'
 PASS = 'pass'
 
 logger = logging_config.get_logger(__name__)
@@ -193,6 +192,13 @@ class Validator(AppLogger):
                 self.results = yaml.safe_load(val_res_file) or {}
 
         # update previous shallow validation format to new one, if applicable
+        if 'version' in self.results:
+            if version.parse(self.results['version']) < version.parse('v0.4.15'):
+                self.update_previous_version_results()
+        else:
+            self.update_previous_version_results()
+
+    def update_previous_version_results(self):
         if 'requested' in self.results.get(SHALLOW_VALIDATION, {}):
             if 'required' in self.results.get(SHALLOW_VALIDATION, {}):
                 if self.results.get(SHALLOW_VALIDATION, {}).get('required', False):
@@ -228,7 +234,6 @@ class Validator(AppLogger):
     def _assess_validation_results(self):
         """
             Assess if the validation results are meeting expectations and marks them as "PASS: true", "PASS: false"
-            or "PASS: Process not run yet" if the process as not been run yet.
             It assumes all validation have been parsed already.
         """
 
@@ -247,8 +252,8 @@ class Validator(AppLogger):
                         for v in self.results.get(EVIDENCE_TYPE_CHECK, {}).values()
                         if isinstance(v, dict)))
         elif VCF_CHECK not in self.results:
-            self.results[VCF_CHECK] = {RUN_STATUS_KEY: PROCESS_NOT_RUN_YET}
-            self.results[EVIDENCE_TYPE_CHECK] = {RUN_STATUS_KEY: PROCESS_NOT_RUN_YET}
+            self.results[VCF_CHECK] = {RUN_STATUS_KEY: False}
+            self.results[EVIDENCE_TYPE_CHECK] = {RUN_STATUS_KEY: False}
 
         if ASSEMBLY_CHECK in self.tasks:
             # assembly_check result
@@ -266,15 +271,15 @@ class Validator(AppLogger):
                                       if isinstance(fa_file_check, dict)))
             self.results[FASTA_CHECK][PASS] = fasta_check_result
         elif ASSEMBLY_CHECK not in self.results:
-            self.results[ASSEMBLY_CHECK] = {RUN_STATUS_KEY: PROCESS_NOT_RUN_YET}
-            self.results[FASTA_CHECK] = {RUN_STATUS_KEY: PROCESS_NOT_RUN_YET}
+            self.results[ASSEMBLY_CHECK] = {RUN_STATUS_KEY: False}
+            self.results[FASTA_CHECK] = {RUN_STATUS_KEY: False}
 
         if SAMPLE_CHECK in self.tasks:
             # sample check result
             self.results[SAMPLE_CHECK][PASS] = self.results.get(SAMPLE_CHECK, {}).get('overall_differences',
-                                                                                            True) is False
+                                                                                      True) is False
         elif SAMPLE_CHECK not in self.results:
-            self.results[SAMPLE_CHECK] = {RUN_STATUS_KEY: PROCESS_NOT_RUN_YET}
+            self.results[SAMPLE_CHECK] = {RUN_STATUS_KEY: False}
 
         if METADATA_CHECK in self.tasks:
             # metadata check result
@@ -282,14 +287,15 @@ class Validator(AppLogger):
             metadata_json_result = len(self.results.get(METADATA_CHECK, {}).get('json_errors', []) or []) == 0
             self.results[METADATA_CHECK][PASS] = metadata_xlsx_result and metadata_json_result
         elif METADATA_CHECK not in self.results:
-            self.results[METADATA_CHECK] = {RUN_STATUS_KEY: PROCESS_NOT_RUN_YET}
+            self.results[METADATA_CHECK] = {RUN_STATUS_KEY: False}
 
         # update config based on the validation results
         self.sub_config.set(READY_FOR_SUBMISSION_TO_EVA, value=self.verify_ready_for_submission_to_eva())
         self.results[READY_FOR_SUBMISSION_TO_EVA] = self.verify_ready_for_submission_to_eva()
         # update shallow validation TRIM_DOWN val
         self.results[TRIM_DOWN] = any(self.results[key].get(TRIM_DOWN, False) is True
-                                                            for key in ALL_VALIDATION_TASKS_GRANULAR)
+                                      for key in ALL_VALIDATION_TASKS_GRANULAR)
+        self.results['version'] = eva_sub_cli.__version__
 
     def _save_validation_results(self):
         with open(self.validation_result_file, 'w') as val_res_file:
@@ -337,7 +343,7 @@ class Validator(AppLogger):
 
     def _collect_vcf_check_results(self):
         # detect output files for vcf check
-        self.results[VCF_CHECK] = {RUN_STATUS_KEY: PROCESS_RUN}
+        self.results[VCF_CHECK] = {RUN_STATUS_KEY: True}
         if self.shallow_validation and self.results[SHALLOW_VALIDATION][TRIM_DOWN] is True:
             self.results[VCF_CHECK].update(TRIM_DOWN, True)
 
@@ -365,7 +371,7 @@ class Validator(AppLogger):
 
     def _collect_assembly_check_results(self):
         # detect output files for assembly check
-        self.results[ASSEMBLY_CHECK] = {RUN_STATUS_KEY: PROCESS_RUN}
+        self.results[ASSEMBLY_CHECK] = {RUN_STATUS_KEY: True}
         if self.shallow_validation and self.results[SHALLOW_VALIDATION][TRIM_DOWN] is True:
             self.results[ASSEMBLY_CHECK].update(TRIM_DOWN, True)
 
@@ -395,7 +401,7 @@ class Validator(AppLogger):
             }
 
     def _load_fasta_check_results(self):
-        self.results[FASTA_CHECK] = {RUN_STATUS_KEY: PROCESS_RUN}
+        self.results[FASTA_CHECK] = {RUN_STATUS_KEY: True}
         if self.shallow_validation and self.results[SHALLOW_VALIDATION][TRIM_DOWN] is True:
             self.results[FASTA_CHECK].update(TRIM_DOWN, True)
 
@@ -415,7 +421,7 @@ class Validator(AppLogger):
                 self.results[SAMPLE_CHECK] = yaml.safe_load(open_yaml)
             self.results[SAMPLE_CHECK]['report_path'] = self._sample_check_yaml
 
-        self.results[SAMPLE_CHECK].update({RUN_STATUS_KEY: PROCESS_RUN})
+        self.results[SAMPLE_CHECK].update({RUN_STATUS_KEY: True})
 
     def _load_evidence_check_results(self):
         self.results[EVIDENCE_TYPE_CHECK] = {}
@@ -423,11 +429,11 @@ class Validator(AppLogger):
             with open(self._evidence_type_check_yaml) as open_yaml:
                 self.results[EVIDENCE_TYPE_CHECK] = yaml.safe_load(open_yaml)
             self.results[EVIDENCE_TYPE_CHECK]['report_path'] = self._evidence_type_check_yaml
-        self.results[EVIDENCE_TYPE_CHECK].update({RUN_STATUS_KEY: PROCESS_RUN})
+        self.results[EVIDENCE_TYPE_CHECK].update({RUN_STATUS_KEY: True})
         self._update_metadata_with_evidence_type()
 
     def _collect_metadata_results(self):
-        self.results[METADATA_CHECK] = {RUN_STATUS_KEY: PROCESS_RUN}
+        self.results[METADATA_CHECK] = {RUN_STATUS_KEY: True}
         self._load_spreadsheet_conversion_errors()
         self.collect_biovalidator_validation_results()
         self._collect_semantic_metadata_results()
