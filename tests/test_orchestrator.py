@@ -16,7 +16,7 @@ from eva_sub_cli.exceptions.submission_status_exception import SubmissionStatusE
 from eva_sub_cli.orchestrator import orchestrate_process, VALIDATE, SUBMIT, DOCKER, check_validation_required, \
     verify_and_get_metadata_xlsx_version, get_metadata_xlsx_template_link, get_sub_cli_github_tags
 from eva_sub_cli.submit import SUB_CLI_CONFIG_KEY_SUBMISSION_ID, SUB_CLI_CONFIG_KEY_SUBMISSION_UPLOAD_URL
-from eva_sub_cli.validators.validator import READY_FOR_SUBMISSION_TO_EVA
+from eva_sub_cli.validators.validator import READY_FOR_SUBMISSION_TO_EVA, ALL_VALIDATION_TASKS
 from tests.test_utils import touch
 
 
@@ -111,7 +111,7 @@ class TestOrchestrator(unittest.TestCase):
             m_get_vcf.assert_called_once_with(self.mapping_file)
             m_docker_validator.assert_any_call(
                 self.mapping_file, self.test_sub_dir, self.project_title, self.metadata_json, self.metadata_xlsx, self.metadata_xlsx_version,
-                submission_config=m_config.return_value, shallow_validation=False
+                validation_tasks=ALL_VALIDATION_TASKS, submission_config=m_config.return_value, shallow_validation=False
             )
             m_docker_validator().validate_and_report.assert_called_once_with()
 
@@ -134,7 +134,8 @@ class TestOrchestrator(unittest.TestCase):
             # Validate was run because the config show it was not run successfully before
             m_docker_validator.assert_any_call(
                 self.mapping_file, self.test_sub_dir, self.project_title, self.metadata_json, self.metadata_xlsx,
-                self.metadata_xlsx_version, submission_config=m_config.return_value, shallow_validation=False
+                self.metadata_xlsx_version, validation_tasks=ALL_VALIDATION_TASKS,
+                submission_config=m_config.return_value, shallow_validation=False
             )
             m_docker_validator().validate_and_report.assert_called_once_with()
 
@@ -182,7 +183,8 @@ class TestOrchestrator(unittest.TestCase):
                     assert row['report'] == ''
             m_docker_validator.assert_any_call(
                 self.mapping_file, self.test_sub_dir, self.project_title, self.metadata_json, self.metadata_xlsx,
-                self.metadata_xlsx_version, submission_config=m_config.return_value, shallow_validation=False
+                self.metadata_xlsx_version, validation_tasks=ALL_VALIDATION_TASKS,
+                submission_config=m_config.return_value, shallow_validation=False
             )
             m_docker_validator().validate_and_report.assert_called_once_with()
 
@@ -200,7 +202,7 @@ class TestOrchestrator(unittest.TestCase):
                     assert row['report'] == ''
             m_docker_validator.assert_any_call(
                 self.mapping_file, self.test_sub_dir, self.project_title, self.metadata_json, None, None,
-                submission_config=m_config.return_value, shallow_validation=False
+                validation_tasks=ALL_VALIDATION_TASKS, submission_config=m_config.return_value, shallow_validation=False
             )
             m_docker_validator().validate_and_report.assert_called_once_with()
 
@@ -221,7 +223,7 @@ class TestOrchestrator(unittest.TestCase):
                     assert 'GCA_000001405.27_report.txt' in row['report']
             m_docker_validator.assert_any_call(
                 self.mapping_file, self.test_sub_dir, self.project_title, self.metadata_json, None, None,
-                submission_config=m_config.return_value, shallow_validation=False
+                validation_tasks=ALL_VALIDATION_TASKS, submission_config=m_config.return_value, shallow_validation=False
             )
             m_docker_validator().validate_and_report.assert_called_once_with()
 
@@ -244,7 +246,7 @@ class TestOrchestrator(unittest.TestCase):
                     assert 'GCA_000001405.27_report.txt' in row['report']
             m_docker_validator.assert_any_call(
                 self.mapping_file, self.test_sub_dir, self.project_title, self.metadata_json, None, None,
-                submission_config=m_config.return_value, shallow_validation=False
+                validation_tasks=ALL_VALIDATION_TASKS, submission_config=m_config.return_value, shallow_validation=False
             )
             m_docker_validator().validate_and_report.assert_called_once_with()
 
@@ -265,7 +267,7 @@ class TestOrchestrator(unittest.TestCase):
                     assert row['report'] == ''
             m_docker_validator.assert_any_call(
                 self.mapping_file, self.test_sub_dir, self.project_title, self.metadata_json, None, None,
-                submission_config=m_config.return_value, shallow_validation=False
+                validation_tasks=ALL_VALIDATION_TASKS, submission_config=m_config.return_value, shallow_validation=False
             )
             m_docker_validator().validate_and_report.assert_called_once_with()
 
@@ -286,7 +288,7 @@ class TestOrchestrator(unittest.TestCase):
                 assert 'test.vcf.gz.csi' not in vcf_files
             m_docker_validator.assert_any_call(
                 self.mapping_file, self.test_sub_dir, self.project_title, self.metadata_json, None, None,
-                submission_config=m_config.return_value, shallow_validation=False
+                validation_tasks=ALL_VALIDATION_TASKS, submission_config=m_config.return_value, shallow_validation=False
             )
             m_docker_validator().validate_and_report.assert_called_once_with()
 
@@ -304,7 +306,8 @@ class TestOrchestrator(unittest.TestCase):
                     assert row['report'] == ''
             m_docker_validator.assert_any_call(
                 self.mapping_file, self.test_sub_dir, self.project_title, None, self.metadata_xlsx,
-                self.metadata_xlsx_version, submission_config=m_config.return_value, shallow_validation=False
+                self.metadata_xlsx_version, validation_tasks=ALL_VALIDATION_TASKS,
+                submission_config=m_config.return_value, shallow_validation=False
             )
             m_docker_validator().validate_and_report.assert_called_once_with()
 
@@ -322,6 +325,7 @@ class TestOrchestrator(unittest.TestCase):
                     assert row['report'] == ''
             m_docker_validator.assert_any_call(self.mapping_file, self.test_sub_dir, self.project_title, None,
                                                self.metadata_xlsx_v2, self.metadata_xlsx_version_v2,
+                                               validation_tasks=ALL_VALIDATION_TASKS,
                                                submission_config=m_config.return_value, shallow_validation=False
                                                )
             m_docker_validator().validate_and_report.assert_called_once_with()
@@ -342,7 +346,7 @@ class TestOrchestrator(unittest.TestCase):
                     assert 'example' in row['vcf']
                     assert row['report'] == ''
             m_docker_validator.assert_any_call(self.mapping_file, self.test_sub_dir, self.project_title, None,
-                self.metadata_xlsx_with_project_accession, self.metadata_xlsx_version,
+                self.metadata_xlsx_with_project_accession, self.metadata_xlsx_version, validation_tasks=ALL_VALIDATION_TASKS,
                 submission_config=m_config.return_value, shallow_validation=False
             )
             m_docker_validator().validate_and_report.assert_called_once_with()
