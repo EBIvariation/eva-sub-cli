@@ -20,7 +20,7 @@ def generate_report(validation_results, validation_date, submission_dir, vcf_fas
 
     from eva_sub_cli.validators.validator import RUN_STATUS_KEY
 
-    results_for_report = {k: v for k, v in validation_results.items() if k != 'ready_for_submission_to_eva'}
+    results_for_report = {k: v for k, v in validation_results.items() if k not in {'ready_for_submission_to_eva', 'version'}}
     vcf_files = sorted(set([file_name
                             for check in results_for_report if check in ["vcf_check", "assembly_check"]
                             for file_name in results_for_report[check]
