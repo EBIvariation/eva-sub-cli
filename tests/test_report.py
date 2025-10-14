@@ -368,7 +368,8 @@ validation_results_json = {
             'evidence_type': None,
             'errors': 'Multiple evidence types found: genotype, allele_frequency'
         },
-    }
+    },
+    'version': 'cli_version'
 }
 
 
