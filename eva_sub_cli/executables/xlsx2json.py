@@ -103,9 +103,7 @@ class XlsxParser:
     @staticmethod
     def cast_value(value, type_name):
         # Do not cast None values
-        if type_name and value is not None:
-            if type_name == 'string':
-                return str(value)
+        if value is not None:
             if type_name == 'boolean':
                 return str(value).lower() in ['true', '1', "'1'", 't', 'y', 'yes']
             if type_name == 'list':
@@ -114,6 +112,10 @@ class XlsxParser:
                 return [v for v in split_values if v]
             if type_name == 'date':
                 return XlsxParser.serialize(value)
+            if type_name == 'integer':
+                return int(value)
+            # Default any value is cast to string
+            return str(value)
         return value
 
     @staticmethod
