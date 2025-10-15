@@ -129,8 +129,6 @@ Sample:
     serotype: serotype
     serovar: serovar
   cast:
-    Sample ID: string
-    BioSample Name: string
     collection_date: date
     Taxonomy ID: integer
 
