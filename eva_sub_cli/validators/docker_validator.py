@@ -82,7 +82,7 @@ class DockerValidator(Validator):
                 "Copy validation output from container to host",
                 f"{self.docker_path} cp {self.container_name}:{container_validation_dir}/{container_validation_output_dir}/. {self.output_dir}"
             )
-            # self.stop_running_container()
+            self.stop_running_container()
 
     def verify_docker_is_installed(self):
         try:
