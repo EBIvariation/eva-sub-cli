@@ -44,7 +44,7 @@ class NativeValidator(Validator):
     def get_validation_cmd(self):
         if self.metadata_xlsx and not self.metadata_json:
             metadata_flag = f"--metadata_xlsx {self.metadata_xlsx} "
-            metadata_flag += f"--conversion_configuration {self._get_xlsx_conversion_configuration()}"
+            metadata_flag += f"--conversion_configuration_name {self._get_xlsx_conversion_configuration_name()}"
         else:
             metadata_flag = f"--metadata_json {self.metadata_json}"
         path_to_workflow = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),

@@ -43,7 +43,8 @@ class DockerValidator(Validator):
             f"{self.docker_path} exec {self.container_name} nextflow run eva_sub_cli/nextflow/validation.nf ",
             f"--base_dir {container_validation_dir} ",
             f"--vcf_files_mapping {self.mapping_file} ",
-            f"--metadata_xlsx {self.metadata_xlsx} --conversion_configuration {self._get_xlsx_conversion_configuration()} "
+            f"--metadata_xlsx {self.metadata_xlsx} ",
+            f"--conversion_configuration_name {self._get_xlsx_conversion_configuration_name()} "
             if self.metadata_xlsx and not self.metadata_json else f"--metadata_json {self.metadata_json} ",
             f"--shallow_validation true " if self.shallow_validation else "",
             f"--output_dir {container_validation_output_dir}"
@@ -81,7 +82,7 @@ class DockerValidator(Validator):
                 "Copy validation output from container to host",
                 f"{self.docker_path} cp {self.container_name}:{container_validation_dir}/{container_validation_output_dir}/. {self.output_dir}"
             )
-            self.stop_running_container()
+            # self.stop_running_container()
 
     def verify_docker_is_installed(self):
         try:
