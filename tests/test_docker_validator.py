@@ -7,6 +7,8 @@ from unittest.mock import patch
 
 import yaml
 
+from eva_sub_cli import MINIMUM_METADATA_XLSX_TEMPLATE_VERSION
+from eva_sub_cli.orchestrator import verify_and_get_metadata_xlsx_version
 from eva_sub_cli.validators.docker_validator import DockerValidator
 from tests.test_utils import create_mapping_file
 
@@ -61,12 +63,14 @@ class TestDockerValidator(TestCase):
             os.path.join(self.resources_folder, 'EVA_Submission_test.xlsx'),
             self.metadata_xlsx
         )
+        metadata_xlsx_version = verify_and_get_metadata_xlsx_version(self.metadata_xlsx, MINIMUM_METADATA_XLSX_TEMPLATE_VERSION)
 
         self.validator_from_excel = DockerValidator(
             mapping_file=self.mapping_file,
             submission_dir=self.test_run_dir2,
             project_title=self.project_title,
-            metadata_xlsx=self.metadata_xlsx
+            metadata_xlsx=self.metadata_xlsx,
+            metadata_xlsx_version=metadata_xlsx_version
         )
 
     def tearDown(self):

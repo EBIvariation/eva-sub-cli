@@ -71,11 +71,11 @@ class Validator(AppLogger):
         return run_command_with_output(command_description, command, stdout_log_level=logging.DEBUG,
                                        stderr_log_level=logging.DEBUG, **kwargs)
 
-    def _get_xlsx_conversion_configuration(self):
+    def _get_xlsx_conversion_configuration_name(self):
         if version.parse(self.metadata_xlsx_version) < version.parse('3.0.0'):
-            return os.path.join(ETC_DIR, 'spreadsheet2json_conf_V2.yaml')
+            return 'spreadsheet2json_conf_V2.yaml'
         else:
-            return os.path.join(ETC_DIR, 'spreadsheet2json_conf.yaml')
+            return 'spreadsheet2json_conf.yaml'
 
     def _find_vcf_and_fasta_files(self):
         vcf_files = []
