@@ -51,6 +51,7 @@ Project:
     Peer Project(s): list
     Link(s): list
     Hold Date: date
+    Taxonomy ID: integer
 
 Analysis:
   required:
@@ -128,9 +129,8 @@ Sample:
     serotype: serotype
     serovar: serovar
   cast:
-    Sample ID: string
-    BioSample Name: string
     collection_date: date
+    Taxonomy ID: integer
 
 
 Files:
