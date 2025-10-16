@@ -1,6 +1,12 @@
 {
   "submitterDetails": [],
-  "project": {},
+  "project": {
+    "title": "Example Project",
+    "description": "An example project for demonstration purposes",
+    "centre": "University of Example",
+    "taxId": 9606,
+    "holdDate": "2023-12-31T00:00:00"
+  },
   "sample": [],
   "analysis": [
     {
