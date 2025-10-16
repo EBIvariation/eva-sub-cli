@@ -577,6 +577,9 @@ class Validator(AppLogger):
         if self.metadata_json_post_validation:
             metadata = EvaMetadataJson(self.metadata_json_post_validation)
             return metadata.project.get('taxId') == 9606 and any(
-                v['evidence_type'] == 'genotype' for k, v in self.results['evidence_type_check'].items() if k != 'pass')
+                v['evidence_type'] == 'genotype'
+                for k, v in self.results['evidence_type_check'].items()
+                if isinstance(v, dict) and 'evidence_type' in v
+            )
 
         return False

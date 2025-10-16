@@ -372,3 +372,18 @@ class TestValidator(TestCase):
         # Nothing added to analysis
         updated_metadata = EvaMetadataJson(self.validator_json.metadata_json_post_validation)
         assert 'evidenceType' not in updated_metadata.analyses[0]
+
+    def test__check_consent_statement_is_needed_for_submission(self):
+        self.validator_json.results['evidence_type_check'] = {
+            'AA': {
+                'errors': None,
+                'evidence_type': 'genotype'
+            },
+            'report_path': '{resource_dir}/validation_reports/validation_output/other_validations/evidence_type_checker.yml'
+        }
+        assert self.validator_json._check_consent_statement_is_needed_for_submission() is True
+
+
+
+
+
