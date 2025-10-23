@@ -17,7 +17,7 @@ Key points to note before validating your metadata spreadsheet with the eva-sub-
 
 - Please do not change the existing structure of the spreadsheet
 - Ensure all mandatory columns (marked in bold) are filled.
-- Pre-registered samples must be released and not kept in private status
+- Pre-registered project and samples must be released and not kept in private status
 - Sample names in the spreadsheet must match those in the VCF file.
 - Analysis aliases must match across the sheets (Analysis, Sample, and File sheets).
 
