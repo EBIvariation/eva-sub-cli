@@ -9,8 +9,11 @@ from eva_sub_cli.validators.validator import RUN_STATUS_KEY, TRIM_DOWN
 
 validation_results_xlsx = {
     "ready_for_submission_to_eva": False,
+    "version": "0.5.1",
+    "trim_down": False,
     "assembly_check": {
         'run_status': True,
+        'pass': False,
         "input_passed.vcf": {
             "report_path": "/path/to/assembly_passed/report",
             "error_list": [],
@@ -42,6 +45,7 @@ validation_results_xlsx = {
     },
     "vcf_check": {
         'run_status': True,
+        'pass': False,
         "input_passed.vcf": {
             'report_path': '/path/to/vcf_passed/report',
             "error_count": 0,
@@ -62,6 +66,7 @@ validation_results_xlsx = {
     },
     "sample_check": {
         'run_status': True,
+        'pass': False,
         'report_path': '/path/to/sample/report',
         'overall_differences': True,
         'results_per_analysis': {
@@ -91,6 +96,7 @@ validation_results_xlsx = {
     # outputs for this check.
     "fasta_check": {
         'run_status': True,
+        'pass': False,
         'not_all_insdc.fa': {
             'report_path': '/path/to/not_all_insdc_check.yml',
             'all_insdc': False,
@@ -152,6 +158,7 @@ validation_results_xlsx = {
     },
     'metadata_check': {
         'run_status': True,
+        'pass': False,
         'spreadsheet_errors': [
             {'sheet': 'Files', 'row': '', 'column': '', 'description': 'Sheet "Files" is missing'},
             {'sheet': 'Project', 'row': 2, 'column': 'Project Title',
@@ -177,6 +184,7 @@ validation_results_xlsx = {
     'evidence_type_check': {
         'run_status': True,
         'pass': False,
+        'report_path': '/path/to/evidence_type.yml',
         'Analysis A': {
             'evidence_type': None,
             'errors': 'VCF file evidence type could not be determined: vcf_files_1, vcf_files_2'
@@ -184,12 +192,14 @@ validation_results_xlsx = {
         'Analysis B': {
             'evidence_type': None,
             'errors': 'Multiple evidence types found: genotype, allele_frequency'
-        },
+        }
     }
 }
 
 validation_results_json = {
     "ready_for_submission_to_eva": False,
+    "version": "0.5.1",
+    "trim_down": False,
     "assembly_check": {
         'run_status': True,
         "input_passed.vcf": {
@@ -360,6 +370,7 @@ validation_results_json = {
     'evidence_type_check': {
         'run_status': True,
         'pass': False,
+        'report_path': '/path/to/evidence_type.yml',
         'Analysis A': {
             'evidence_type': None,
             'errors': 'VCF file evidence type could not be determined: vcf_files_1, vcf_files_2'
