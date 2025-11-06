@@ -7,6 +7,7 @@ def helpMessage() {
     Validate a set of VCF files and metadata to check if they are valid to be submitted to EVA.
 
     Inputs:
+            --tasks					    Which validation tasks to run
             --vcf_files_mapping         csv file with the mappings for vcf files, fasta and assembly report
             --output_dir                output_directory where the reports will be output
             --metadata_json             Json file describing the project, analysis, samples and files
@@ -15,6 +16,14 @@ def helpMessage() {
     """
 }
 
+// Values from validators.validator.ALL_VALIDATION_TASKS
+VCF_CHECK = 'vcf_check'
+ASSEMBLY_CHECK = 'assembly_check'
+METADATA_CHECK = 'metadata_check'
+SAMPLE_CHECK = 'sample_check'
+
+// Default to running all tasks
+params.tasks = [VCF_CHECK, ASSEMBLY_CHECK, METADATA_CHECK, SAMPLE_CHECK]
 params.vcf_files_mapping = null
 params.output_dir = null
 params.metadata_json = null
@@ -59,7 +68,7 @@ conversion_configuration = "${schema_dir}/$params.conversion_configuration_name"
 
 
 def joinBasePath(path) {
-    if (path){
+    if (path) {
         return params.base_dir + '/' + path
     }
     return 'NO_FILE'
@@ -76,36 +85,41 @@ workflow {
             file(joinBasePath(row.fasta)),
             file(joinBasePath(row.report))
         )}
-    if (params.shallow_validation){
+    if (params.shallow_validation) {
         // create a smaller vcf and fasta then replace the channel
         trim_down_vcf(vcf_and_ref_ch)
         vcf_and_ref_ch = trim_down_vcf.out.vcf_and_ref
     }
     vcf_files = vcf_and_ref_ch.map{row -> row[0]}
     fasta_to_vcfs = vcf_and_ref_ch.map{row -> tuple(row[1], row[0])}.groupTuple(by:0)
-    // VCF checks
-    check_vcf_valid(vcf_and_ref_ch)
-    check_vcf_reference(vcf_and_ref_ch)
-
-    generate_file_size_and_md5_digests(vcf_files)
-    collect_file_size_and_md5(generate_file_size_and_md5_digests.out.file_size_and_digest_info.collect())
-
 
     // Metadata conversion
     if (params.metadata_xlsx && !params.metadata_json){
-        convert_xlsx_2_json(joinBasePath(params.metadata_xlsx))
-        metadata_json = convert_xlsx_2_json.out.metadata_json
-    } else {
-        metadata_json = joinBasePath(params.metadata_json)
-    }
-    if (metadata_json) {
-        // Metadata checks and concordance checks
-        metadata_json_validation(metadata_json)
-        metadata_semantic_check(metadata_json)
-        sample_name_concordance(metadata_json, vcf_files.collect())
+		convert_xlsx_2_json(joinBasePath(params.metadata_xlsx))
+		metadata_json = convert_xlsx_2_json.out.metadata_json
+	} else {
+		metadata_json = joinBasePath(params.metadata_json)
+	}
+	// File size and MD5
+	generate_file_size_and_md5_digests(vcf_files)
+	collect_file_size_and_md5(generate_file_size_and_md5_digests.out.file_size_and_digest_info.collect())
+
+	// Task-specific processing
+    if (params.tasks.contains(VCF_CHECK)) {
+        check_vcf_valid(vcf_and_ref_ch)
         evidence_type_check(metadata_json, vcf_files.collect())
-        insdc_checker(metadata_json, fasta_to_vcfs)
-    }
+	}
+	if (params.tasks.contains(ASSEMBLY_CHECK)) {
+		check_vcf_reference(vcf_and_ref_ch)
+		insdc_checker(metadata_json, fasta_to_vcfs)
+	}
+	if (params.tasks.contains(METADATA_CHECK)) {
+		metadata_json_validation(metadata_json)
+		metadata_semantic_check(metadata_json)
+	}
+	if (params.tasks.contains(SAMPLE_CHECK)) {
+		sample_name_concordance(metadata_json, vcf_files.collect())
+	}
 }
 
 

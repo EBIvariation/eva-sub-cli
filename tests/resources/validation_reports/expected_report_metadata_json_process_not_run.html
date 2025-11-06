@@ -34,30 +34,6 @@
         <h6>eva-sub-cli vcligeneratedversion</h6>
     </div>
 </header>
-    <section>
-        <div class="report-section fail collapsible"> <span class="expand_icon">&#9654;</span>
-            &#10060; <b>You requested to run the shallow validation, please run full validation before submitting the data</b>
-        </div>
-        <div class="no-show">
-        <table>
-            <tr>
-                <th><strong>VCF File</strong></th>
-                <th><strong>Variant lines validated in VCF</strong></th>
-                <th><strong>Entries used in Fasta</strong></th>
-            </tr>
-                <tr>
-                    <td>input_fail.vcf</td>
-                    <td>10000</td>
-                    <td>24</td>
-                </tr>
-                <tr>
-                    <td>input_passed.vcf</td>
-                    <td>10000</td>
-                    <td>24</td>
-                </tr>
-            </table>
-        </div>
-    </section>
 <section>
     <h2>Project Summary</h2>
     <div class="description">
@@ -97,22 +73,6 @@
                 </table>
             </div>
         </div>
-        <div class="report-section fail collapsible"><span class="expand_icon">&#9654;</span>&#10060; Evidence Type Check Failures </div>
-         <div class="error-list">
-            <table>
-                <tr>
-                    <th>Analysis Alias</th><th>Errors</th>
-                </tr>
-                             <tr>
-                                <td><strong>Analysis A </strong></td>
-                                <td>VCF file evidence type could not be determined: vcf_files_1, vcf_files_2</td>
-                            </tr>
-                             <tr>
-                                <td><strong>Analysis B </strong></td>
-                                <td>Multiple evidence types found: genotype, allele_frequency</td>
-                            </tr>
-            </table>
-        </div>
 </section>
 <section>
     <h2>Metadata validation results</h2>
@@ -120,75 +80,7 @@
         Ensures that required fields are present and values are formatted correctly.
         For requirements, please refer to the <a href="https://www.ebi.ac.uk/eva/?Submit-Data" target=”_blank”>EVA website</a>.
     </div>
-    <div class='report-section fail collapsible'><span class="expand_icon">&#9654;</span> &#10060; Metadata validation check </div>
-        <div class="error-list">
-            <div class="error-description"><strong>Full report:</strong> /path/to/metadata/metadata_spreadsheet_validation.txt</div>
-            <table>
-                <tr>
-                    <th>Sheet</th><th>Row</th><th>Column</th><th>Description</th>
-                </tr>
-                    <tr>
-                        <td><strong>Files</strong></td>
-                        <td><strong></strong></td>
-                        <td><strong></strong></td>
-                        <td> Sheet "Files" is missing</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Project</strong></td>
-                        <td><strong>2</strong></td>
-                        <td><strong>Project Title</strong></td>
-                        <td> Column "Project Title" is not populated</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Project</strong></td>
-                        <td><strong>2</strong></td>
-                        <td><strong>Description</strong></td>
-                        <td> Column "Description" is not populated</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Project</strong></td>
-                        <td><strong>2</strong></td>
-                        <td><strong>Tax ID</strong></td>
-                        <td> Column "Tax ID" is not populated</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Project</strong></td>
-                        <td><strong>2</strong></td>
-                        <td><strong>Center</strong></td>
-                        <td> Column "Center" is not populated</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Analysis</strong></td>
-                        <td><strong>2</strong></td>
-                        <td><strong>Analysis Title</strong></td>
-                        <td> Column "Analysis Title" is not populated</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Analysis</strong></td>
-                        <td><strong>2</strong></td>
-                        <td><strong>Description</strong></td>
-                        <td> Column "Description" is not populated</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Analysis</strong></td>
-                        <td><strong>2</strong></td>
-                        <td><strong>Experiment Type</strong></td>
-                        <td> Column "Experiment Type" is not populated</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Analysis</strong></td>
-                        <td><strong>2</strong></td>
-                        <td><strong>Reference</strong></td>
-                        <td> Column "Reference" is not populated</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Sample</strong></td>
-                        <td><strong>3</strong></td>
-                        <td><strong>Sample Accession</strong></td>
-                        <td> Column "Sample Accession" is not populated</td>
-                    </tr>
-            </table>
-        </div>
+    <div class='report-section info'><span class="expand_icon"></span> &#9208; Process not run yet</div>
 </section>
 <section>
     <h2>VCF validation results</h2>
@@ -196,215 +88,14 @@
         Checks whether each file is compliant with the <a href="http://samtools.github.io/hts-specs/VCFv4.4.pdf" target=”_blank”>VCF specification</a>.
         Also checks whether the variants' reference alleles match against the reference assembly.
     </div>
-            <h3>input_fail.vcf</h3>
-    <div class='report-section fail collapsible'><span class="expand_icon">&#9654;</span> &#10060; Assembly check: 26/36 (72.22%)</div>
-        <div class="error-list">
-        <div class="error-description">First 10 errors per category are below. <strong>Full report:</strong> /path/to/assembly_failed/report</div>
-        <table>
-            <tr>
-                <th>Category</th><th>Error</th>
-            </tr>
-                <tr>
-                    <td><strong>Parsing Error</strong></td><td> The assembly checking could not be completed: Contig 'chr23' not found in assembly report</td>
-                </tr>
-                <tr>
-                    <td><strong>mismatch error</strong></td><td> Chromosome 1, position 35549, reference allele 'G' does not match the reference sequence, expected 'c'</td>
-                </tr>
-                <tr>
-                    <td><strong>mismatch error</strong></td><td> Chromosome 1, position 35595, reference allele 'G' does not match the reference sequence, expected 'a'</td>
-                </tr>
-                <tr>
-                    <td><strong>mismatch error</strong></td><td> Chromosome 1, position 35618, reference allele 'G' does not match the reference sequence, expected 'c'</td>
-                </tr>
-                <tr>
-                    <td><strong>mismatch error</strong></td><td> Chromosome 1, position 35626, reference allele 'A' does not match the reference sequence, expected 'g'</td>
-                </tr>
-                <tr>
-                    <td><strong>mismatch error</strong></td><td> Chromosome 1, position 35639, reference allele 'T' does not match the reference sequence, expected 'c'</td>
-                </tr>
-                <tr>
-                    <td><strong>mismatch error</strong></td><td> Chromosome 1, position 35643, reference allele 'T' does not match the reference sequence, expected 'g'</td>
-                </tr>
-                <tr>
-                    <td><strong>mismatch error</strong></td><td> Chromosome 1, position 35717, reference allele 'T' does not match the reference sequence, expected 'g'</td>
-                </tr>
-                <tr>
-                    <td><strong>mismatch error</strong></td><td> Chromosome 1, position 35819, reference allele 'T' does not match the reference sequence, expected 'a'</td>
-                </tr>
-                <tr>
-                    <td><strong>mismatch error</strong></td><td> Chromosome 1, position 35822, reference allele 'T' does not match the reference sequence, expected 'c'</td>
-                </tr>
-        </table>
-        </div>
-    <div class='report-section fail collapsible'><span class="expand_icon">&#9654;</span> &#10060; VCF check: 1 critical errors, 1 non-critical errors </div>
-        <div class="error-list">
-            <div class="error-description">First 10 errors per category are below. <strong>Full report:</strong> /path/to/vcf_failed/report</div>
-            <table>
-                <tr>
-                    <th>Category</th><th>Error</th>
-                </tr>
-                    <tr>
-                        <td><strong>critical error</strong></td><td> Line 4: Error in meta-data section.</td>
-                    </tr>
-                    <tr>
-                        <td><strong>non-critical error</strong></td><td> Sample #11, field AD does not match the meta specification Number=R (expected 2 value(s)). AD=..</td>
-                    </tr>
-            </table>
-        </div>
-            <h3>input_passed.vcf</h3>
-    <div class='report-section pass'><span class="expand_icon"></span> &#10004; Assembly check: 247/247 (100.0%)</div>
-    <div class='report-section pass'><span class="expand_icon"></span> &#10004; VCF check: 0 critical errors, 0 non-critical errors </div>
+    <div class='report-section info'><span class="expand_icon"></span> &#9208; Process not run yet</div>
 </section>
 <section>
     <h2>Sample name concordance check</h2>
     <div class="description">
         Checks whether information in the metadata is concordant with that contained in the VCF files, in particular sample names.
     </div>
-        <div class='report-section fail collapsible'><span class="expand_icon">&#9654;</span> &#10060; <b>Analysis A</b>: Sample names in metadata do not match with those in VCF files </div>
-            <div class="error-list">
-                <table>
-                    <tr>
-                        <th>Category</th><th>First 5 Errors For Category</th><th>Link To View All Errors</th>
-                    </tr>
-                    <tr>
-                        <td><strong>Samples described in the metadata but not in the VCF files</strong></td>
-                        <td> SampleA1, SampleA2 , SampleA3, SampleA4, SampleA5</td>
-                        <td> <a href="#" onclick="toggleSampleAllErrorsList('metadata-0'); return false;">Show All Errors For Category</a></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Samples in the VCF files but not described in the metadata</strong></td>
-                        <td>A1Sample ,  A2Sample, A3Sample, A4Sample, A5Sample</td>
-                        <td> <a href="#" onclick="toggleSampleAllErrorsList('vcf-0'); return false;">Show All Errors For Category</a></td>
-                    </tr>
-                </table>
-                <div id="metadata-0" class="description no-show">
-                    <div class="error-description"><strong>All Errors For Category - Samples described in the metadata but not in the VCF files:</strong></div>
-                    <ol>
-                            <li>
-        •SampleA1
-    </li>
-                            <li>
-        SampleA2•
-    </li>
-                            <li>
-        SampleA3
-    </li>
-                            <li>
-        SampleA4
-    </li>
-                            <li>
-        SampleA5
-    </li>
-                            <li>
-        SampleA6
-    </li>
-                            <li>
-        SampleA7
-    </li>
-                            <li>
-        SampleA8
-    </li>
-                            <li>
-        SampleA9
-    </li>
-                            <li>
-        SampleA10
-    </li>
-                    </ol>
-                    <a href="#" onclick="toggleSampleAllErrorsList('metadata-0'); return false;">Hide</a>
-                </div>
-                <div id="vcf-0" class="description no-show">
-                    <div class="error-description"><strong>All Errors For Category - Samples in the VCF files but not described in the metadata:</strong></div>
-                    <ol>
-                            <li>
-        A1Sample•
-    </li>
-                            <li>
-        •A2Sample
-    </li>
-                            <li>
-        A3Sample
-    </li>
-                            <li>
-        A4Sample
-    </li>
-                            <li>
-        A5Sample
-    </li>
-                            <li>
-        A6Sample
-    </li>
-                            <li>
-        A7Sample
-    </li>
-                            <li>
-        A8Sample
-    </li>
-                            <li>
-        A9Sample
-    </li>
-                            <li>
-        A10Sample
-    </li>
-                    </ol>
-                    <a href="#" onclick="toggleSampleAllErrorsList('vcf-0'); return false;">Hide</a>
-                </div>
-            </div>
-        <div class='report-section pass'><span class="expand_icon"></span> &#10004; <b>Analysis B</b>: Sample names in metadata match with those in VCF files </div>
-        <div class='report-section fail collapsible'><span class="expand_icon">&#9654;</span> &#10060; <b>Analysis C</b>: Sample names in metadata do not match with those in VCF files </div>
-            <div class="error-list">
-                <table>
-                    <tr>
-                        <th>Category</th><th>First 5 Errors For Category</th><th>Link To View All Errors</th>
-                    </tr>
-                    <tr>
-                        <td><strong>Samples described in the metadata but not in the VCF files</strong></td>
-                        <td>SampleC1 ,  SampleC2, SampleC3, SampleC4</td>
-                        <td> <a href="#" onclick="toggleSampleAllErrorsList('metadata-2'); return false;">Show All Errors For Category</a></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Samples in the VCF files but not described in the metadata</strong></td>
-                        <td>C1Sample ,  C2Sample, C3Sample, C4Sample</td>
-                        <td> <a href="#" onclick="toggleSampleAllErrorsList('vcf-2'); return false;">Show All Errors For Category</a></td>
-                    </tr>
-                </table>
-                <div id="metadata-2" class="description no-show">
-                    <div class="error-description"><strong>All Errors For Category - Samples described in the metadata but not in the VCF files:</strong></div>
-                    <ol>
-                            <li>
-        SampleC1•
-    </li>
-                            <li>
-        •SampleC2
-    </li>
-                            <li>
-        SampleC3
-    </li>
-                            <li>
-        SampleC4
-    </li>
-                    </ol>
-                    <a href="#" onclick="toggleSampleAllErrorsList('metadata-2'); return false;">Hide</a>
-                </div>
-                <div id="vcf-2" class="description no-show">
-                    <div class="error-description"><strong>All Errors For Category - Samples in the VCF files but not described in the metadata:</strong></div>
-                    <ol>
-                            <li>
-        C1Sample•
-    </li>
-                            <li>
-        •C2Sample
-    </li>
-                            <li>
-        C3Sample
-    </li>
-                            <li>
-        C4Sample
-    </li>
-                    </ol>
-                    <a href="#" onclick="toggleSampleAllErrorsList('vcf-2'); return false;">Hide</a>
-                </div>
-            </div>
+    <div class='report-section info'><span class="expand_icon"></span> &#9208; Process not run yet</div>
 </section>
 <section>
     <h2>Reference genome INSDC check</h2>
@@ -412,84 +103,7 @@
         Checks that the reference sequences in the FASTA file used to call the variants are accessioned in INSDC.
         Also checks if the reference assembly accession in the metadata matches the one determined from the FASTA file.
     </div>
-            <h3>metadata_asm_match.fa</h3>
-    <!-- All INSDC check results -->
-    <div class='report-section pass'><span class="expand_icon"></span> &#10004; All sequences are INSDC accessioned </div>
-    <!-- INSDC concordance check results (optional) -->
-            <!-- found assembly in metadata, so definitely know the analysis -->
-        <div class='report-section pass'><span class="expand_icon"></span> &#10004; Analysis A: Assembly accession in metadata is compatible </div>
-            <h3>metadata_asm_not_found.fa</h3>
-    <!-- All INSDC check results -->
-    <div class='report-section pass'><span class="expand_icon"></span> &#10004; All sequences are INSDC accessioned </div>
-    <!-- INSDC concordance check results (optional) -->
-            <!-- has possible assemblies but no metadata assembly -->
-        <div class='report-section fail collapsible'><span class="expand_icon">&#9654;</span> &#10060; No assembly accession found in metadata </div>
-            <div class="error-list">
-                <div class="error-description"><strong>Full report:</strong> /path/to/metadata_asm_not_found.yml</div>
-                <table>
-                    <tr>
-                        <th>Category</th><th>Accessions</th>
-                    </tr>
-                    <tr>
-                        <td><strong>Assembly accession found in metadata</strong></td>
-                        <td>Not found</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Assembly accession(s) compatible with FASTA</strong></td>
-                        <td>GCA_1</td>
-                    </tr>
-                </table>
-            </div>
-            <h3>metadata_asm_not_match.fa</h3>
-    <!-- All INSDC check results -->
-    <div class='report-section pass'><span class="expand_icon"></span> &#10004; All sequences are INSDC accessioned </div>
-    <!-- INSDC concordance check results (optional) -->
-            <!-- found assembly in metadata, so definitely know the analysis -->
-        <div class='report-section fail collapsible'><span class="expand_icon">&#9654;</span> &#10060; Analysis B: Assembly accession in metadata is not compatible </div>
-            <div class="error-list">
-                <div class="error-description"><strong>Full report:</strong> /path/to/metadata_asm_not_match.yml</div>
-                <table>
-                    <tr>
-                        <th>Category</th><th>Accessions</th>
-                    </tr>
-                    <tr>
-                        <td><strong>Assembly accession found in metadata</strong></td>
-                        <td>GCA_2</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Assembly accession(s) compatible with FASTA</strong></td>
-                        <td>GCA_1</td>
-                    </tr>
-                </table>
-            </div>
-            <h3>metadata_error.fa</h3>
-        <div class="report-section fail">
-            <strong>Warning:</strong> The following results may be incomplete due to problems with external services. Please try again later for
-            complete results.
-            <br><strong>Error message:</strong> 500 Server Error: Internal Server Error for url: https://www.ebi.ac.uk/eva/webservices/contig-alias/v1/chromosomes/md5checksum/hjfdoijsfc47hfg0gh9qwjrve
-        </div>
-    <!-- All INSDC check results -->
-    <div class='report-section pass'><span class="expand_icon"></span> &#10004; All sequences are INSDC accessioned </div>
-    <!-- INSDC concordance check results (optional) -->
-            <!-- found assembly in metadata, so definitely know the analysis -->
-        <div class='report-section pass'><span class="expand_icon"></span> &#10004; Analysis C: Assembly accession in metadata is compatible </div>
-            <h3>not_all_insdc.fa</h3>
-    <!-- All INSDC check results -->
-    <div class='report-section fail collapsible'><span class="expand_icon">&#9654;</span> &#10060; Some sequences are not INSDC accessioned </div>
-        <div class="error-list">
-            <div class="error-description">First 10 sequences not in INSDC. <strong>Full report:</strong> /path/to/not_all_insdc_check.yml</div>
-            <table>
-                <tr>
-                    <th>Sequence name</th><th>Refget md5</th>
-                </tr>
-                    <tr>
-                        <td><strong>2</strong></td><td> hjfdoijsfc47hfg0gh9qwjrve</td>
-                    </tr>
-            </table>
-        </div>
-    <!-- INSDC concordance check results (optional) -->
-            <!-- found assembly in metadata, so definitely know the analysis -->
-        <div class='report-section pass'><span class="expand_icon"></span> &#10004; Analysis A: Assembly accession in metadata is compatible </div>
+    <div class='report-section info'><span class="expand_icon"></span> &#9208; Process not run yet</div>
 </section>
 <script>
     let collapsibles = document.querySelectorAll('.collapsible');

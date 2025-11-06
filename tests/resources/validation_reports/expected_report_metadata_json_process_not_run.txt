@@ -1,0 +1,44 @@
+
+VALIDATION REPORT
+eva-sub-cli vcligeneratedversion
+-
+PROJECT SUMMARY
+General details about the project
+	Project Title: My cool project
+	Validation Date: 2023-08-31 12:34:56
+	Submission Directory: /test/submission/dir
+    Note for human genotype data:
+        You will need to provide a signed copy of our Consent Statement (https://docs.google.com/document/d/1UaRmimAe919IZYIH55mDXMe-4sHsRVqaP4moqx2IYE4) via email to eva-helpdesk@ebi.ac.uk after submission.
+        Your submission will only be processed after receiving the consent statement.For more info, please see our help section (https://www.ebi.ac.uk/eva/?Help#submissionPanel&link=consent-statement-for-human-genotype-data).
+	Files mapping:
+		---
+		VCF File: input_fail.vcf
+		Fasta File: input_fail.fa
+		Analysis: A
+		---
+		VCF File: input_pass.vcf
+		Fasta File: input_pass.fa
+		Analysis: B
+		---
+		VCF File: input_test.vcf
+		Fasta File: input_test.fa
+		Analysis: could not be linked
+-
+METADATA VALIDATION RESULTS
+Ensures that required fields are present and values are formatted correctly.
+For requirements, please refer to the EVA website (https://www.ebi.ac.uk/eva/?Submit-Data).
+⏸ Process not run yet
+-
+VCF VALIDATION RESULTS
+Checks whether each file is compliant with the VCF specification (http://samtools.github.io/hts-specs/VCFv4.4.pdf).
+Also checks whether the variants' reference alleles match against the reference assembly.
+⏸ Process not run yet
+-
+SAMPLE NAME CONCORDANCE CHECK
+Checks whether information in the metadata is concordant with that contained in the VCF files, in particular sample names.
+⏸ Process not run yet
+-
+REFERENCE GENOME INSDC CHECK
+Checks that the reference sequences in the FASTA file used to call the variants are accessioned in INSDC.
+Also checks if the reference assembly accession in the metadata matches the one determined from the FASTA file.
+⏸ Process not run yet

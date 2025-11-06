@@ -5,10 +5,15 @@ from unittest import TestCase
 
 import eva_sub_cli
 from eva_sub_cli.report import generate_html_report, generate_text_report
+from eva_sub_cli.validators.validator import RUN_STATUS_KEY, TRIM_DOWN
 
 validation_results_xlsx = {
     "ready_for_submission_to_eva": False,
+    "version": "0.5.1",
+    "trim_down": False,
     "assembly_check": {
+        'run_status': True,
+        'pass': False,
         "input_passed.vcf": {
             "report_path": "/path/to/assembly_passed/report",
             "error_list": [],
@@ -39,6 +44,8 @@ validation_results_xlsx = {
         },
     },
     "vcf_check": {
+        'run_status': True,
+        'pass': False,
         "input_passed.vcf": {
             'report_path': '/path/to/vcf_passed/report',
             "error_count": 0,
@@ -58,6 +65,8 @@ validation_results_xlsx = {
         },
     },
     "sample_check": {
+        'run_status': True,
+        'pass': False,
         'report_path': '/path/to/sample/report',
         'overall_differences': True,
         'results_per_analysis': {
@@ -86,6 +95,8 @@ validation_results_xlsx = {
     # NB. obviously this doesn't make sense for the number of analyses in this report, but demonstrates the possible
     # outputs for this check.
     "fasta_check": {
+        'run_status': True,
+        'pass': False,
         'not_all_insdc.fa': {
             'report_path': '/path/to/not_all_insdc_check.yml',
             'all_insdc': False,
@@ -146,6 +157,8 @@ validation_results_xlsx = {
         }
     },
     'metadata_check': {
+        'run_status': True,
+        'pass': False,
         'spreadsheet_errors': [
             {'sheet': 'Files', 'row': '', 'column': '', 'description': 'Sheet "Files" is missing'},
             {'sheet': 'Project', 'row': 2, 'column': 'Project Title',
@@ -169,7 +182,9 @@ validation_results_xlsx = {
     },
 
     'evidence_type_check': {
+        'run_status': True,
         'pass': False,
+        'report_path': '/path/to/evidence_type.yml',
         'Analysis A': {
             'evidence_type': None,
             'errors': 'VCF file evidence type could not be determined: vcf_files_1, vcf_files_2'
@@ -177,13 +192,16 @@ validation_results_xlsx = {
         'Analysis B': {
             'evidence_type': None,
             'errors': 'Multiple evidence types found: genotype, allele_frequency'
-        },
+        }
     }
 }
 
 validation_results_json = {
     "ready_for_submission_to_eva": False,
+    "version": "0.5.1",
+    "trim_down": False,
     "assembly_check": {
+        'run_status': True,
         "input_passed.vcf": {
             "report_path": "/path/to/assembly_passed/report",
             "error_list": [],
@@ -215,6 +233,7 @@ validation_results_json = {
         "pass": False,
     },
     "vcf_check": {
+        'run_status': True,
         "input_passed.vcf": {
             'report_path': '/path/to/vcf_passed/report',
             "error_count": 0,
@@ -235,6 +254,7 @@ validation_results_json = {
         "pass": False,
     },
     "sample_check": {
+        'run_status': True,
         'report_path': '/path/to/sample/report',
         'overall_differences': True,
         'results_per_analysis': {
@@ -264,6 +284,7 @@ validation_results_json = {
     # NB. obviously this doesn't make sense for the number of analyses in this report, but demonstrates the possible
     # outputs for this check.
     "fasta_check": {
+        'run_status': True,
         "pass": False,
         'not_all_insdc.fa': {
             'report_path': '/path/to/not_all_insdc_check.yml',
@@ -325,6 +346,7 @@ validation_results_json = {
         }
     },
     'metadata_check': {
+        'run_status': True,
         "pass": False,
         'json_errors': [
             {'property': '.files', 'description': "should have required property 'files'"},
@@ -346,7 +368,9 @@ validation_results_json = {
     },
 
     'evidence_type_check': {
+        'run_status': True,
         'pass': False,
+        'report_path': '/path/to/evidence_type.yml',
         'Analysis A': {
             'evidence_type': None,
             'errors': 'VCF file evidence type could not be determined: vcf_files_1, vcf_files_2'
@@ -365,14 +389,18 @@ class TestReport(TestCase):
                                                  'expected_report_metadata_xlsx.html')
     expected_report_metadata_json = os.path.join(resource_dir, 'validation_reports',
                                                  'expected_report_metadata_json.html')
+    expected_report_metadata_json_process_not_run = os.path.join(resource_dir, 'validation_reports',
+                                                                 'expected_report_metadata_json_process_not_run.html')
     expected_report_metadata_xlsx_shallow = os.path.join(resource_dir, 'validation_reports',
                                                          'expected_shallow_metadata_xlsx_report.html')
     expected_text_report_metadata_xlsx = os.path.join(resource_dir, 'validation_reports',
-                                                 'expected_report_metadata_xlsx.txt')
+                                                      'expected_report_metadata_xlsx.txt')
     expected_text_report_metadata_json = os.path.join(resource_dir, 'validation_reports',
-                                                 'expected_report_metadata_json.txt')
+                                                      'expected_report_metadata_json.txt')
+    expected_text_report_metadata_json_process_not_run = os.path.join(resource_dir, 'validation_reports',
+                                                                      'expected_report_metadata_json_process_not_run.txt')
     expected_text_report_metadata_xlsx_shallow = os.path.join(resource_dir, 'validation_reports',
-                                                         'expected_shallow_metadata_xlsx_report.txt')
+                                                              'expected_shallow_metadata_xlsx_report.txt')
     test_project_name = "My cool project"
     test_validation_date = datetime.datetime(2023, 8, 31, 12, 34, 56)
     test_submission_dir = "/test/submission/dir"
@@ -418,10 +446,26 @@ class TestReport(TestCase):
             self.expected_report_metadata_json
         )
 
+    def test_generate_html_report_metadata_json_metadata_report_not_run_yet(self):
+        validation_result = {
+            'vcf_check': {RUN_STATUS_KEY: False},
+            'evidence_type_check': {RUN_STATUS_KEY: False},
+            'assembly_check': {RUN_STATUS_KEY: False},
+            'fasta_check': {RUN_STATUS_KEY: False},
+            'metadata_check': {RUN_STATUS_KEY: False},
+            'sample_check': {RUN_STATUS_KEY: False}
+        }
+
+        self.check_report_vs_expected(
+            validation_result,
+            'metadata_json_report.html',
+            self.expected_report_metadata_json_process_not_run
+        )
+
     def test_generate_html_report_metadata_xlsx_shallow(self):
         shallow_validation_results_xlsx = copy.deepcopy(validation_results_xlsx)
+        shallow_validation_results_xlsx[TRIM_DOWN] = True
         shallow_validation_results_xlsx['shallow_validation'] = {
-            'required': True, 'requested': True,
             'metrics': {
                 'input_fail.vcf': {'trim_down_vcf_record': 10000, 'number_sequence_found': 24,
                                    'trim_down_required': True},
@@ -450,10 +494,27 @@ class TestReport(TestCase):
             html=False
         )
 
+    def test_generate_text_report_metadata_json_report_not_run(self):
+        validation_result = {
+            'vcf_check': {RUN_STATUS_KEY: False},
+            'evidence_type_check': {RUN_STATUS_KEY: False},
+            'assembly_check': {RUN_STATUS_KEY: False},
+            'fasta_check': {RUN_STATUS_KEY: False},
+            'metadata_check': {RUN_STATUS_KEY: False},
+            'sample_check': {RUN_STATUS_KEY: False}
+        }
+
+        self.check_report_vs_expected(
+            validation_result,
+            'metadata_json_report.txt',
+            self.expected_text_report_metadata_json_process_not_run,
+            html=False
+        )
+
     def test_generate_text_report_metadata_xlsx_shallow(self):
         shallow_validation_results_xlsx = copy.deepcopy(validation_results_xlsx)
+        shallow_validation_results_xlsx[TRIM_DOWN] = True
         shallow_validation_results_xlsx['shallow_validation'] = {
-            'required': True, 'requested': True,
             'metrics': {
                 'input_fail.vcf': {'trim_down_vcf_record': 10000, 'number_sequence_found': 24,
                                    'trim_down_required': True},
