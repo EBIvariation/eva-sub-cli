@@ -154,6 +154,8 @@ class TestSubmit(unittest.TestCase):
         for vcf_file in self.submitter.vcf_files:
             mock_upload_file.assert_any_call(test_url, vcf_file)
 
+        mock_upload_file.assert_any_call(test_url, self.submitter.metadata_json_file)
+
     def test_upload_file(self):
         test_url = 'http://example.com/'
         with patch('eva_sub_cli.submit.requests.put') as mock_put:

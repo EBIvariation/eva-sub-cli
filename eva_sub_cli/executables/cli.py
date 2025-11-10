@@ -1,5 +1,7 @@
 import sys
 
+from requests import HTTPError
+
 if not sys.warnoptions:
     import warnings
     warnings.simplefilter("ignore")
@@ -152,7 +154,12 @@ def main():
     except MetadataTemplateVersionNotFoundException as mte:
         print(mte)
         exit_status = 70
+    except HTTPError as http_err:
+        print(http_err)
+        if http_err.response is not None and http_err.response.text:
+            print(http_err.response.text)
+        exit_status = 71
     except Exception as ex:
         print(ex)
-        exit_status = 71
+        exit_status = 72
     return exit_status
