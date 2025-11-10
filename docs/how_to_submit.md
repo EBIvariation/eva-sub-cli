@@ -65,6 +65,21 @@ If you are working with large VCF files and find that validation takes a very lo
 argument `--shallow` to the command, which will validate only the first 10,000 lines in each VCF. Note that running
 shallow validation will **not** be sufficient for actual submission but will allow you to identify most validation concerns without long run time.
 
+### Validation tasks
+To run only a subset of the validation steps, you can use the `--validation_tasks` argument.
+This can be useful if you want to avoid re-running long-running validations that have already passed.
+Note that all validation tasks must pass in order to submit.
+The possible tasks are:
+* `vcf_check` - includes syntax validation and other checks on VCF files
+* `assembly_check` - includes all checks involving the FASTA file
+* `metadata_check` - includes syntactic and semantic checks on metadata
+* `sample_check` - includes sample coherence checks between VCF files and metadata
+
+For example, to run only `vcf_check` and `sample_check`:
+```shell
+eva-sub-cli.py --metadata_xlsx <metadata file> --submission_dir <submission directory> --validation_tasks vcf_check sample_check
+```
+
 ### VCF files and reference FASTA
 These can be provided either in the metadata file directly, or on the command line using the `--vcf_files` and
 `--reference_fasta` options. Note that if you are using more than one reference FASTA, you **cannot** use the command 
