@@ -68,7 +68,7 @@ shallow validation will **not** be sufficient for actual submission but will all
 ### Validation tasks
 To run only a subset of the validation steps, you can use the `--validation_tasks` argument.
 This can be useful if you want to avoid re-running long-running validations that have already passed.
-Note that all validation tasks must pass in order to submit.
+Note that all validation tasks must pass in order to submit. The report will aggregate the results of previous runs and new ones.
 The possible tasks are:
 * `vcf_check` - includes syntax validation and other checks on VCF files
 * `assembly_check` - includes all checks involving the FASTA file
