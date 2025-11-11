@@ -7,6 +7,7 @@ from retry import retry
 
 from eva_sub_cli import SUBMISSION_WS_VAR
 from eva_sub_cli.auth import get_auth
+from eva_sub_cli.exceptions.submission_upload_exception import SubmissionUploadException
 
 
 class SubmissionWSClient(AppLogger):
@@ -43,10 +44,14 @@ class SubmissionWSClient(AppLogger):
 
     def mark_submission_uploaded(self, submission_id, metadata_json):
         response = requests.put(self._submission_uploaded_url(submission_id),
-                                headers={'Accept': 'application/json', 'Authorization': 'Bearer ' + self.auth.token},
-                                json=metadata_json)
-        response.raise_for_status()
-        return response.json()
+                            headers={'Accept': 'application/json', 'Authorization': 'Bearer ' + self.auth.token},
+                            json=metadata_json)
+        if 400 <= response.status_code < 500:
+            raise SubmissionUploadException(f"There was an error in uploading the submission {submission_id}."
+                                            f"Status: {response.status_code}. Error: {response.text}")
+        else:
+            response.raise_for_status()
+            return response.json()
 
     def initiate_submission(self):
         response = requests.post(self._submission_initiate_url(), headers={'Accept': 'application/json',
