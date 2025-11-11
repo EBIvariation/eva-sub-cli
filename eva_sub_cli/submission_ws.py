@@ -43,16 +43,15 @@ class SubmissionWSClient(AppLogger):
         return os.path.join(self.base_url, self.SUBMISSION_STATUS_PATH.format(submissionId=submission_id))
 
     def mark_submission_uploaded(self, submission_id, metadata_json):
-        try:
-            response = requests.put(self._submission_uploaded_url(submission_id),
-                                headers={'Accept': 'application/json', 'Authorization': 'Bearer ' + self.auth.token},
-                                json=metadata_json)
+        response = requests.put(self._submission_uploaded_url(submission_id),
+                            headers={'Accept': 'application/json', 'Authorization': 'Bearer ' + self.auth.token},
+                            json=metadata_json)
+        if 400 <= response.status_code < 500:
+            raise SubmissionUploadException(f"There was an error in uploading the submission {submission_id}."
+                                            f"Status: {response.status_code}. Error: {response.text}")
+        else:
             response.raise_for_status()
             return response.json()
-        except requests.exceptions.HTTPError as e:
-            raise SubmissionUploadException(f"There was an error in uploading the submission {submission_id}."
-                f"Status: {response.status_code}. Error: {response.text}"
-            ) from e
 
     def initiate_submission(self):
         response = requests.post(self._submission_initiate_url(), headers={'Accept': 'application/json',
