@@ -13,6 +13,7 @@ from eva_sub_cli.exceptions.metadata_template_version_exception import MetadataT
     MetadataTemplateVersionNotFoundException
 from eva_sub_cli.exceptions.submission_not_found_exception import SubmissionNotFoundException
 from eva_sub_cli.exceptions.submission_status_exception import SubmissionStatusException
+from eva_sub_cli.exceptions.submission_upload_exception import SubmissionUploadException
 from eva_sub_cli.executables import cli
 from eva_sub_cli.file_utils import DirLockError
 from tests.test_utils import touch
@@ -73,8 +74,8 @@ class TestCli(TestCase):
 
     def test_main_exception_handling(self):
         mock_response = Mock()
-        mock_response.text = "File size in metadata json does not match with the size of the file uploaded"
-        http_error = HTTPError("400 bad request", response=mock_response)
+        mock_response.text = "Error while submitting submission"
+        http_error = HTTPError("500 Internal Server Error", response=mock_response)
 
         test_cases = [
             (DirLockError(f'Could not acquire the lock file for {self.submission_dir} because another process is '
@@ -85,8 +86,9 @@ class TestCli(TestCase):
             (SubmissionStatusException("can't get submission status"), 68),
             (MetadataTemplateVersionException("Metadata template version lower than expected"), 69),
             (MetadataTemplateVersionNotFoundException("Metadata template version not found"), 70),
-            (http_error, 71),
-            (Exception("Exception occurred while processing"), 72),
+            (SubmissionUploadException("Error while uploading submission: File size in metadata json does not match with the size of the file uploaded"), 71),
+            (http_error, 72),
+            (Exception("Exception occurred while processing"), 73),
         ]
 
         for exception, expected_exit in test_cases:

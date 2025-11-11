@@ -57,10 +57,10 @@ class StudySubmitter(AppLogger):
 
         submission_upload_url = self.sub_config[SUB_CLI_CONFIG_KEY_SUBMISSION_UPLOAD_URL]
 
+        self._upload_file(submission_upload_url, self.metadata_json_file)
+
         for f in self.vcf_files:
             self._upload_file(submission_upload_url, f)
-
-        self._upload_file(submission_upload_url, self.metadata_json_file)
 
     @retry(tries=5, delay=10, backoff=5)
     def _upload_file(self, submission_upload_url, input_file):

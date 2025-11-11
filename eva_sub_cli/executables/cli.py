@@ -2,6 +2,8 @@ import sys
 
 from requests import HTTPError
 
+from eva_sub_cli.exceptions.submission_upload_exception import SubmissionUploadException
+
 if not sys.warnoptions:
     import warnings
     warnings.simplefilter("ignore")
@@ -154,12 +156,15 @@ def main():
     except MetadataTemplateVersionNotFoundException as mte:
         print(mte)
         exit_status = 70
+    except SubmissionUploadException as sue:
+        print(sue)
+        exit_status = 71
     except HTTPError as http_err:
         print(http_err)
         if http_err.response is not None and http_err.response.text:
             print(http_err.response.text)
-        exit_status = 71
+        exit_status = 72
     except Exception as ex:
         print(ex)
-        exit_status = 72
+        exit_status = 73
     return exit_status
