@@ -47,6 +47,34 @@ def get_vcf_files(mapping_file):
     return vcf_files
 
 
+def remove_non_vcf_files_from_metadata(metadata_json, metadata_xlsx):
+    if metadata_json:
+        metadata = EvaMetadataJson(metadata_json)
+        if any(not is_vcf_file(f['fileName']) for f in metadata.files):
+            vcf_files = [f for f in metadata.files if is_vcf_file(f['fileName'])]
+            metadata.set_files(vcf_files)
+            metadata.write(metadata_json)
+    elif metadata_xlsx:
+        workbook = load_workbook(metadata_xlsx)
+        files_sheet = workbook['Files']
+        files_headers = {cell.value: cell.column - 1 for cell in files_sheet[1]}
+
+        rows_to_delete = []
+        for i, row in enumerate(files_sheet.iter_rows(min_row=2, values_only=True), start=2):
+            # Skip completely empty rows
+            if all(cell is None for cell in row):
+                continue
+            if not is_vcf_file(row[files_headers['File Name']]):
+                rows_to_delete.append(i)
+
+        if rows_to_delete:
+            # Delete from bottom to top so that we don't invalidate the row indices
+            for row_idx in reversed(rows_to_delete):
+                files_sheet.delete_rows(row_idx, 1)
+
+            workbook.save(metadata_xlsx)
+
+
 def get_project_title_and_create_vcf_files_mapping(submission_dir, vcf_files, reference_fasta,
                                                    metadata_json, metadata_xlsx, metadata_xlsx_version):
     """
@@ -296,6 +324,9 @@ def orchestrate_process(submission_dir, vcf_files, reference_fasta, metadata_jso
         metadata_xlsx = os.path.abspath(metadata_xlsx)
         # check metadata xlsx version is not lower than the required min metadata template version
         metadata_xlsx_version = verify_and_get_metadata_xlsx_version(metadata_xlsx, MINIMUM_METADATA_XLSX_TEMPLATE_VERSION)
+
+    # remove non vcf files from metadata
+    remove_non_vcf_files_from_metadata(metadata_json, metadata_xlsx)
 
     # Get the provided Project Title and VCF files mapping (VCF, Fasta and Report)
     project_title, vcf_files_mapping = get_project_title_and_create_vcf_files_mapping(
