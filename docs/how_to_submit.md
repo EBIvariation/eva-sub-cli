@@ -70,10 +70,11 @@ To run only a subset of the validation steps, you can use the `--validation_task
 This can be useful if you want to avoid re-running long-running validations that have already passed.
 Note that all validation tasks must pass in order to submit. The report will aggregate the results of previous runs and new ones.
 The possible tasks are:
-* `vcf_check` - includes syntax validation and other checks on VCF files
-* `assembly_check` - includes all checks involving the FASTA file
-* `metadata_check` - includes syntactic and semantic checks on metadata
-* `sample_check` - includes sample coherence checks between VCF files and metadata
+* [`vcf_check`](validation_overview.md#vcf-checks) - includes syntax validation and other checks on VCF files
+${CODE_ROOT}/env/bin/upload_to_gcloud.py --input-file evidence.json.gz --destination-folder pharmacogenomics
+* [`assembly_check`](validation_overview.md#assembly-checks) - includes all checks involving the FASTA file
+* [`metadata_check`](validation_overview.md#metadata-check) - includes syntactic and semantic checks on metadata
+* [`sample_check`](validation_overview.md#sample-name-concordance-check) - includes sample coherence checks between VCF files and metadata
 
 For example, to run only `vcf_check` and `sample_check`:
 ```shell
