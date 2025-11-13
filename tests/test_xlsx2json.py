@@ -61,7 +61,13 @@ class TestXlsReader(TestCase):
             # assert json file is created with expected data
             assert sorted(json_data.keys()) == ['$schema', 'analysis', 'files', 'project', 'sample', 'submitterDetails']
             json_data.pop('$schema', None)
-            self.assertEqual(self.get_expected_json(), json_data)
+            expected_json_data = self.get_expected_json()
+            expected_json_data['files'].append(
+                {
+                    "analysisAlias": "VD2",
+                    "fileName": "example2.vcf.gz.tbi"
+                })
+            self.assertEqual(expected_json_data, json_data)
 
         # assert json schema
         with open(self.eva_schema) as eva_schema_file:
@@ -304,10 +310,6 @@ class TestXlsReader(TestCase):
                 {
                     "analysisAlias": "VD3",
                     "fileName": "example3.vcf",
-                },
-                {
-                    "analysisAlias": "VD2",
-                    "fileName": "example2.vcf.gz.tbi"
-                },
+                }
             ]
         }
