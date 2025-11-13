@@ -54,6 +54,7 @@ def remove_non_vcf_files_from_metadata(metadata_json, metadata_xlsx):
             vcf_files = [f for f in metadata.files if is_vcf_file(f['fileName'])]
             metadata.set_files(vcf_files)
             metadata.write(metadata_json)
+            logger.warning(f"Some files mentioned in the metadata file's ({metadata_json}) files section are not VCF files and have been removed.")
     elif metadata_xlsx:
         workbook = load_workbook(metadata_xlsx)
         files_sheet = workbook['Files']
@@ -73,6 +74,7 @@ def remove_non_vcf_files_from_metadata(metadata_json, metadata_xlsx):
                 files_sheet.delete_rows(row_idx, 1)
 
             workbook.save(metadata_xlsx)
+            logger.warning(f"Some files mentioned in the metadata xlsx's ({metadata_xlsx}) Files sheet are not VCF files and have been removed.")
 
 
 def get_project_title_and_create_vcf_files_mapping(submission_dir, vcf_files, reference_fasta,

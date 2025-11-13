@@ -304,6 +304,10 @@ class TestXlsReader(TestCase):
                 {
                     "analysisAlias": "VD3",
                     "fileName": "example3.vcf",
-                }
+                },
+                {
+                    "analysisAlias": "VD2",
+                    "fileName": "example2.vcf.gz.tbi"
+                },
             ]
         }
