@@ -5,6 +5,7 @@ import unittest
 from unittest.mock import patch, Mock, MagicMock
 
 from ebi_eva_common_pyutils.config import WritableConfig
+from openpyxl.reader.excel import load_workbook
 from requests import HTTPError
 
 from eva_sub_cli import SUB_CLI_CONFIG_FILE
@@ -13,8 +14,11 @@ from eva_sub_cli.exceptions.metadata_template_version_exception import MetadataT
     MetadataTemplateVersionNotFoundException
 from eva_sub_cli.exceptions.submission_not_found_exception import SubmissionNotFoundException
 from eva_sub_cli.exceptions.submission_status_exception import SubmissionStatusException
+from eva_sub_cli.file_utils import is_vcf_file
+from eva_sub_cli.metadata import EvaMetadataJson
 from eva_sub_cli.orchestrator import orchestrate_process, VALIDATE, SUBMIT, DOCKER, check_validation_required, \
-    verify_and_get_metadata_xlsx_version, get_metadata_xlsx_template_link, get_sub_cli_github_tags
+    verify_and_get_metadata_xlsx_version, get_metadata_xlsx_template_link, get_sub_cli_github_tags, \
+    remove_non_vcf_files_from_metadata
 from eva_sub_cli.submit import SUB_CLI_CONFIG_KEY_SUBMISSION_ID, SUB_CLI_CONFIG_KEY_SUBMISSION_UPLOAD_URL
 from eva_sub_cli.validators.validator import READY_FOR_SUBMISSION_TO_EVA, ALL_VALIDATION_TASKS
 from tests.test_utils import touch
@@ -48,7 +52,7 @@ class TestOrchestrator(unittest.TestCase):
                     self.metadata_xlsx_with_project_accession)
         shutil.copy(os.path.join(self.resource_dir, 'EVA_Submission_test_version_missing.xlsx'),
                     self.metadata_xlsx_version_missing)
-        for file_name in ['example1.vcf.gz', 'example2.vcf', 'example3.vcf', 'GCA_000001405.27_fasta.fa']:
+        for file_name in ['example1.vcf.gz', 'example2.vcf', 'example3.vcf', 'example2.vcf.gz.tbi', 'GCA_000001405.27_fasta.fa']:
             touch(os.path.join(self.test_sub_dir, file_name))
         self.curr_wd = os.getcwd()
         os.chdir(self.test_sub_dir)
@@ -57,6 +61,37 @@ class TestOrchestrator(unittest.TestCase):
         os.chdir(self.curr_wd)
         if os.path.exists(self.test_sub_dir):
             shutil.rmtree(self.test_sub_dir)
+
+
+    def test_remove_non_vcf_files_from_metadata_json(self):
+        # assert non vcf files exist in metadata
+        metadata = EvaMetadataJson(self.metadata_json)
+        assert any(not is_vcf_file(f['fileName']) for f in metadata.files)
+
+        # remove non vcf files from metadata
+        remove_non_vcf_files_from_metadata(self.metadata_json, None)
+
+        # assert non vcf files are removed from metadata
+        metadata = EvaMetadataJson(self.metadata_json)
+        assert all(is_vcf_file(f['fileName']) for f in metadata.files)
+
+
+
+    def test_remove_non_vcf_files_from_metadata_xlsx(self):
+        # assert non vcf files exist in metadata
+        workbook = load_workbook(self.metadata_xlsx)
+        files_sheet = workbook['Files']
+        files_headers = {cell.value: cell.column - 1 for cell in files_sheet[1]}
+        assert any(not is_vcf_file(row[files_headers['File Name']]) for row in files_sheet.iter_rows(min_row=2, values_only=True) if row[files_headers['File Name']] is not None)
+
+        # remove non vcf files from metadata
+        remove_non_vcf_files_from_metadata(None, self.metadata_xlsx)
+
+        # assert non vcf files are removed from metadata
+        workbook = load_workbook(self.metadata_xlsx)
+        files_sheet = workbook['Files']
+        files_headers = {cell.value: cell.column - 1 for cell in files_sheet[1]}
+        assert all(is_vcf_file(row[files_headers['File Name']]) for row in files_sheet.iter_rows(min_row=2, values_only=True) if row[files_headers['File Name']] is not None)
 
     def test_check_validation_required(self):
         tasks = ['submit']
