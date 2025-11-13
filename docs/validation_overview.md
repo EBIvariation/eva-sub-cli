@@ -5,7 +5,7 @@ The CLI tool performs the following validation checks and generates correspondin
 - Metadata check to ensure that the metadata fields have been correctly filled in
 - VCF check to ensure that the VCF file follows the VCF format specification
 - Assembly check to ensure that the genome and the VCF match
-- Sample name check to ensure that the samples in the metadata can be associated with the sample in the VCF
+- Sample name check to ensure that the samples in the metadata can be associated with the samples in the VCF
 
 In the following sections, we will examine each of these checks in detail.
 
@@ -17,20 +17,20 @@ If any mandatory columns or sheets are missing, the CLI tool will raise errors.
 
 Key points to note before validating your metadata spreadsheet with the eva-sub-cli tool:
 
-- Please do not change the existing structure of the spreadsheet
+- Please do not change the existing structure of the spreadsheet.
 - Ensure all mandatory columns (marked in bold) are filled.
-- Pre-registered project and samples must be released and not kept in private status
+- Any pre-registered projects and samples must be released and not kept in private status.
 - Sample names in the spreadsheet must match those in the VCF file.
 - Analysis aliases must match across the sheets (Analysis, Sample, and File sheets).
 
 Common errors seen with metadata checks:
 
 - Analysis alias is not filled in for the respective samples in the Sample tab.
-- Reference field is not filled with an INSDC accession. Submitters can sometimes use a non-GCA accession or generic assembly name as their reference genome.
-- Tax ID and the scientific name of the organism do not match.
-- Collection data and geographic location of the samples are not filled if the samples being submitted are novel.
+- Reference field in the Analysis tab is not filled with an INSDC accession. Submitters should not use a non-GCA accession or generic assembly name as their reference genome.
+- Taxonomy ID and the scientific name of the organism do not match for novel samples.
+- Collection data and geographic location of the samples are not filled in for novel samples.
 
-Most issues around metadata will be reported in the "Metadata validation results" section of the report.
+Most issues around metadata will be reported in the "Metadata validation results" section of the validation report.
 However, note that other validation failures may also require you to modify your metadata file.
 
 ## VCF Checks
@@ -41,7 +41,7 @@ Additionally, submitted variants must be supported by either experimentally dete
 
 Key points to note before validating your VCF file with the eva-sub-cli tool:
 
-- File Format Version: Always start the header with the version number (versions 4.1-4 are accepted).
+- File Format Version: Always start the header with the VCF version number (versions 4.1-4 are accepted).
 - Header Metadata: Should include the reference genome, information fields (INFO), filters (FILTER), AF and  genotype metadata
 - Variant Information: VCF files must provide either sample genotypes and/or aggregated sample summary-level allele frequencies.
 - Unique Variants: Variant lines should be unique and not specify duplicate loci.
@@ -52,10 +52,9 @@ Common errors seen with VCF checks:
 - The VCF version is not one of 4.1, 4.2, 4.3, or 4.4.
 - The VCF file contains extra spaces, blanks, or extra quotations causing validation to fail. Tools like bcftools can help verify the header before validating the file.
 - GT and AF fields are not defined in the header section.
-- VCF uses non-GCA contig alias
-- The fields used do not conform to the official VCF specifications
+- The fields used do not conform to the official VCF specifications.
 
-Issues in VCF format validation will be reported in the "VCF validation results" section of the report.
+Issues in VCF format validation will be reported in the "VCF validation results" section of the validation report.
 Issues in determining evidence type (genotypes or allele frequencies) are reported per analysis at the top of the report.
 
 ## Assembly Checks
@@ -75,13 +74,13 @@ Key points to note before validating your data with the eva-sub-cli tool:
 - VCF file uses contig name not found in the FASTA file, causing the assembly check to fail.
 - Major Allele Used as REF Allele: This typically occurs when a specific version of Plink or Tassel is used to create VCF files, causing the tool to use the major allele as the reference allele. In such cases, submitters should use the GCA FASTA sequence to create corrected files.
 
-Issues around reference allele matching in VCF files will be reported in the "VCF validation results" section of the report,
+Issues around reference allele matching in VCF files will be reported in the "VCF validation results" section of the validation report,
 while issues around INSDC accessioning of the assembly will be reported in the "Reference genome INSDC check" section.
 
 ## Sample Name Concordance Check
 
 The sample name concordance check ensures that the sample names in the metadata spreadsheet match those in the VCF file.
-This is achieved by cross-checking the 'Sample name in VCF' column in the spreadsheet with the sample names registered in the VCF file.
+This is achieved by cross-checking the "Sample name in VCF" column in the spreadsheet with the sample names registered in the VCF file.
 Any discrepancies must be addressed by the submitter when the CLI tool generates a report of the mismatches found.
 
 Key points to note before validating your data with the eva-sub-cli tool:
@@ -91,8 +90,8 @@ Key points to note before validating your data with the eva-sub-cli tool:
 
 Common errors seen with sample concordance checks:
 
-- Link between “Sample” and “File” provided via the Analysis alias is not correctly defined in the metadata which causes the sample name concordance check to fail.
+- Link between "Sample" and "File" provided via the Analysis alias is not correctly defined in the metadata which causes the sample name concordance check to fail.
 - Extra white spaces in the sample names can lead to mismatches.
 - Case sensitivity issues between the sample names in the VCF file and the metadata spreadsheet.
 
-Issues in sample name concordance will be reported in the "Sample name concordance check" section of the report.
+Issues in sample name concordance will be reported in the "Sample name concordance check" section of the validation report.
