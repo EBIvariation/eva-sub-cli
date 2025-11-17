@@ -265,10 +265,16 @@ class Validator(AppLogger):
             self.results[ASSEMBLY_CHECK][PASS] = asm_nb_mismatch_result and asm_nb_error_result
 
             # fasta_check result
+            # Note this fails only if the FASTA file is not INSDC or the reference in the metadata is not a GCA.
+            # It does not fail if the metadata assembly is not compatible with the FASTA, even though this is reported
+            # as an error in the validation report.
             fasta_check_result = all((fa_file_check.get('all_insdc', False) is True
                                       for fa_file, fa_file_check in self.results.get(FASTA_CHECK, {}).items()
                                       if isinstance(fa_file_check, dict)))
-            self.results[FASTA_CHECK][PASS] = fasta_check_result
+            gca_check_result = all(fa_file_check.get('metadata_assembly_gca', False)
+                                   for fa_file, fa_file_check in self.results.get(FASTA_CHECK, {}).items()
+                                   if isinstance(fa_file_check, dict))
+            self.results[FASTA_CHECK][PASS] = fasta_check_result and gca_check_result
         elif ASSEMBLY_CHECK not in self.results:
             self.results[ASSEMBLY_CHECK] = {RUN_STATUS_KEY: False}
             self.results[FASTA_CHECK] = {RUN_STATUS_KEY: False}

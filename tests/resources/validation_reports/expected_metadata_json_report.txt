@@ -31,36 +31,42 @@ METADATA VALIDATION RESULTS
 Ensures that required fields are present and values are formatted correctly.
 For requirements, please refer to the EVA website (https://www.ebi.ac.uk/eva/?Submit-Data).
     ❌ Metadata validation check
-	Full report: /path/to/metadata/metadata_spreadsheet_validation.txt
-		Sheet: Files | Row:  | Column:
-		Error: Sheet "Files" is missing
+	Full report: /path/to/json/metadata/report
+		JSON Property: .files
+		Error: should have required property 'files'
 		---
-		Sheet: Project | Row: 2 | Column: Project Title
-		Error: Column "Project Title" is not populated
+		JSON Property: /project.title
+		Error: should have required property 'title'
 		---
-		Sheet: Project | Row: 2 | Column: Description
-		Error: Column "Description" is not populated
+		JSON Property: /project.description
+		Error: should have required property 'description'
 		---
-		Sheet: Project | Row: 2 | Column: Tax ID
-		Error: Column "Tax ID" is not populated
+		JSON Property: /project.taxId
+		Error: should have required property 'taxId'
 		---
-		Sheet: Project | Row: 2 | Column: Center
-		Error: Column "Center" is not populated
+		JSON Property: /project.centre
+		Error: should have required property 'centre'
 		---
-		Sheet: Analysis | Row: 2 | Column: Analysis Title
-		Error: Column "Analysis Title" is not populated
+		JSON Property: /analysis/0.analysisTitle
+		Error: should have required property 'analysisTitle'
 		---
-		Sheet: Analysis | Row: 2 | Column: Description
-		Error: Column "Description" is not populated
+		JSON Property: /analysis/0.description
+		Error: should have required property 'description'
 		---
-		Sheet: Analysis | Row: 2 | Column: Experiment Type
-		Error: Column "Experiment Type" is not populated
+		JSON Property: /analysis/0.experimentType
+		Error: should have required property 'experimentType'
 		---
-		Sheet: Analysis | Row: 2 | Column: Reference
-		Error: Column "Reference" is not populated
+		JSON Property: /analysis/0.referenceGenome
+		Error: should have required property 'referenceGenome'
 		---
-		Sheet: Sample | Row: 3 | Column: Sample Accession
-		Error: Column "Sample Accession" is not populated
+		JSON Property: /sample/0.bioSampleAccession
+		Error: should have required property 'bioSampleAccession'
+		---
+		JSON Property: /sample/0.bioSampleObject
+		Error: should have required property 'bioSampleObject'
+		---
+		JSON Property: /sample/0
+		Error: should match exactly one schema in oneOf
 		---
 -
 VCF VALIDATION RESULTS
@@ -110,6 +116,14 @@ Also checks if the reference assembly accession in the metadata matches the one 
 		❌ No assembly accession found in metadata
 			Full report: /path/to/metadata_asm_not_found.yml
 			Assembly accession found in metadata: Not found
+			Assembly accession(s) compatible with FASTA: GCA_1
+    metadata_asm_not_gca.fa
+        Warning: Non-GCA reference found in metadata. Please provide the INSDC accession for your reference assembly.
+        If you would like to submit using a non-assembly reference sequence, contact eva-helpdesk@ebi.ac.uk.
+		✔ All sequences are INSDC accessioned.
+		❌ Analysis B: Assembly accession in metadata is not compatible
+			Full report: /path/to/metadata_asm_not_gca.yml
+			Assembly accession found in metadata: GCF_1
 			Assembly accession(s) compatible with FASTA: GCA_1
     metadata_asm_not_match.fa
 		✔ All sequences are INSDC accessioned.

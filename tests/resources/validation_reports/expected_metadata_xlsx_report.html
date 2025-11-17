@@ -98,58 +98,70 @@
     </div>
     <div class='report-section fail collapsible'><span class="expand_icon">&#9654;</span> &#10060; Metadata validation check </div>
         <div class="error-list">
-            <div class="error-description"><strong>Full report:</strong> /path/to/json/metadata/report</div>
+            <div class="error-description"><strong>Full report:</strong> /path/to/metadata/metadata_spreadsheet_validation.txt</div>
             <table>
                 <tr>
-                    <th>JSON Property</th><th>Error Description</th>
+                    <th>Sheet</th><th>Row</th><th>Column</th><th>Description</th>
                 </tr>
                     <tr>
-                        <td><strong>.files</strong></td>
-                        <td> should have required property 'files'</td>
+                        <td><strong>Files</strong></td>
+                        <td><strong></strong></td>
+                        <td><strong></strong></td>
+                        <td> Sheet "Files" is missing</td>
                     </tr>
                     <tr>
-                        <td><strong>/project.title</strong></td>
-                        <td> should have required property 'title'</td>
+                        <td><strong>Project</strong></td>
+                        <td><strong>2</strong></td>
+                        <td><strong>Project Title</strong></td>
+                        <td> Column "Project Title" is not populated</td>
                     </tr>
                     <tr>
-                        <td><strong>/project.description</strong></td>
-                        <td> should have required property 'description'</td>
+                        <td><strong>Project</strong></td>
+                        <td><strong>2</strong></td>
+                        <td><strong>Description</strong></td>
+                        <td> Column "Description" is not populated</td>
                     </tr>
                     <tr>
-                        <td><strong>/project.taxId</strong></td>
-                        <td> should have required property 'taxId'</td>
+                        <td><strong>Project</strong></td>
+                        <td><strong>2</strong></td>
+                        <td><strong>Tax ID</strong></td>
+                        <td> Column "Tax ID" is not populated</td>
                     </tr>
                     <tr>
-                        <td><strong>/project.centre</strong></td>
-                        <td> should have required property 'centre'</td>
+                        <td><strong>Project</strong></td>
+                        <td><strong>2</strong></td>
+                        <td><strong>Center</strong></td>
+                        <td> Column "Center" is not populated</td>
                     </tr>
                     <tr>
-                        <td><strong>/analysis/0.analysisTitle</strong></td>
-                        <td> should have required property 'analysisTitle'</td>
+                        <td><strong>Analysis</strong></td>
+                        <td><strong>2</strong></td>
+                        <td><strong>Analysis Title</strong></td>
+                        <td> Column "Analysis Title" is not populated</td>
                     </tr>
                     <tr>
-                        <td><strong>/analysis/0.description</strong></td>
-                        <td> should have required property 'description'</td>
+                        <td><strong>Analysis</strong></td>
+                        <td><strong>2</strong></td>
+                        <td><strong>Description</strong></td>
+                        <td> Column "Description" is not populated</td>
                     </tr>
                     <tr>
-                        <td><strong>/analysis/0.experimentType</strong></td>
-                        <td> should have required property 'experimentType'</td>
+                        <td><strong>Analysis</strong></td>
+                        <td><strong>2</strong></td>
+                        <td><strong>Experiment Type</strong></td>
+                        <td> Column "Experiment Type" is not populated</td>
                     </tr>
                     <tr>
-                        <td><strong>/analysis/0.referenceGenome</strong></td>
-                        <td> should have required property 'referenceGenome'</td>
+                        <td><strong>Analysis</strong></td>
+                        <td><strong>2</strong></td>
+                        <td><strong>Reference</strong></td>
+                        <td> Column "Reference" is not populated</td>
                     </tr>
                     <tr>
-                        <td><strong>/sample/0.bioSampleAccession</strong></td>
-                        <td> should have required property 'bioSampleAccession'</td>
-                    </tr>
-                    <tr>
-                        <td><strong>/sample/0.bioSampleObject</strong></td>
-                        <td> should have required property 'bioSampleObject'</td>
-                    </tr>
-                    <tr>
-                        <td><strong>/sample/0</strong></td>
-                        <td> should match exactly one schema in oneOf</td>
+                        <td><strong>Sample</strong></td>
+                        <td><strong>3</strong></td>
+                        <td><strong>Sample Accession</strong></td>
+                        <td> Column "Sample Accession" is not populated</td>
                     </tr>
             </table>
         </div>
@@ -397,6 +409,32 @@
                     <tr>
                         <td><strong>Assembly accession found in metadata</strong></td>
                         <td>Not found</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Assembly accession(s) compatible with FASTA</strong></td>
+                        <td>GCA_1</td>
+                    </tr>
+                </table>
+            </div>
+            <h3>metadata_asm_not_gca.fa</h3>
+        <div class="report-section fail">
+            <strong>Warning:</strong> Non-GCA reference found in metadata. Please provide the INSDC accession for your reference assembly.
+            If you would like to submit using a non-assembly reference sequence, contact <a href="mailto:eva-helpdesk@ebi.ac.uk">eva-helpdesk@ebi.ac.uk</a>.
+        </div>
+    <!-- All INSDC check results -->
+    <div class='report-section pass'><span class="expand_icon"></span> &#10004; All sequences are INSDC accessioned </div>
+    <!-- INSDC concordance check results (optional) -->
+            <!-- found assembly in metadata, so definitely know the analysis -->
+        <div class='report-section fail collapsible'><span class="expand_icon">&#9654;</span> &#10060; Analysis B: Assembly accession in metadata is not compatible </div>
+            <div class="error-list">
+                <div class="error-description"><strong>Full report:</strong> /path/to/metadata_asm_not_gca.yml</div>
+                <table>
+                    <tr>
+                        <th>Category</th><th>Accessions</th>
+                    </tr>
+                    <tr>
+                        <td><strong>Assembly accession found in metadata</strong></td>
+                        <td>GCF_1</td>
                     </tr>
                     <tr>
                         <td><strong>Assembly accession(s) compatible with FASTA</strong></td>

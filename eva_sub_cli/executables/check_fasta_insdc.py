@@ -54,6 +54,11 @@ def _get_containing_assemblies_paged(url):
 
 
 def get_containing_assemblies(md5_digest):
+    """
+    Return the INSDC accessions of assemblies in contig alias containing the sequence with the provided md5 digest.
+    :param md5_digest: md5 digest of the sequence to query
+    :return: set of INSDC accessions
+    """
     # Wrapper method to handle pagination
     url = f'{CONTIG_ALIAS_SERVER}/{md5_digest}'
     return _get_containing_assemblies_paged(url)
@@ -89,7 +94,7 @@ def assess_fasta(input_fasta, analyses, assembly_in_metadata):
             elif len(possible_assemblies) == 0:
                 possible_assemblies = containing_assemblies
             else:
-                possible_assemblies &= containing_assemblies
+                possible_assemblies = possible_assemblies.intersection(containing_assemblies)
     except Exception as e:
         # Server errors from either ENA refget or EVA contig alias will halt the check prematurely.
         # Report the error but do not return from the method, so that incomplete results can be reported
@@ -134,6 +139,10 @@ def get_analyses_and_reference_genome_from_metadata(vcf_files_for_fasta, json_fi
     return all_analyses, assemblies[0]
 
 
+def check_assembly_in_metadata(assembly_in_metadata):
+    return assembly_in_metadata and assembly_in_metadata.upper().startswith('GCA')
+
+
 def main():
     arg_parser = argparse.ArgumentParser(
         description="Calculate each sequence's Refget MD5 digest and compare these against INSDC Refget server.")
@@ -147,6 +156,7 @@ def main():
                             help='Path to the location of the results')
     args = arg_parser.parse_args()
     logging_config.add_stdout_handler()
-    analyses, metadata_insdc = get_analyses_and_reference_genome_from_metadata(args.vcf_files, args.metadata_json)
-    results = assess_fasta(args.input_fasta, analyses, metadata_insdc)
+    analyses, assembly_in_metadata = get_analyses_and_reference_genome_from_metadata(args.vcf_files, args.metadata_json)
+    results = assess_fasta(args.input_fasta, analyses, assembly_in_metadata)
+    results['metadata_assembly_gca'] = check_assembly_in_metadata(assembly_in_metadata)
     write_result_yaml(args.output_yaml, results)
