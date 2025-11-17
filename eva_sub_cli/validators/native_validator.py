@@ -5,8 +5,6 @@ from ebi_eva_common_pyutils.logger import logging_config
 
 from eva_sub_cli.validators.validator import Validator, ALL_VALIDATION_TASKS
 
-logger = logging_config.get_logger(__name__)
-
 
 class NativeValidator(Validator):
 
@@ -24,10 +22,6 @@ class NativeValidator(Validator):
         self.assembly_checker_path = assembly_checker_path
         self.biovalidator_path = biovalidator_path
 
-    @staticmethod
-    def _validation_file_path_for(file_path):
-        return file_path
-
     def _validate(self):
         self.run_validator()
 
@@ -39,7 +33,8 @@ class NativeValidator(Validator):
             os.chdir(self.submission_dir)
             self._run_quiet_command("Run Validation using Nextflow", command)
         except subprocess.CalledProcessError as ex:
-            logger.error(ex)
+            self.error('Nextflow validation did not complete successfully. results may be incomplete.')
+            self.error(ex)
         finally:
             os.chdir(curr_wd)
 
@@ -74,5 +69,5 @@ class NativeValidator(Validator):
                     f"{path} --version"
                 )
             except subprocess.CalledProcessError as ex:
-                logger.error(ex)
+                self.error(ex)
                 raise RuntimeError(f"Please make sure {name} ({path}) is installed and available on the path")

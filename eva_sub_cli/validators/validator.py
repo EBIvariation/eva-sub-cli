@@ -42,7 +42,6 @@ TRIM_DOWN = 'trim_down'
 RUN_STATUS_KEY = 'run_status'
 PASS = 'pass'
 
-logger = logging_config.get_logger(__name__)
 
 
 class Validator(AppLogger):
@@ -148,7 +147,7 @@ class Validator(AppLogger):
 
     @staticmethod
     def _validation_file_path_for(file_path):
-        raise NotImplementedError
+        return file_path
 
     def verify_files_present(self):
         # verify mapping file exists
@@ -527,6 +526,7 @@ class Validator(AppLogger):
             self.results[METADATA_CHECK]['spreadsheet_report_path'] = spreadsheet_report_file
 
     def _collect_file_info_to_metadata(self):
+        errors = []
         md5sum_file = resolve_single_file_path(os.path.join(self.output_dir, 'other_validations', 'file_info.txt'))
         file_path_2_md5 = {}
         file_name_2_md5 = {}
@@ -544,9 +544,9 @@ class Validator(AppLogger):
                     file_path_2_file_size[vcf_file] = file_size
                     file_name_2_file_size[os.path.basename(vcf_file)] = file_size
         else:
-            self.error(
-                f"Cannot locate file_info.txt at {os.path.join(self.output_dir, 'other_validations', 'file_info.txt')}"
-            )
+            error_txt =  f"Cannot locate file_info.txt at {os.path.join(self.output_dir, 'other_validations', 'file_info.txt')}"
+            self.error(error_txt)
+            errors.append({'property': '/files', 'description': error_txt})
         if self.metadata_json_post_validation:
             metadata = EvaMetadataJson(self.metadata_json_post_validation)
             try:
@@ -558,17 +558,38 @@ class Validator(AppLogger):
                                            file_name_2_md5.get(file_dict.get('fileName')) or ''
                         file_dict['fileSize'] = file_path_2_file_size.get(file_path) or \
                                                 file_name_2_file_size.get(file_dict.get('fileName')) or ''
+
+                        if not file_dict.get('fileSize'):
+                            error_txt = f"File size is not available for {file_dict.get('fileName')}"
+                            self.error(error_txt)
+                            errors.append({'property': '/files/fileSize', 'description': error_txt})
+                        if not file_dict.get('md5'):
+                            error_txt = f"md5 is not available for {file_dict.get('fileName')}"
+                            self.error(error_txt)
+                            errors.append({'property': '/files/md5', 'description': error_txt})
                         file_rows.append(file_dict)
                 else:
-                    self.error('No file found in metadata and multiple analysis alias exist: '
-                               'cannot infer the relationship between files and analysis alias')
+                    error_txt = ('No file section found in metadata and multiple analysis alias exist: '
+                                 'cannot infer the relationship between files and analysis alias')
+                    self.error(error_txt)
+                    errors.append({'property': '/files', 'description': error_txt})
                 metadata.set_files(file_rows)
             except Exception as e:
+                raise e
                 # Skip adding the md5
-                self.error('Error while loading or parsing metadata json: ' + str(e))
+                error_txt = 'Error while loading or parsing metadata json: ' + str(e)
+                self.error(error_txt)
+                errors.append({'property': '/', 'description': error_txt})
             metadata.write(self.metadata_json_post_validation)
         else:
-            self.error(f'Cannot locate the metadata in JSON format in {os.path.join(self.output_dir, "metadata.json")}')
+            error_txt = f'Cannot locate the metadata in JSON format in {os.path.join(self.output_dir, "metadata.json")}'
+            self.error(error_txt)
+            errors.append({'property': '/', 'description': error_txt})
+        if errors:
+            if 'json_errors' in self.results[METADATA_CHECK]:
+                self.results[METADATA_CHECK]['json_errors'].extend(errors)
+            else:
+                self.results[METADATA_CHECK]['json_errors'] = errors
 
     def _update_metadata_with_evidence_type(self):
         if self.metadata_json_post_validation:

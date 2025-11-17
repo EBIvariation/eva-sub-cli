@@ -83,8 +83,9 @@ expected_validation_results = {
             {'property': '/sample/1/bioSampleObject/characteristics/Organism',
              'description': 'Species sheep sapiens does not match taxonomy 9606 (Homo sapiens)'},
             {'property': '/sample/analysisAlias', 'description': 'alias1 present in Analysis not in Samples'},
-            {'property': '/sample/analysisAlias',
-             'description': 'alias_1,alias_2 present in Samples not in Analysis'},
+            {'property': '/sample/analysisAlias', 'description': 'alias_1,alias_2 present in Samples not in Analysis'},
+            {'property': '/files/fileSize', 'description': 'File size is not available for input_passed.vcf'},
+            {'property': '/files/md5', 'description': 'md5 is not available for input_passed.vcf'}
         ],
         'spreadsheet_errors': [
             {'sheet': '', 'row': '', 'column': '',
@@ -287,6 +288,8 @@ class TestValidator(TestCase):
             saved_results = yaml.safe_load(val_res_file) or {}
         self.drop_report_paths_from_validation_results(saved_results)
         assert saved_results == self.format_data_structure(expected_results)
+
+
 
     def test__collect_validation_workflow_results_for_shallow_validation_no_effect_when_task_not_in_vcf_check_or_assembly_check(
             self):
