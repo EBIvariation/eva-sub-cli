@@ -33,7 +33,7 @@ class NativeValidator(Validator):
             os.chdir(self.submission_dir)
             self._run_quiet_command("Run Validation using Nextflow", command)
         except subprocess.CalledProcessError as ex:
-            self.error('Nextflow validation did not complete successfully. results may be incomplete.')
+            self.error('Nextflow validation did not complete successfully. Results may be incomplete.')
             self.error(ex)
         finally:
             os.chdir(curr_wd)
