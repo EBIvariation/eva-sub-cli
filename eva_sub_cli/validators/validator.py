@@ -546,13 +546,16 @@ class Validator(AppLogger):
         else:
             error_txt =  f"Cannot locate file_info.txt at {os.path.join(self.output_dir, 'other_validations', 'file_info.txt')}"
             self.error(error_txt)
-            errors.append({'property': '/files', 'description': error_txt})
+            raise FileNotFoundError(error_txt)
+
         if self.metadata_json_post_validation:
             metadata = EvaMetadataJson(self.metadata_json_post_validation)
             try:
                 file_rows = []
                 if metadata.files:
+                    file_count = 0
                     for file_dict in metadata.files:
+                        file_count += 1
                         file_path = self._validation_file_path_for(file_dict.get('fileName'))
                         file_dict['md5'] = file_path_2_md5.get(file_path) or \
                                            file_name_2_md5.get(file_dict.get('fileName')) or ''
@@ -562,12 +565,13 @@ class Validator(AppLogger):
                         if not file_dict.get('fileSize'):
                             error_txt = f"File size is not available for {file_dict.get('fileName')}"
                             self.error(error_txt)
-                            errors.append({'property': '/files/fileSize', 'description': error_txt})
+                            errors.append({'property': f'/files/{file_count}.fileSize', 'description': error_txt})
                         if not file_dict.get('md5'):
                             error_txt = f"md5 is not available for {file_dict.get('fileName')}"
                             self.error(error_txt)
-                            errors.append({'property': '/files/md5', 'description': error_txt})
+                            errors.append({'property': f'/files/{file_count}.md5', 'description': error_txt})
                         file_rows.append(file_dict)
+                        file_count += 1
                 else:
                     error_txt = ('No file section found in metadata and multiple analysis alias exist: '
                                  'cannot infer the relationship between files and analysis alias')
@@ -575,7 +579,6 @@ class Validator(AppLogger):
                     errors.append({'property': '/files', 'description': error_txt})
                 metadata.set_files(file_rows)
             except Exception as e:
-                raise e
                 # Skip adding the md5
                 error_txt = 'Error while loading or parsing metadata json: ' + str(e)
                 self.error(error_txt)
@@ -584,7 +587,7 @@ class Validator(AppLogger):
         else:
             error_txt = f'Cannot locate the metadata in JSON format in {os.path.join(self.output_dir, "metadata.json")}'
             self.error(error_txt)
-            errors.append({'property': '/', 'description': error_txt})
+            raise FileNotFoundError(error_txt)
         if errors:
             if 'json_errors' in self.results[METADATA_CHECK]:
                 self.results[METADATA_CHECK]['json_errors'].extend(errors)

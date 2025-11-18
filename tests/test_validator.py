@@ -84,8 +84,8 @@ expected_validation_results = {
              'description': 'Species sheep sapiens does not match taxonomy 9606 (Homo sapiens)'},
             {'property': '/sample/analysisAlias', 'description': 'alias1 present in Analysis not in Samples'},
             {'property': '/sample/analysisAlias', 'description': 'alias_1,alias_2 present in Samples not in Analysis'},
-            {'property': '/files/fileSize', 'description': 'File size is not available for input_passed.vcf'},
-            {'property': '/files/md5', 'description': 'md5 is not available for input_passed.vcf'}
+            {'property': '/files/1.fileSize', 'description': 'File size is not available for input_passed.vcf'},
+            {'property': '/files/1.md5', 'description': 'md5 is not available for input_passed.vcf'}
         ],
         'spreadsheet_errors': [
             {'sheet': '', 'row': '', 'column': '',
