@@ -192,8 +192,7 @@ class TestDockerValidator(TestCase):
         expected_metadata_files_json = [
             {'analysisAlias': 'VD1', 'fileName': 'example1.vcf.gz', 'fileSize': '', 'md5': ''},
             {'analysisAlias': 'VD2', 'fileName': 'example2.vcf', 'fileSize': '', 'md5': ''},
-            {'analysisAlias': 'VD3', 'fileName': 'example3.vcf',  'fileSize': '', 'md5': ''},
-            {'analysisAlias': 'VD2', 'fileName': 'example2.vcf.gz.tbi', 'fileSize': '', 'md5': ''}
+            {'analysisAlias': 'VD3', 'fileName': 'example3.vcf',  'fileSize': '', 'md5': ''}
         ]
         expected_metadata_val = 'Validation passed successfully.'
         expected_semantic_val = {'description': 'Project PRJEB00002 does not exist in ENA or is private',

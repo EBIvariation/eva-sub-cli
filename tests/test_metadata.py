@@ -29,10 +29,7 @@ class TestEvaMetadata(TestCase):
                 'analysisAlias': 'VD3',
                 'fileName': os.path.join(self.working_dir, 'example3.vcf'),
                 'fileType': 'vcf'
-            },
-            {'analysisAlias': 'VD2',
-             'fileName': os.path.join(self.working_dir, 'example2.vcf.gz.tbi'),
-             'fileType': 'vcf'}
+            }
         ]
         # Confirm resolved_files does not affect files
         assert self.metadata.files[0]['fileName'] == 'example1.vcf.gz'
@@ -49,8 +46,7 @@ class TestEvaMetadata(TestCase):
     def test_files_per_analysis(self):
         assert self.metadata.files_per_analysis == {
             'VD1': {os.path.join(self.working_dir, 'example1.vcf.gz')},
-            'VD2': {os.path.join(self.working_dir, 'example2.vcf'),
-                    os.path.join(self.working_dir, 'example2.vcf.gz.tbi')},
+            'VD2': {os.path.join(self.working_dir, 'example2.vcf')},
             'VD3': {os.path.join(self.working_dir, 'example3.vcf')}
         }
 
