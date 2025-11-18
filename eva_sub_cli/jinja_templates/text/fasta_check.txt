@@ -9,7 +9,7 @@
 	{% endif %}
 	{% if 'metadata_assembly_compatible' in results_for_fasta and not results_for_fasta.get('metadata_assembly_gca') %}
         Warning: Non-GCA reference found in metadata. Please provide the INSDC accession for your reference assembly.
-        If you would like to submit using a non-assembly reference sequence, contact eva-helpdesk@ebi.ac.uk.
+        If you would like to submit using a non-GCA reference sequence, contact eva-helpdesk@ebi.ac.uk.
 	{% endif %}
 
 	{% if results_for_fasta.get('all_insdc') %}
@@ -32,7 +32,7 @@
 				{% set icon = "\u2714" %}
 				{% set text = analysis_text + ": Assembly accession in metadata is compatible" %}
 			{% else %}
-				{% set icon = "\u274C" %}
+				{% set icon = "\u2757" %}
 				{% set text = analysis_text + ": Assembly accession in metadata is not compatible" %}
 			{% endif %}
 		{% else %}

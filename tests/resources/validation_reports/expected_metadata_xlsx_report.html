@@ -14,11 +14,13 @@
         .error-description { padding: 10px 0px 10px}
         .report-section { padding: 12px; border: 1px solid white; margin-bottom: 5px}
         .active, .collapsible:hover.fail { background-color: #e6a3ae; }
+        .active, .collapsible:hover.warn { background-color: #e6de7c; }
         .active, .collapsible:hover.info { background-color: #c0c0c0; }
         table { border-collapse: collapse; padding: 10px; margin-bottom: 20px}
         th, td { border: 1px solid black;  padding: 8px;  text-align: left; }
         th {  background-color: lightgrey;  }
         .fail { background-color: #FFB6C1; }
+        .warn { background-color: #f5ed7f; }
         .pass { background-color: #90EE90; }
         .info { background-color: #dadada; }
         .error-list, .no-show { display: none; }
@@ -419,13 +421,13 @@
             <h3>metadata_asm_not_gca.fa</h3>
         <div class="report-section fail">
             <strong>Warning:</strong> Non-GCA reference found in metadata. Please provide the INSDC accession for your reference assembly.
-            If you would like to submit using a non-assembly reference sequence, contact <a href="mailto:eva-helpdesk@ebi.ac.uk">eva-helpdesk@ebi.ac.uk</a>.
+            If you would like to submit using a non-GCA reference sequence, contact <a href="mailto:eva-helpdesk@ebi.ac.uk">eva-helpdesk@ebi.ac.uk</a>.
         </div>
     <!-- All INSDC check results -->
     <div class='report-section pass'><span class="expand_icon"></span> &#10004; All sequences are INSDC accessioned </div>
     <!-- INSDC concordance check results (optional) -->
             <!-- found assembly in metadata, so definitely know the analysis -->
-        <div class='report-section fail collapsible'><span class="expand_icon">&#9654;</span> &#10060; Analysis B: Assembly accession in metadata is not compatible </div>
+        <div class='report-section warn collapsible'><span class="expand_icon">&#9654;</span> &#10071; Analysis B: Assembly accession in metadata is not compatible </div>
             <div class="error-list">
                 <div class="error-description"><strong>Full report:</strong> /path/to/metadata_asm_not_gca.yml</div>
                 <table>
@@ -447,7 +449,7 @@
     <div class='report-section pass'><span class="expand_icon"></span> &#10004; All sequences are INSDC accessioned </div>
     <!-- INSDC concordance check results (optional) -->
             <!-- found assembly in metadata, so definitely know the analysis -->
-        <div class='report-section fail collapsible'><span class="expand_icon">&#9654;</span> &#10060; Analysis B: Assembly accession in metadata is not compatible </div>
+        <div class='report-section warn collapsible'><span class="expand_icon">&#9654;</span> &#10071; Analysis B: Assembly accession in metadata is not compatible </div>
             <div class="error-list">
                 <div class="error-description"><strong>Full report:</strong> /path/to/metadata_asm_not_match.yml</div>
                 <table>
