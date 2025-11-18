@@ -555,7 +555,6 @@ class Validator(AppLogger):
                 if metadata.files:
                     file_count = 0
                     for file_dict in metadata.files:
-                        file_count += 1
                         file_path = self._validation_file_path_for(file_dict.get('fileName'))
                         file_dict['md5'] = file_path_2_md5.get(file_path) or \
                                            file_name_2_md5.get(file_dict.get('fileName')) or ''
