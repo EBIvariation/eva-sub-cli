@@ -120,9 +120,17 @@ Also checks if the reference assembly accession in the metadata matches the one 
 			Full report: /path/to/metadata_asm_not_found.yml
 			Assembly accession found in metadata: Not found
 			Assembly accession(s) compatible with FASTA: GCA_1
+    metadata_asm_not_gca.fa
+        Warning: Non-GCA reference found in metadata. Please provide the INSDC accession for your reference assembly.
+        If you would like to submit using a non-GCA reference sequence, contact eva-helpdesk@ebi.ac.uk.
+		✔ All sequences are INSDC accessioned.
+		❗ Analysis B: Assembly accession in metadata is not compatible
+			Full report: /path/to/metadata_asm_not_gca.yml
+			Assembly accession found in metadata: GCF_1
+			Assembly accession(s) compatible with FASTA: GCA_1
     metadata_asm_not_match.fa
 		✔ All sequences are INSDC accessioned.
-		❌ Analysis B: Assembly accession in metadata is not compatible
+		❗ Analysis B: Assembly accession in metadata is not compatible
 			Full report: /path/to/metadata_asm_not_match.yml
 			Assembly accession found in metadata: GCA_2
 			Assembly accession(s) compatible with FASTA: GCA_1

@@ -9,6 +9,12 @@
             <br><strong>Error message:</strong> {{ results_for_fasta.get('connection_error') }}
         </div>
     {% endif %}
+	{% if 'metadata_assembly_compatible' in results_for_fasta and not results_for_fasta.get('metadata_assembly_gca') %}
+        <div class="report-section fail">
+            <strong>Warning:</strong> Non-GCA reference found in metadata. Please provide the INSDC accession for your reference assembly.
+            If you would like to submit using a non-GCA reference sequence, contact <a href="mailto:eva-helpdesk@ebi.ac.uk">eva-helpdesk@ebi.ac.uk</a>.
+        </div>
+	{% endif %}
 
     <!-- All INSDC check results -->
     {% set expand_icon = "" %}
@@ -52,8 +58,8 @@
                 {% set text = analysis_text + ": Assembly accession in metadata is compatible" %}
             {% else %}
                 {% set expand_icon = "&#9654;" %}
-                {% set icon = "&#10060;" %}
-                {% set row_class = "report-section fail collapsible" %}
+                {% set icon = "&#10071;" %}
+                {% set row_class = "report-section warn collapsible" %}
                 {% set text = analysis_text + ": Assembly accession in metadata is not compatible" %}
             {% endif %}
         {% else %}
