@@ -13,22 +13,28 @@ In the following sections, we will examine each of these checks in detail.
 
 Once the user passes the metadata spreadsheet for validation checks, the eva-sub-cli tool verifies that all mandatory columns, marked in bold in the spreadsheet, are filled in.
 This data is crucial for further validation processes, such as retrieving the INDSC accession of the reference genome used to call the variants, and for sample and project metadata.
+
+Each tab in the spreadsheet has an associated help tab, which provides detailed instructions on how to fill in your metadata correctly.
 If any mandatory columns or sheets are missing, the CLI tool will raise errors.
 
 Key points to note before validating your metadata spreadsheet with the eva-sub-cli tool:
 
 - Please do not change the existing structure of the spreadsheet.
 - Ensure all mandatory columns (marked in bold) are filled.
+- Columns marked in green indicate an either/or requirement, so only one of the sections should be filled in.
 - Any pre-registered projects and samples must be released and not kept in private status.
 - Sample names in the spreadsheet must match those in the VCF file.
 - Analysis aliases must match across the sheets (Analysis, Sample, and File sheets).
+- Use the Hold Date field in the Project sheet for data that needs to be kept under embargo.
 
 Common errors seen with metadata checks:
 
 - Analysis alias is not filled in for the respective samples in the Sample tab.
 - Reference field in the Analysis tab is not filled with an INSDC accession. Submitters should not use a non-GCA accession or generic assembly name as their reference genome.
 - Taxonomy ID and the scientific name of the organism do not match for novel samples.
-- Collection data and geographic location of the samples are not filled in for novel samples.
+- Collection date and geographic location of the samples are not filled in for novel samples.
+- Date fields do not follow the YYYY-MM-DD format.
+- Custom values are used for controlled vocabulary fields (indicated with a drop-down menu). Submitters should select from the values provided or contact us if the required value is not present.
 
 Most issues around metadata will be reported in the "Metadata validation results" section of the validation report.
 However, note that other validation failures may also require you to modify your metadata file.
