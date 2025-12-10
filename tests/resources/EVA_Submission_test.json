@@ -22,7 +22,8 @@
     "description": "An example project for demonstration purposes",
     "centre": "University of Example",
     "taxId": 9606,
-    "holdDate": "2023-12-31T00:00:00"
+    "holdDate": "2023-12-31T00:00:00",
+    "publications": ["PUBMED:12034", "doi:10.1000/182"]
   },
   "analysis": [
     {

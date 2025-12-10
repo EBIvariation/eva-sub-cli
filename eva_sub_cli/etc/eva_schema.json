@@ -106,7 +106,10 @@
             },
             "publications": {
               "type": "array",
-              "items": true
+              "items": {
+                "type": "string",
+                "pattern": "^[^:,]+?:[^:,]+?$"
+              }
             },
             "parentProject": {
               "$ref": "#/definitions/projectAccession"
