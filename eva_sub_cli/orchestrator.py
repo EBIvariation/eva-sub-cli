@@ -77,15 +77,12 @@ def remove_non_vcf_files_from_metadata(metadata_json, metadata_xlsx):
             logger.warning(f"Some files mentioned in the metadata xlsx's ({metadata_xlsx}) Files sheet are not VCF files and have been removed.")
 
 
-def get_project_title_and_create_vcf_files_mapping(submission_dir, vcf_files, reference_fasta,
-                                                   metadata_json, metadata_xlsx, metadata_xlsx_version):
+def get_project_title_and_create_vcf_files_mapping(submission_dir, metadata_json, metadata_xlsx, metadata_xlsx_version):
     """
-    Get project title and mapping between VCF files and reference FASTA files, from three sources: command line
-        arguments, metadata JSON file, or metadata XLSX file.
+    Get project title and mapping between VCF files and reference FASTA files, from two sources: metadata JSON file
+    or metadata XLSX file.
 
     :param submission_dir: Directory where mapping file will be saved
-    :param vcf_files: VCF files from command line, if present
-    :param reference_fasta: Reference FASTA from command line, if present
     :param metadata_json: Metadata JSON from command line, if present
     :param metadata_xlsx: Metadata XLSX from command line, if present
     :param metadata_xlsx_version: Version of metadata XLSX
@@ -97,17 +94,10 @@ def get_project_title_and_create_vcf_files_mapping(submission_dir, vcf_files, re
         writer.writerow(['vcf', 'fasta', 'report'])
 
         vcf_files_mapping = []
-        if vcf_files and reference_fasta:
-            for vcf_file in vcf_files:
-                vcf_files_mapping.append([os.path.abspath(vcf_file), os.path.abspath(reference_fasta), ''])
-            if metadata_json:
-                project_title, _ = get_project_and_vcf_fasta_mapping_from_metadata_json(metadata_json, False)
-            elif metadata_xlsx:
-                project_title, _ = get_project_and_vcf_fasta_mapping_from_metadata_xlsx(metadata_xlsx, metadata_xlsx_version, False)
-        elif metadata_json:
-            project_title, vcf_files_mapping = get_project_and_vcf_fasta_mapping_from_metadata_json(metadata_json, True)
+        if metadata_json:
+            project_title, vcf_files_mapping = get_project_and_vcf_fasta_mapping_from_metadata_json(metadata_json)
         elif metadata_xlsx:
-            project_title, vcf_files_mapping = get_project_and_vcf_fasta_mapping_from_metadata_xlsx(metadata_xlsx, metadata_xlsx_version, True)
+            project_title, vcf_files_mapping = get_project_and_vcf_fasta_mapping_from_metadata_xlsx(metadata_xlsx, metadata_xlsx_version)
 
         # Filter out non-vcf files
         vcf_files_mapping = [(vcf, fasta, report) for vcf, fasta, report in vcf_files_mapping if is_vcf_file(vcf)]
@@ -137,7 +127,7 @@ def validate_vcf_mapping(vcf_mapping):
                                     f'path.')
 
 
-def get_project_and_vcf_fasta_mapping_from_metadata_json(metadata_json, mapping_req=False):
+def get_project_and_vcf_fasta_mapping_from_metadata_json(metadata_json):
     metadata = EvaMetadataJson(metadata_json)
 
     project_title = metadata.project.get('title')
@@ -147,19 +137,19 @@ def get_project_and_vcf_fasta_mapping_from_metadata_json(metadata_json, mapping_
             project_title = get_project_title_from_ena(project_accession)
 
     vcf_fasta_report_mapping = []
-    if mapping_req:
-        analysis_alias_dict = defaultdict(dict)
-        for analysis in metadata.analyses:
-            analysis_alias_dict[analysis['analysisAlias']]['referenceFasta'] = analysis['referenceFasta']
-            analysis_alias_dict[analysis['analysisAlias']]['assemblyReport'] = analysis['assemblyReport'] \
-                if 'assemblyReport' in analysis else ''
 
-        for file_dict in metadata.resolved_files:
-            reference_fasta = analysis_alias_dict[file_dict['analysisAlias']]['referenceFasta']
-            assembly_report = analysis_alias_dict[file_dict['analysisAlias']]['assemblyReport']
-            vcf_fasta_report_mapping.append([os.path.abspath(file_dict['fileName']),
-                                             os.path.abspath(reference_fasta),
-                                             os.path.abspath(assembly_report) if assembly_report else ''])
+    analysis_alias_dict = defaultdict(dict)
+    for analysis in metadata.analyses:
+        analysis_alias_dict[analysis['analysisAlias']]['referenceFasta'] = analysis['referenceFasta']
+        analysis_alias_dict[analysis['analysisAlias']]['assemblyReport'] = analysis['assemblyReport'] \
+            if 'assemblyReport' in analysis else ''
+
+    for file_dict in metadata.resolved_files:
+        reference_fasta = analysis_alias_dict[file_dict['analysisAlias']]['referenceFasta']
+        assembly_report = analysis_alias_dict[file_dict['analysisAlias']]['assemblyReport']
+        vcf_fasta_report_mapping.append([os.path.abspath(file_dict['fileName']),
+                                         os.path.abspath(reference_fasta),
+                                         os.path.abspath(assembly_report) if assembly_report else ''])
 
     return project_title, vcf_fasta_report_mapping
 
@@ -223,7 +213,7 @@ def verify_and_get_metadata_xlsx_version(metadata_xlsx, min_req_version):
     return xlsx_version
 
 
-def get_project_and_vcf_fasta_mapping_from_metadata_xlsx(metadata_xlsx, metadata_xlsx_version, mapping_req=False):
+def get_project_and_vcf_fasta_mapping_from_metadata_xlsx(metadata_xlsx, metadata_xlsx_version):
     workbook = load_workbook(metadata_xlsx)
 
     project_sheet = workbook['Project']
@@ -243,33 +233,32 @@ def get_project_and_vcf_fasta_mapping_from_metadata_xlsx(metadata_xlsx, metadata
                 project_title = get_project_title_from_ena(project_accession)
 
     vcf_fasta_report_mapping = []
-    if mapping_req:
-        analysis_alias_sheet = workbook['Analysis']
-        analysis_headers = {}
-        for cell in analysis_alias_sheet[1]:
-            analysis_headers[cell.value] = cell.column - 1
+    analysis_alias_sheet = workbook['Analysis']
+    analysis_headers = {}
+    for cell in analysis_alias_sheet[1]:
+        analysis_headers[cell.value] = cell.column - 1
 
-        analysis_alias_dict = {}
-        for row in analysis_alias_sheet.iter_rows(min_row=2, values_only=True):
-            analysis_alias = row[analysis_headers['Analysis Alias']]
-            reference_fasta = row[analysis_headers['Reference Fasta Path']]
-            analysis_alias_dict[analysis_alias] = reference_fasta
+    analysis_alias_dict = {}
+    for row in analysis_alias_sheet.iter_rows(min_row=2, values_only=True):
+        analysis_alias = row[analysis_headers['Analysis Alias']]
+        reference_fasta = row[analysis_headers['Reference Fasta Path']]
+        analysis_alias_dict[analysis_alias] = reference_fasta
 
-        files_sheet = workbook['Files']
-        files_headers = {}
-        for cell in files_sheet[1]:
-            files_headers[cell.value] = cell.column - 1
+    files_sheet = workbook['Files']
+    files_headers = {}
+    for cell in files_sheet[1]:
+        files_headers[cell.value] = cell.column - 1
 
-        for row in files_sheet.iter_rows(min_row=2, values_only=True):
-            file_name = row[files_headers['File Name']]
-            if file_name:
-                file_name = os.path.abspath(file_name)
-            analysis_alias = row[files_headers['Analysis Alias']]
-            reference_fasta = analysis_alias_dict[analysis_alias]
-            if reference_fasta:
-                reference_fasta = os.path.abspath(reference_fasta)
-            if file_name and reference_fasta:
-                vcf_fasta_report_mapping.append([file_name, reference_fasta, ''])
+    for row in files_sheet.iter_rows(min_row=2, values_only=True):
+        file_name = row[files_headers['File Name']]
+        if file_name:
+            file_name = os.path.abspath(file_name)
+        analysis_alias = row[files_headers['Analysis Alias']]
+        reference_fasta = analysis_alias_dict[analysis_alias]
+        if reference_fasta:
+            reference_fasta = os.path.abspath(reference_fasta)
+        if file_name and reference_fasta:
+            vcf_fasta_report_mapping.append([file_name, reference_fasta, ''])
 
     return project_title, vcf_fasta_report_mapping
 
@@ -308,7 +297,7 @@ def check_validation_required(tasks, sub_config, username=None, password=None):
     return False
 
 
-def orchestrate_process(submission_dir, vcf_files, reference_fasta, metadata_json, metadata_xlsx,
+def orchestrate_process(submission_dir, metadata_json, metadata_xlsx,
                         tasks, executor, validation_tasks=ALL_VALIDATION_TASKS, username=None, password=None,
                         shallow_validation=False, nextflow_config=None, **kwargs):
     # load config
@@ -332,7 +321,7 @@ def orchestrate_process(submission_dir, vcf_files, reference_fasta, metadata_jso
 
     # Get the provided Project Title and VCF files mapping (VCF, Fasta and Report)
     project_title, vcf_files_mapping = get_project_title_and_create_vcf_files_mapping(
-        submission_dir, vcf_files, reference_fasta, metadata_json, metadata_xlsx, metadata_xlsx_version
+        submission_dir, metadata_json, metadata_xlsx, metadata_xlsx_version
     )
     vcf_files = get_vcf_files(vcf_files_mapping)
 

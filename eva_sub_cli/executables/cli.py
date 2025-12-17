@@ -26,20 +26,6 @@ from eva_sub_cli.validators.validator import ALL_VALIDATION_TASKS
 
 def validate_command_line_arguments(args, argparser):
     fail = False
-    if (args.vcf_files and not args.reference_fasta) or (not args.vcf_files and args.reference_fasta):
-        print("When using --vcf_files and --reference_fasta, both need to be specified")
-        fail = True
-
-    if args.vcf_files:
-        for vcf_file in args.vcf_files:
-            if not os.path.isfile(vcf_file):
-                print(f"VCF file {vcf_file} is not a file")
-                fail = True
-
-    if args.reference_fasta:
-        if not os.path.isfile(args.reference_fasta):
-            print(f"Fasta file {args.reference_fasta} is not a file")
-            fail = True
 
     if args.metadata_xlsx:
         if not os.path.isfile(args.metadata_xlsx):
@@ -77,14 +63,6 @@ def parse_args(cmd_line_args):
     argparser.add_argument('--version', action='version', version=f'%(prog)s {eva_sub_cli.__version__}')
     argparser.add_argument('--submission_dir', required=True, type=str,
                            help='Path to the directory where all processing is done and submission info is stored')
-    vcf_group = argparser.add_argument_group(
-        'Input VCF and assembly',
-        "Specify the VCF files and associated assembly with the following options. If you used different assemblies "
-        "for different VCF files, then you must include these in the metadata file rather than specifying them here."
-    )
-    vcf_group.add_argument('--vcf_files', nargs='+', help="One or more VCF files to validate")
-    vcf_group.add_argument('--reference_fasta',
-                           help="The FASTA file containing the reference genome from which the variants were derived")
 
     metadata_group = argparser.add_argument_group('Metadata', 'Specify the metadata in a spreadsheet or in a JSON file')
     metadata_group = metadata_group.add_mutually_exclusive_group(required=True)

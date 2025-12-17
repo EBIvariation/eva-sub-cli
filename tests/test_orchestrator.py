@@ -1,7 +1,9 @@
 import csv
+import json
 import os
 import shutil
 import unittest
+from copy import deepcopy
 from unittest.mock import patch, Mock, MagicMock
 
 from ebi_eva_common_pyutils.config import WritableConfig
@@ -31,8 +33,8 @@ class TestOrchestrator(unittest.TestCase):
     config_file = os.path.join(test_sub_dir, SUB_CLI_CONFIG_FILE)
 
     mapping_file = os.path.join(test_sub_dir, 'vcf_mapping_file.csv')
-    vcf_files = [os.path.join(test_sub_dir, 'vcf_file1.vcf'), os.path.join(test_sub_dir, 'vcf_file2.vcf')]
-    reference_fasta = os.path.join(test_sub_dir, 'genome.fa')
+    # vcf_files = [os.path.join(test_sub_dir, 'vcf_file1.vcf'), os.path.join(test_sub_dir, 'vcf_file2.vcf')]
+    # reference_fasta = os.path.join(test_sub_dir, 'genome.fa')
     metadata_json = os.path.join(test_sub_dir, 'sub_metadata.json')
     metadata_xlsx = os.path.join(test_sub_dir, 'sub_metadata.xlsx')
     metadata_xlsx_version = '3.0.0'
@@ -68,7 +70,6 @@ class TestOrchestrator(unittest.TestCase):
         if os.path.exists(self.test_sub_dir):
             shutil.rmtree(self.test_sub_dir)
 
-
     def test_remove_non_vcf_files_from_metadata_json(self):
         # assert non vcf files exist in metadata
         metadata = EvaMetadataJson(self.metadata_json_with_non_vcf_files)
@@ -80,8 +81,6 @@ class TestOrchestrator(unittest.TestCase):
         # assert non vcf files are removed from metadata
         metadata = EvaMetadataJson(self.metadata_json_with_non_vcf_files)
         assert all(is_vcf_file(f['fileName']) for f in metadata.files)
-
-
 
     def test_remove_non_vcf_files_from_metadata_xlsx(self):
         # assert non vcf files exist in metadata
@@ -119,7 +118,7 @@ class TestOrchestrator(unittest.TestCase):
 
             get_submission_status_mock.return_value = 'FAILED'
             self.assertTrue(check_validation_required(tasks, sub_config))
-            # A FAILD submission status reset the submission ID and submission URL
+            # A FAILED submission status reset the submission ID and submission URL
             self.assertEqual(sub_config.get(SUB_CLI_CONFIG_KEY_SUBMISSION_ID), None)
             self.assertEqual(sub_config.get(SUB_CLI_CONFIG_KEY_SUBMISSION_UPLOAD_URL), None)
 
@@ -143,15 +142,14 @@ class TestOrchestrator(unittest.TestCase):
                     'eva_sub_cli.orchestrator.get_project_title_and_create_vcf_files_mapping') as m_get_project_title_and_create_vcf_files_mapping, \
                 patch('eva_sub_cli.orchestrator.DockerValidator') as m_docker_validator:
             m_get_project_title_and_create_vcf_files_mapping.return_value = self.project_title, self.mapping_file
-            orchestrate_process(self.test_sub_dir, None, None, self.metadata_json,
-                                self.metadata_xlsx, tasks=[VALIDATE], executor=DOCKER)
-            m_get_project_title_and_create_vcf_files_mapping.assert_called_once_with(self.test_sub_dir, None, None,
-                                                                                     self.metadata_json,
+            orchestrate_process(self.test_sub_dir, None, self.metadata_xlsx, tasks=[VALIDATE], executor=DOCKER)
+            m_get_project_title_and_create_vcf_files_mapping.assert_called_once_with(self.test_sub_dir,
+                                                                                     None,
                                                                                      self.metadata_xlsx,
                                                                                      self.metadata_xlsx_version)
             m_get_vcf.assert_called_once_with(self.mapping_file)
             m_docker_validator.assert_any_call(
-                self.mapping_file, self.test_sub_dir, self.project_title, self.metadata_json, self.metadata_xlsx, self.metadata_xlsx_version,
+                self.mapping_file, self.test_sub_dir, self.project_title, None, self.metadata_xlsx, self.metadata_xlsx_version,
                 validation_tasks=ALL_VALIDATION_TASKS, submission_config=m_config.return_value, shallow_validation=False
             )
             m_docker_validator().validate_and_report.assert_called_once_with()
@@ -169,12 +167,11 @@ class TestOrchestrator(unittest.TestCase):
             m_config.return_value = config
             m_get_project_title_and_create_vcf_files_mapping.return_value = self.project_title, self.mapping_file
 
-            orchestrate_process(self.test_sub_dir, None, None, self.metadata_json,
-                                self.metadata_xlsx, tasks=[SUBMIT], executor=DOCKER)
+            orchestrate_process(self.test_sub_dir, None, self.metadata_xlsx, tasks=[SUBMIT], executor=DOCKER)
             m_get_vcf.assert_called_once_with(self.mapping_file)
             # Validate was run because the config show it was not run successfully before
             m_docker_validator.assert_any_call(
-                self.mapping_file, self.test_sub_dir, self.project_title, self.metadata_json, self.metadata_xlsx,
+                self.mapping_file, self.test_sub_dir, self.project_title, None, self.metadata_xlsx,
                 self.metadata_xlsx_version, validation_tasks=ALL_VALIDATION_TASKS,
                 submission_config=m_config.return_value, shallow_validation=False
             )
@@ -197,8 +194,7 @@ class TestOrchestrator(unittest.TestCase):
             m_config.return_value = {READY_FOR_SUBMISSION_TO_EVA: True}
             m_get_project_title_and_create_vcf_files_mapping.return_value = self.project_title, self.mapping_file
 
-            orchestrate_process(self.test_sub_dir, None, None, self.metadata_json,
-                                self.metadata_xlsx, tasks=[SUBMIT], executor=DOCKER)
+            orchestrate_process(self.test_sub_dir, None, self.metadata_xlsx, tasks=[SUBMIT], executor=DOCKER)
             m_get_vcf.assert_called_once_with(self.mapping_file)
             # Validate was not run because the config showed it was run successfully before
             assert m_docker_validator.call_count == 0
@@ -209,30 +205,10 @@ class TestOrchestrator(unittest.TestCase):
             with m_submitter() as submitter:
                 submitter.submit.assert_called_once_with()
 
-    def test_orchestrate_with_vcf_files(self):
-        with patch('eva_sub_cli.orchestrator.WritableConfig') as m_config, \
-                patch('eva_sub_cli.orchestrator.DockerValidator') as m_docker_validator, \
-                patch('eva_sub_cli.orchestrator.os.path.isfile'):
-            orchestrate_process(self.test_sub_dir, self.vcf_files, self.reference_fasta, self.metadata_json,
-                                self.metadata_xlsx, tasks=[VALIDATE], executor=DOCKER)
-            # Mapping file was created from the vcf and assembly files
-            assert os.path.exists(self.mapping_file)
-            with open(self.mapping_file) as open_file:
-                reader = csv.DictReader(open_file, delimiter=',')
-                for row in reader:
-                    assert 'vcf_file' in row['vcf']
-                    assert row['report'] == ''
-            m_docker_validator.assert_any_call(
-                self.mapping_file, self.test_sub_dir, self.project_title, self.metadata_json, self.metadata_xlsx,
-                self.metadata_xlsx_version, validation_tasks=ALL_VALIDATION_TASKS,
-                submission_config=m_config.return_value, shallow_validation=False
-            )
-            m_docker_validator().validate_and_report.assert_called_once_with()
-
     def test_orchestrate_with_metadata_json_without_asm_report(self):
         with patch('eva_sub_cli.orchestrator.WritableConfig') as m_config, \
                 patch('eva_sub_cli.orchestrator.DockerValidator') as m_docker_validator:
-            orchestrate_process(self.test_sub_dir, None, None, self.metadata_json,
+            orchestrate_process(self.test_sub_dir, self.metadata_json,
                                 None, tasks=[VALIDATE], executor=DOCKER)
             # Mapping file was created from the metadata_json
             assert os.path.exists(self.mapping_file)
@@ -253,7 +229,7 @@ class TestOrchestrator(unittest.TestCase):
         with patch('eva_sub_cli.orchestrator.WritableConfig') as m_config, \
                 patch('eva_sub_cli.orchestrator.DockerValidator') as m_docker_validator, \
                 patch('eva_sub_cli.orchestrator.os.path.isfile'):
-            orchestrate_process(self.test_sub_dir, None, None, self.metadata_json, None,
+            orchestrate_process(self.test_sub_dir, self.metadata_json, None,
                                 tasks=[VALIDATE], executor=DOCKER)
             # Mapping file was created from the metadata_json
             assert os.path.exists(self.mapping_file)
@@ -276,7 +252,7 @@ class TestOrchestrator(unittest.TestCase):
                 patch('eva_sub_cli.orchestrator.os.path.isfile'), \
                 patch('eva_sub_cli.orchestrator.get_project_title_from_ena') as get_project_title_from_ena:
             get_project_title_from_ena.return_value = self.project_title
-            orchestrate_process(self.test_sub_dir, None, None, self.metadata_json, None,
+            orchestrate_process(self.test_sub_dir, self.metadata_json, None,
                                 tasks=[VALIDATE], executor=DOCKER)
             # Mapping file was created from the metadata_json
             assert os.path.exists(self.mapping_file)
@@ -291,32 +267,20 @@ class TestOrchestrator(unittest.TestCase):
             )
             m_docker_validator().validate_and_report.assert_called_once_with()
 
-    def test_orchestrate_vcf_files_takes_precedence_over_metadata(self):
-        shutil.copy(os.path.join(self.resource_dir, 'EVA_Submission_test_with_asm_report.json'), self.metadata_json)
-
-        with patch('eva_sub_cli.orchestrator.WritableConfig') as m_config, \
-                patch('eva_sub_cli.orchestrator.DockerValidator') as m_docker_validator, \
-                patch('eva_sub_cli.orchestrator.os.path.isfile'):
-            orchestrate_process(self.test_sub_dir, self.vcf_files, self.reference_fasta, self.metadata_json,
-                                None, tasks=[VALIDATE], executor=DOCKER, resume=False)
-            # Mapping file was created from the metadata_json
-            assert os.path.exists(self.mapping_file)
-            with open(self.mapping_file) as open_file:
-                reader = csv.DictReader(open_file, delimiter=',')
-                for row in reader:
-                    assert 'vcf_file' in row['vcf']
-                    assert row['report'] == ''
-            m_docker_validator.assert_any_call(
-                self.mapping_file, self.test_sub_dir, self.project_title, self.metadata_json, None, None,
-                validation_tasks=ALL_VALIDATION_TASKS, submission_config=m_config.return_value, shallow_validation=False
-            )
-            m_docker_validator().validate_and_report.assert_called_once_with()
-
     def test_orchestrate_non_vcf_files_filtered_out(self):
+        metadata_with_non_vcf_file = os.path.join(self.test_sub_dir, 'updated_metadata.json')
+        with open(self.metadata_json) as f:
+            metadata = json.load(f)
+        metadata['files'].append({
+            'analysisAlias': 'VD1',
+            'fileName': 'test.vcf.gz.csi'
+        })
+        with open(metadata_with_non_vcf_file, 'w') as f:
+            json.dump(metadata, f)
         with patch('eva_sub_cli.orchestrator.WritableConfig') as m_config, \
                 patch('eva_sub_cli.orchestrator.DockerValidator') as m_docker_validator, \
                 patch('eva_sub_cli.orchestrator.os.path.isfile'):
-            orchestrate_process(self.test_sub_dir, ['test.vcf.gz.csi'] + self.vcf_files, self.reference_fasta, self.metadata_json,
+            orchestrate_process(self.test_sub_dir, metadata_with_non_vcf_file,
                                 None, tasks=[VALIDATE], executor=DOCKER, resume=False)
             # Mapping file was created from the metadata_json
             assert os.path.exists(self.mapping_file)
@@ -325,10 +289,10 @@ class TestOrchestrator(unittest.TestCase):
                 vcf_files = set()
                 for row in reader:
                     vcf_files.add(row['vcf'])
-                assert len(vcf_files) == 2
+                assert len(vcf_files) == 3
                 assert 'test.vcf.gz.csi' not in vcf_files
             m_docker_validator.assert_any_call(
-                self.mapping_file, self.test_sub_dir, self.project_title, self.metadata_json, None, None,
+                self.mapping_file, self.test_sub_dir, self.project_title, metadata_with_non_vcf_file, None, None,
                 validation_tasks=ALL_VALIDATION_TASKS, submission_config=m_config.return_value, shallow_validation=False
             )
             m_docker_validator().validate_and_report.assert_called_once_with()
@@ -336,7 +300,7 @@ class TestOrchestrator(unittest.TestCase):
     def test_orchestrate_with_metadata_xlsx(self):
         with patch('eva_sub_cli.orchestrator.WritableConfig') as m_config, \
                 patch('eva_sub_cli.orchestrator.DockerValidator') as m_docker_validator:
-            orchestrate_process(self.test_sub_dir, None, None, None, self.metadata_xlsx,
+            orchestrate_process(self.test_sub_dir, None, self.metadata_xlsx,
                                 tasks=[VALIDATE], executor=DOCKER)
             # Mapping file was created from the metadata_xlsx
             assert os.path.exists(self.mapping_file)
@@ -355,7 +319,7 @@ class TestOrchestrator(unittest.TestCase):
     def test_orchestrate_with_metadata_xlsx_v2(self):
         with patch('eva_sub_cli.orchestrator.WritableConfig') as m_config, \
                 patch('eva_sub_cli.orchestrator.DockerValidator') as m_docker_validator:
-            orchestrate_process(self.test_sub_dir, None, None, None, self.metadata_xlsx_v2,
+            orchestrate_process(self.test_sub_dir, None, self.metadata_xlsx_v2,
                                 tasks=[VALIDATE], executor=DOCKER)
             # Mapping file was created from the metadata_xlsx
             assert os.path.exists(self.mapping_file)
@@ -377,7 +341,7 @@ class TestOrchestrator(unittest.TestCase):
                 patch('eva_sub_cli.orchestrator.get_project_title_from_ena') as get_project_title_from_ena:
             get_project_title_from_ena.return_value = self.project_title
 
-            orchestrate_process(self.test_sub_dir, None, None, None, self.metadata_xlsx_with_project_accession,
+            orchestrate_process(self.test_sub_dir, None, self.metadata_xlsx_with_project_accession,
                                 tasks=[VALIDATE], executor=DOCKER)
             # Mapping file was created from the metadata_xlsx
             assert os.path.exists(self.mapping_file)
@@ -394,7 +358,7 @@ class TestOrchestrator(unittest.TestCase):
 
     def test_metadata_file_does_not_exist_error(self):
         with self.assertRaises(FileNotFoundError) as context:
-            orchestrate_process(self.test_sub_dir, None, None, None, 'Non_existing_metadata.xlsx',
+            orchestrate_process(self.test_sub_dir, None, 'Non_existing_metadata.xlsx',
                                 tasks=[VALIDATE], executor=DOCKER)
         self.assertRegex(
             str(context.exception),
@@ -402,10 +366,17 @@ class TestOrchestrator(unittest.TestCase):
         )
 
     def test_fasta_file_compressed(self):
+        metadata_with_compressed_fasta = os.path.join(self.test_sub_dir, 'updated_metadata.json')
+        with open(self.metadata_json) as f:
+            metadata = json.load(f)
+        for analysis in metadata['analysis']:
+            analysis['referenceFasta'] = os.path.join(self.test_sub_dir, 'genome.fa.gz')
+        with open(metadata_with_compressed_fasta, 'w') as f:
+            json.dump(metadata, f)
         with patch('eva_sub_cli.orchestrator.os.path.isfile'):
             with self.assertRaises(InvalidFileTypeError):
-                orchestrate_process(self.test_sub_dir, self.vcf_files, self.reference_fasta + '.gz', self.metadata_json,
-                                    self.metadata_xlsx, tasks=[VALIDATE], executor=DOCKER)
+                orchestrate_process(self.test_sub_dir, metadata_with_compressed_fasta,
+                                    None, tasks=[VALIDATE], executor=DOCKER)
 
     def test_get_sub_cli_github_tags(self):
         with patch("requests.get") as mock_req:
