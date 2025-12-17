@@ -33,8 +33,6 @@ class TestOrchestrator(unittest.TestCase):
     config_file = os.path.join(test_sub_dir, SUB_CLI_CONFIG_FILE)
 
     mapping_file = os.path.join(test_sub_dir, 'vcf_mapping_file.csv')
-    # vcf_files = [os.path.join(test_sub_dir, 'vcf_file1.vcf'), os.path.join(test_sub_dir, 'vcf_file2.vcf')]
-    # reference_fasta = os.path.join(test_sub_dir, 'genome.fa')
     metadata_json = os.path.join(test_sub_dir, 'sub_metadata.json')
     metadata_xlsx = os.path.join(test_sub_dir, 'sub_metadata.xlsx')
     metadata_xlsx_version = '3.0.0'
