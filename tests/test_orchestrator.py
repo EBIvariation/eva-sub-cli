@@ -3,7 +3,6 @@ import json
 import os
 import shutil
 import unittest
-from copy import deepcopy
 from unittest.mock import patch, Mock, MagicMock
 
 from ebi_eva_common_pyutils.config import WritableConfig
