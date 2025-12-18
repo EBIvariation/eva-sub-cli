@@ -81,15 +81,6 @@ For example, to run only `vcf_check` and `sample_check`:
 eva-sub-cli.py --metadata_xlsx <metadata file> --submission_dir <submission directory> --validation_tasks vcf_check sample_check
 ```
 
-### VCF files and reference FASTA
-These can be provided either in the metadata file directly, or on the command line using the `--vcf_files` and
-`--reference_fasta` options. Note that if you are using more than one reference FASTA, you **cannot** use the command 
-line options; you must specify which VCF files use which FASTA files in the metadata.
-
-VCF files can be either uncompressed or compressed using bgzip.
-Other types of compression are not allowed and will result in errors during validation.
-FASTA files must be uncompressed.
-
 ### Metadata JSON
 Frequent submitters may be interested in using our [metadata JSON schema](https://github.com/EBIvariation/eva-sub-cli/blob/main/eva_sub_cli/etc/eva_schema.json)
 instead of our spreadsheet template. The metadata requirements are the same regardless of which format you use, you will

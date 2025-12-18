@@ -578,8 +578,7 @@ class Validator(AppLogger):
                         file_rows.append(file_dict)
                         file_count += 1
                 else:
-                    error_txt = ('No file section found in metadata and multiple analysis alias exist: '
-                                 'cannot infer the relationship between files and analysis alias')
+                    error_txt = 'No file section found in metadata'
                     self.error(error_txt)
                     errors.append({'property': '/files', 'description': error_txt})
                 metadata.set_files(file_rows)
