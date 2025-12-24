@@ -1,4 +1,6 @@
-# Overview of Input Files 
+# Overview of Input Files
+
+View our [video tutorial on input files](link to final tutorial).
 
 The eva-sub-cli tool requires the following inputs:
 
@@ -6,43 +8,40 @@ The eva-sub-cli tool requires the following inputs:
 - Reference genome in FASTA format
 - Completed metadata spreadsheet
 
-VCF files can be either uncompressed or compressed using bgzip.
-Other types of compression are not allowed and will result in errors during validation.
-FASTA files must be uncompressed.
-
 Only the metadata file is passed directly to the CLI tool. The VCF and FASTA files should be referenced from the 
 metadata file.
 
-The VCF file must adhere to official VCF specifications, and the metadata spreadsheet provides contextual information 
-about the dataset. In the following sections, we will examine each of these inputs in detail.
+In the following sections, we will examine each of these inputs in detail.
 
 ## VCF File
 
 A VCF (Variant Call Format) file is a type of file used in bioinformatics to store information about genetic variants.
-It includes data about the differences (or variants) between a sample's DNA and a reference genome. Typically, 
-generating a VCF file involves several steps: preparing your sample, sequencing the DNA, aligning it to a 
-reference genome, identifying variants, and finally, formatting this information into a VCF file. The overall goal is
-to systematically capture and record genetic differences in a standardised format. 
+The EVA requires data files to conform to the official VCF specifications, so that the data can be interpreted 
+consistently by other databases and researchers looking to reuse the data. Many tools can be used to generate VCF files,
+including [BCFtools](https://samtools.github.io/bcftools/), [PLINK](https://www.cog-genomics.org/plink/2.0/), and 
+[GATK](https://gatk.broadinstitute.org).
 
-A VCF file consists of two main parts: the header and the body.
+Besides being compliant with the VCF specification, we also require that each VCF file contains the necessary 
+evidence linking the variant to its source. This evidence can be in the form of sample genotypes or allele frequencies.
 
-Header: The header contains metadata about the file, such as the format version, reference genome information, and 
-descriptions of the data fields. Each line in the header starts with a double ##, except for the last header line which
-starts with a single #.
-
+Here is an example of how sample genotypes might look like in a VCF file:
 ```
 ##fileformat=VCFv4.2
-##INFO=<ID=DP,Number=1,Type=Integer,Description="Total Depth">
-##FILTER=<ID=PASS,Description="All filters passed">
 ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+#CHROM  POS ID  REF ALT QUAL    FILTER  INFO    FORMAT  SAMPLE1 SAMPLE2
+1   10583   rs58108140  G   A   100 PASS    .   GT  0/1 1/1
 ```
 
-Body: The body of the VCF file contains the actual variant data, with each row representing a single variant. The 
-columns in the body are: CHROM, POS, ID, REF, ALT, QUAL, FILTER, INFO, FORMAT, Sample Columns
+And here is how allele frequencies would look:
+```
+##fileformat=VCFv4.2
+##INFO=<ID=AF,Number=A,Type=Float,Description="Allele Frequency">
+#CHROM  POS ID  REF ALT QUAL    FILTER  INFO
+1   10583   rs58108140  G   A   100 PASS    AF=0.25
+```
 
-```
-#CHROM  POS  ID  REF  ALT  QUAL  FILTER  INFO  FORMAT  [SampleIDs...]
-```
+When using the eva-sub-cli tool, VCF files can be either uncompressed or compressed using bgzip. Other types of
+compression are not allowed and will result in errors during validation.
 
 ## FASTA File
 
