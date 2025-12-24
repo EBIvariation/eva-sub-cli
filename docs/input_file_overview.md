@@ -78,9 +78,9 @@ project is live on the EVA website.
 ### Project
 
 The objective of this sheet is to gather general information about the Project. If you are submitting to an existing
-project, you can skip the other details and just provide the project accession and analyses will be linked to that 
-project. In case of a new project, please provide the relevant details including submitter, submitting center, 
-collaborators, project title, description and publications.
+project, you can skip the other details and just provide the project accession; the data in this submission will be
+added as analyses linked to that project. In case of a new project, please provide the relevant details including 
+submitter, submitting center, collaborators, project title, description and publications.
 
 One important column to note is the Hold Date, which is the date until which the data should be kept private. EVA will
 release the data automatically after this date. If it is missing, the default value is three days after the date of
@@ -88,9 +88,9 @@ submission.
 
 ### Analysis
 
-For EVA, an analysis is a grouping of samples and data files. This sheet allows EVA to link VCF files to a project and
+For EVA, an analysis is a grouping of samples and data files. This sheet allows us to link VCF files to a project and
 to other EVA analyses. Additionally, this worksheet contains experimental metadata detailing the methodology of each
-analysis. This includes a local path to your reference FASTA file.
+analysis. This includes a local path to your reference FASTA file, as described [above](#FASTA-file).
 
 One project can have multiple associated analyses. EVA links analyses to samples and VCF files through the analysis 
 alias, which is a shortened identifier you must provide for each analysis.
@@ -98,15 +98,15 @@ alias, which is a shortened identifier you must provide for each analysis.
 ### Sample
 
 This is where you describe the biological samples used for your analyses. Each row describes one sample and must include
-Analysis Alias to indicate which analysis it belongs to, and Sample Name in VCF which is the exact name of the sample
-as it appears in the VCF file.
+the Analysis Alias to indicate which analysis it belongs to, and "Sample Name in VCF" which is the exact name of the 
+sample as it appears in the VCF file.
 
 We accept preregistered samples, which should be provided using BioSamples sample or sampleset accessions. Please
 ensure these are publicly accessible, as otherwise EVA will not be able to validate them.
 
 If your samples are not yet accessioned, and are therefore novel, please use the "Novel sample(s)" sections of the
 Sample worksheet to have them registered at BioSamples. Make sure to fill in the required fields in bold, including the
-taxonomy  ID, geographic location (chosen from the controlled vocabulary in the drop-down menu), and collection date 
+taxonomy ID, geographic location (chosen from the controlled vocabulary in the drop-down menu), and collection date 
 (in YYYY-MM-DD format).
 
 ### Files
