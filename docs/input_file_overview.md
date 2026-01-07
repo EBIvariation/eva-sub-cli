@@ -22,7 +22,7 @@ including [BCFtools](https://samtools.github.io/bcftools/), [PLINK](https://www.
 [GATK](https://gatk.broadinstitute.org).
 
 Besides being compliant with the VCF specification, we also require that each VCF file contains the necessary 
-evidence linking the variant to its source. This evidence can be in the form of sample genotypes or allele frequencies.
+evidence linking the variant to its biological source. This evidence can be in the form of sample genotypes or allele frequencies.
 
 Here is an example of how sample genotypes might look like in a VCF file:
 ```
@@ -48,10 +48,10 @@ compression are not allowed and will result in errors during validation.
 This is the reference genome that your variants were called against, in uncompressed FASTA format. The EVA uses this to
 check that the reference alleles are set correctly in the VCF files.
 
-The reference genome must be INSDC-registered, which means it is publicly available in one of the archives within the
+The sequences of the reference genome must be INSDC-registered, which means they are publicly available in one of the archives within the
 INSDC consortium: [Genbank](https://www.ncbi.nlm.nih.gov/genbank/), [ENA](https://www.ebi.ac.uk/ena/browser/home), or
 [DDBJ](https://www.ddbj.nig.ac.jp/index-e.html). This ensures the long-term availability of the genome and the 
-reusability of your data.
+reusability of your variation data.
 
 ## Metadata Spreadsheet
 
