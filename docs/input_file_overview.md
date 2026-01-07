@@ -1,6 +1,6 @@
 # Overview of Input Files
 
-View our [video tutorial on input files](link to final tutorial).
+View our [video tutorial on input files](https://embl-ebi.cloud.panopto.eu/Panopto/Pages/Viewer.aspx?id=9284869a-9f57-43c6-8222-b3aa0158941e).
 
 The eva-sub-cli tool requires the following inputs:
 
@@ -40,8 +40,7 @@ And here is how allele frequencies would look:
 1   10583   rs58108140  G   A   100 PASS    AF=0.25
 ```
 
-When using the eva-sub-cli tool, VCF files can be either uncompressed or compressed using bgzip. Other types of
-compression are not allowed and will result in errors during validation.
+When using the eva-sub-cli tool, VCF files can be either uncompressed or compressed using bgzip or gzip.
 
 ## FASTA File
 
@@ -106,8 +105,8 @@ ensure these are publicly accessible, as otherwise EVA will not be able to valid
 
 If your samples are not yet accessioned, and are therefore novel, please use the "Novel sample(s)" sections of the
 Sample worksheet to have them registered at BioSamples. Make sure to fill in the required fields in bold, including the
-taxonomy ID, geographic location (chosen from the controlled vocabulary in the drop-down menu), and collection date 
-(in YYYY-MM-DD format).
+BioSample name, title, taxonomy ID, geographic location (chosen from the controlled vocabulary in the drop-down menu),
+and collection date (in YYYY-MM-DD format).
 
 ### Files
 
