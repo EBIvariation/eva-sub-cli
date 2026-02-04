@@ -23,6 +23,22 @@ class TestFastaChecker(TestCase):
         assert analyses == {'VD1'}
         assert reference == 'GCA_000001405.27'
 
+    def test_get_analysis_and_reference_genome_from_metadata_multiple_analyses(self):
+        """Test that multiple analyses with the same referenceGenome return that single assembly."""
+        working_dir = os.path.join(self.resource_dir, 'sample_checker')
+        metadata_json = os.path.join(working_dir, 'metadata.json')
+        vcf_file1 = os.path.join(working_dir, 'example1.vcf.gz')  # VD1
+        vcf_file2 = os.path.join(working_dir, 'example2.vcf')     # VD2
+        vcf_file3 = os.path.join(working_dir, 'example3.vcf')     # VD3
+        os.chdir(working_dir)
+
+        # Multiple VCF files from different analyses, all with same referenceGenome
+        analyses, reference = get_analyses_and_reference_genome_from_metadata(
+            [vcf_file1, vcf_file2, vcf_file3], metadata_json
+        )
+        assert analyses == {'VD1', 'VD2', 'VD3'}
+        assert reference == 'GCA_000001405.27'
+
     def test_get_analysis_and_reference_genome_from_metadata_absolute_paths(self):
         working_dir = os.path.join(self.resource_dir, 'sample_checker')
         metadata_json = os.path.join(working_dir, 'metadata.json')
