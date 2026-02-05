@@ -132,11 +132,11 @@ def get_analyses_and_reference_genome_from_metadata(vcf_files_for_fasta, json_fi
         else:
             all_analyses.add(analysis_aliases[0])
     # Get (single) assembly associated with these analyses
-    assemblies = [metadata.get_reference_assembly_for_analysis(analysis) for analysis in all_analyses]
+    assemblies = {metadata.get_reference_assembly_for_analysis(analysis) for analysis in all_analyses}
     if len(assemblies) != 1:
         logger.error(f'Could not determine assembly accession to check against fasta file, out of: {assemblies}')
         return all_analyses, None
-    return all_analyses, assemblies[0]
+    return all_analyses, assemblies.pop()
 
 
 def check_assembly_in_metadata(assembly_in_metadata):
