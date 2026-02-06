@@ -6,7 +6,9 @@ ENV NXF_VER=23.10.0
 WORKDIR /opt
 
 # Install JAVA and Node
-RUN apt update && apt install -y default-jdk nodejs npm
+RUN apt update && apt install -y default-jdk build-essential \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt install -y nodejs
 
 # Install VCF validator
 RUN curl -LJo /usr/local/bin/vcf_validator  https://github.com/EBIvariation/vcf-validator/releases/download/v${vcf_validator_version}/vcf_validator_linux \
