@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Call-Home Event Payload",
+  "description": "Payload sent by the eva-sub-cli to the submission WS /call-home endpoint for usage telemetry.",
+  "type": "object",
+  "properties": {
+    "deploymentId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Persistent UUID identifying a unique CLI installation. Stored at ~/.eva-sub-cli/deployment_id."
+    },
+    "runId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Persistent UUID identifying a submission directory run. Stored in the .eva_sub_cli_config.yml file within the submission directory."
+    },
+    "eventType": {
+      "type": "string",
+      "enum": ["START", "VALIDATION_COMPLETED", "END", "FAILURE"],
+      "description": "Type of lifecycle event. START is sent when main() begins, VALIDATION_COMPLETED after successful validation, END on successful completion, FAILURE on any error."
+    },
+    "cliVersion": {
+      "type": "string",
+      "description": "Version of the eva-sub-cli package (e.g. '0.5.3')."
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC timestamp of when the event was created."
+    },
+    "runtimeSeconds": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Elapsed wall-clock seconds since the CLI started. Always 0 for START events."
+    },
+    "executor": {
+      "type": "string",
+      "enum": ["native", "docker"],
+      "description": "Execution backend selected for validation."
+    },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["validate", "submit"]
+      },
+      "description": "List of tasks requested by the user."
+    },
+    "validation_result": {
+      "type": "string",
+      "description": "Outcome of the validation step. Only present in VALIDATION_COMPLETED events."
+    },
+    "exceptionMessage": {
+      "type": "string",
+      "description": "The exception message string. Only present in FAILURE events when an exception was caught."
+    },
+    "exceptionStacktrace": {
+      "type": "string",
+      "description": "Full Python stacktrace of the exception. Only present in FAILURE events when an exception was caught."
+    }
+  },
+  "required": [
+    "deploymentId",
+    "runId",
+    "eventType",
+    "cliVersion",
+    "createdAt",
+    "runtimeSeconds",
+    "executor",
+    "tasks"
+  ],
+  "additionalProperties": true
+}

@@ -36,7 +36,8 @@ class TestCli(TestCase):
                     vcf_files=[], reference_fasta='', metadata_json=None, metadata_xlsx='',
                     tasks='validate', executor='native', debug=False)
         with patch('eva_sub_cli.executables.cli.parse_args', return_value=args), \
-                patch('eva_sub_cli.orchestrator.orchestrate_process'):
+                patch('eva_sub_cli.orchestrator.orchestrate_process'), \
+                patch('eva_sub_cli.executables.cli.CallHomeClient'):
             exit_status = cli.main()
             # Check that the debug message is shown
             logger = orchestrator.logger
@@ -94,6 +95,7 @@ class TestCli(TestCase):
 
                 with patch('eva_sub_cli.executables.cli.parse_args', return_value=args), \
                         patch('eva_sub_cli.executables.cli.orchestrator.orchestrate_process', side_effect=exception), \
+                        patch('eva_sub_cli.executables.cli.CallHomeClient'), \
                         patch('builtins.print') as mock_print:
                     exit_status = cli.main()
 
@@ -107,3 +109,48 @@ class TestCli(TestCase):
 
                     if (isinstance(exception, HTTPError)):
                         self.assertIn(exception.response.text, printed_texts)
+
+    def test_main_sends_start_and_end_on_success(self):
+        args = Mock(submission_dir=self.submission_dir,
+                    vcf_files=[], reference_fasta='', metadata_json=None, metadata_xlsx='',
+                    tasks=['validate'], executor='native', debug=False)
+        with patch('eva_sub_cli.executables.cli.parse_args', return_value=args), \
+                patch('eva_sub_cli.orchestrator.orchestrate_process'), \
+                patch('eva_sub_cli.executables.cli.CallHomeClient') as MockCallHome:
+            mock_client = MockCallHome.return_value
+            exit_status = cli.main()
+            self.assertEqual(exit_status, 0)
+            mock_client.send_start.assert_called_once()
+            mock_client.send_end.assert_called_once()
+            mock_client.send_failure.assert_not_called()
+
+    def test_main_sends_start_and_failure_on_exception(self):
+        args = Mock(submission_dir=self.submission_dir,
+                    vcf_files=[], reference_fasta='', metadata_json=None, metadata_xlsx='',
+                    tasks=['submit'], executor='native', debug=False)
+        exception = Exception('boom')
+        with patch('eva_sub_cli.executables.cli.parse_args', return_value=args), \
+                patch('eva_sub_cli.executables.cli.orchestrator.orchestrate_process',
+                      side_effect=exception), \
+                patch('eva_sub_cli.executables.cli.CallHomeClient') as MockCallHome, \
+                patch('builtins.print'):
+            mock_client = MockCallHome.return_value
+            exit_status = cli.main()
+            self.assertNotEqual(exit_status, 0)
+            mock_client.send_start.assert_called_once()
+            mock_client.send_failure.assert_called_once()
+            failure_arg = mock_client.send_failure.call_args[0][0]
+            self.assertIsInstance(failure_arg, Exception)
+            self.assertEqual(str(failure_arg), 'boom')
+            mock_client.send_end.assert_not_called()
+
+    def test_main_unaffected_by_call_home_init_failure(self):
+        args = Mock(submission_dir=self.submission_dir,
+                    vcf_files=[], reference_fasta='', metadata_json=None, metadata_xlsx='',
+                    tasks=['validate'], executor='native', debug=False)
+        with patch('eva_sub_cli.executables.cli.parse_args', return_value=args), \
+                patch('eva_sub_cli.orchestrator.orchestrate_process'), \
+                patch('eva_sub_cli.executables.cli.CallHomeClient',
+                      side_effect=Exception('call home init failed')):
+            exit_status = cli.main()
+            self.assertEqual(exit_status, 0)

@@ -9,6 +9,7 @@ from eva_sub_cli import SUBMISSION_WS_VAR
 from eva_sub_cli.auth import get_auth
 from eva_sub_cli.exceptions.submission_upload_exception import SubmissionUploadException
 
+DEFAULT_SUBMISSION_WS_URL = 'https://www.ebi.ac.uk/eva/webservices/submission-ws/v1/'
 
 class SubmissionWSClient(AppLogger):
     """
@@ -19,7 +20,6 @@ class SubmissionWSClient(AppLogger):
         self.auth = get_auth(username, password)
         self.base_url = self._submission_ws_url
 
-    SUBMISSION_WS_URL = 'https://www.ebi.ac.uk/eva/webservices/submission-ws/v1/'
     SUBMISSION_INITIATE_PATH = 'submission/initiate'
     SUBMISSION_UPLOADED_PATH = 'submission/{submissionId}/uploaded'
     SUBMISSION_STATUS_PATH = 'submission/{submissionId}/status'

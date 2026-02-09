@@ -299,7 +299,7 @@ def check_validation_required(tasks, sub_config, username=None, password=None):
 
 def orchestrate_process(submission_dir, metadata_json, metadata_xlsx,
                         tasks, executor, validation_tasks=ALL_VALIDATION_TASKS, username=None, password=None,
-                        shallow_validation=False, nextflow_config=None, **kwargs):
+                        shallow_validation=False, nextflow_config=None, call_home=None, **kwargs):
     # load config
     config_file_path = os.path.join(submission_dir, SUB_CLI_CONFIG_FILE)
     sub_config = WritableConfig(config_file_path, version=__version__)
@@ -341,6 +341,8 @@ def orchestrate_process(submission_dir, metadata_json, metadata_xlsx,
                                         nextflow_config=nextflow_config)
         with validator:
             validator.validate_and_report()
+            if call_home:
+                call_home.send_validation_completed(validator.results)
             if not metadata_json:
                 metadata_json = os.path.join(validator.output_dir, 'metadata.json')
             sub_config.set('metadata_json', value=metadata_json)
