@@ -1,18 +1,14 @@
 import os
 import shutil
-import tempfile
 import uuid
 from unittest import TestCase
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from requests.exceptions import ConnectionError, Timeout
 
 from eva_sub_cli import SUB_CLI_CONFIG_FILE
-from eva_sub_cli.call_home import (
-    _get_or_create_deployment_id, _get_or_create_run_id,
-    CallHomeClient, EVENT_START, EVENT_VALIDATION_COMPLETED, EVENT_END, EVENT_FAILURE,
-    DEPLOYMENT_ID_FILE, DEPLOYMENT_ID_DIR, _get_call_home_url
-)
+from eva_sub_cli.call_home import _get_or_create_deployment_id, _get_or_create_run_id, \
+    CallHomeClient, EVENT_START, EVENT_VALIDATION_COMPLETED, EVENT_END, EVENT_FAILURE
 
 
 class TestDeploymentId(TestCase):
