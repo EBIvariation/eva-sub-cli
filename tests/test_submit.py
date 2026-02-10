@@ -9,7 +9,7 @@ from ebi_eva_common_pyutils.config import WritableConfig
 
 from eva_sub_cli import SUB_CLI_CONFIG_FILE
 from eva_sub_cli.file_utils import is_submission_dir_writable
-from eva_sub_cli.submission_ws import SubmissionWSClient
+from eva_sub_cli.submission_ws import SubmissionWSClient, DEFAULT_SUBMISSION_WS_URL
 from eva_sub_cli.validators.validator import READY_FOR_SUBMISSION_TO_EVA
 from eva_sub_cli.submit import StudySubmitter, SUB_CLI_CONFIG_KEY_SUBMISSION_ID, \
     SUB_CLI_CONFIG_KEY_SUBMISSION_UPLOAD_URL
@@ -58,11 +58,11 @@ class TestSubmit(unittest.TestCase):
                 self.submitter.submit()
 
                 mock_post.assert_called_once_with(
-                    os.path.join(test_submission_ws_client.SUBMISSION_WS_URL, 'submission/initiate'),
+                    os.path.join(DEFAULT_SUBMISSION_WS_URL, 'submission/initiate'),
                     headers={'Accept': 'application/json', 'Authorization': 'Bearer a token'})
 
                 mock_put.assert_called_once_with(
-                    os.path.join(test_submission_ws_client.SUBMISSION_WS_URL, 'submission/mock_submission_id/uploaded'),
+                    os.path.join(DEFAULT_SUBMISSION_WS_URL, 'submission/mock_submission_id/uploaded'),
                     headers={'Accept': 'application/json', 'Authorization': 'Bearer a token'},
                     json=self.metadata_json)
 
