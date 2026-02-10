@@ -7,8 +7,8 @@ from datetime import datetime, timezone
 import requests
 from ebi_eva_common_pyutils.config import WritableConfig
 
-from eva_sub_cli import __version__, SUBMISSION_WS_VAR, SUB_CLI_CONFIG_FILE
-from eva_sub_cli.submission_ws import DEFAULT_SUBMISSION_WS_URL
+from eva_sub_cli import __version__, SUB_CLI_CONFIG_FILE
+from eva_sub_cli.submission_ws import _submission_ws_base_url
 
 logger = logging.getLogger(__name__)
 
@@ -23,8 +23,7 @@ EVENT_FAILURE = 'FAILURE'
 
 
 def _get_call_home_url():
-    base_url = os.environ.get(SUBMISSION_WS_VAR) or DEFAULT_SUBMISSION_WS_URL
-    return os.path.join(base_url, CALL_HOME_PATH)
+    return os.path.join(_submission_ws_base_url(), CALL_HOME_PATH)
 
 
 def _get_or_create_deployment_id():
@@ -65,6 +64,8 @@ class CallHomeClient:
     def __init__(self, submission_dir, executor, tasks):
         self.start_time = datetime.now(timezone.utc)
         self.deployment_id = _get_or_create_deployment_id()
+        if not os.path.exists(submission_dir):
+            os.makedirs(submission_dir)
         self.run_id = _get_or_create_run_id(submission_dir)
         self.executor = executor
         self.tasks = tasks

@@ -108,7 +108,7 @@ def main():
     else:
         logging_config.add_stdout_handler(logging.INFO)
 
-    # Initialize call-home (fire-and-forget, guarded)
+    # Initialize call-home
     call_home = None
     try:
         call_home = CallHomeClient(

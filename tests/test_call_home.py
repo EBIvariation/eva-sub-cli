@@ -24,7 +24,8 @@ class TestDeploymentId(TestCase):
         self.deployment_file = os.path.join(self.config_dir, 'deployment_id')
 
     def tearDown(self):
-        shutil.rmtree(self.config_dir)
+        if os.path.exists(self.config_dir):(
+            shutil.rmtree(self.config_dir))
 
     def test_creates_new_id_when_file_missing(self):
         with patch('eva_sub_cli.call_home.DEPLOYMENT_ID_DIR', self.config_dir), \
@@ -60,7 +61,7 @@ class TestDeploymentId(TestCase):
         with open(self.deployment_file, 'w') as f:
             f.write('')
 
-        with patch('eva_sub_cli.call_home.DEPLOYMENT_ID_DIR', self.mock_dir), \
+        with patch('eva_sub_cli.call_home.DEPLOYMENT_ID_DIR', self.config_dir), \
                 patch('eva_sub_cli.call_home.DEPLOYMENT_ID_FILE', self.deployment_file):
             deployment_id = _get_or_create_deployment_id()
             uuid.UUID(deployment_id)
@@ -74,9 +75,11 @@ class TestRunId(TestCase):
 
     def setUp(self):
         self.submission_dir = os.path.join(self.resources_dir, 'submission_dir')
+        os.makedirs(self.submission_dir, exist_ok=True)
 
     def tearDown(self):
-        shutil.rmtree(self.submission_dir)
+        if os.path.exists(self.submission_dir):
+            shutil.rmtree(self.submission_dir)
 
     def test_creates_new_id_when_config_has_no_run_id(self):
         run_id = _get_or_create_run_id(self.submission_dir)
@@ -105,17 +108,20 @@ class TestRunId(TestCase):
 
 class TestCallHomeClient(TestCase):
 
+    resources_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'resources')
+
     def setUp(self):
-        self.tmp_dir = tempfile.mkdtemp()
+        self.submission_dir = os.path.join(self.resources_dir, 'submission_dir')
 
     def tearDown(self):
-        shutil.rmtree(self.tmp_dir)
+        if os.path.exists(self.submission_dir):
+            shutil.rmtree(self.submission_dir)
 
     @patch('eva_sub_cli.call_home._get_or_create_run_id', return_value='test-run-id')
     @patch('eva_sub_cli.call_home._get_or_create_deployment_id', return_value='test-deployment-id')
     def _create_client(self, mock_dep_id, mock_run_id):
         return CallHomeClient(
-            submission_dir=self.tmp_dir,
+            submission_dir=self.submission_dir,
             executor='native',
             tasks=['validate', 'submit']
         )

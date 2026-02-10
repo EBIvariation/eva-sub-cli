@@ -11,6 +11,15 @@ from eva_sub_cli.exceptions.submission_upload_exception import SubmissionUploadE
 
 DEFAULT_SUBMISSION_WS_URL = 'https://www.ebi.ac.uk/eva/webservices/submission-ws/v1/'
 
+
+def _submission_ws_base_url():
+    """Retrieve the base URL for the submission web services.
+    In order of preference from the environment variable or the hardcoded value."""
+    if os.environ.get(SUBMISSION_WS_VAR):
+        return os.environ.get(SUBMISSION_WS_VAR)
+    else:
+        return DEFAULT_SUBMISSION_WS_URL
+
 class SubmissionWSClient(AppLogger):
     """
     Python client for interfacing with the Submission WS API.
@@ -26,12 +35,7 @@ class SubmissionWSClient(AppLogger):
 
     @property
     def _submission_ws_url(self):
-        """Retrieve the base URL for the submission web services.
-        In order of preference from the environment variable or the hardcoded value."""
-        if os.environ.get(SUBMISSION_WS_VAR):
-            return os.environ.get(SUBMISSION_WS_VAR)
-        else:
-            return self.SUBMISSION_WS_URL
+        return _submission_ws_base_url()
 
     def _submission_initiate_url(self):
         return os.path.join(self.base_url, self.SUBMISSION_INITIATE_PATH)
