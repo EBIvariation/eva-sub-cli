@@ -62,8 +62,9 @@ class TestCli(TestCase):
         args = cli.parse_args(cmd_args)
         assert args.submission_dir == self.submission_dir
 
-        with patch('sys.exit') as m_exit:
-            cli.parse_args(cmd_args[:2]+cmd_args[4:])
+        with patch('sys.exit', side_effect=SystemExit) as m_exit:
+            with self.assertRaises(SystemExit):
+                cli.parse_args(cmd_args[:2]+cmd_args[4:])
             m_exit.assert_called_once_with(2)
 
     def test_main_exception_handling(self):
