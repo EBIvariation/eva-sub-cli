@@ -17,7 +17,7 @@
     "eventType": {
       "type": "string",
       "enum": ["START", "VALIDATION_COMPLETED", "END", "FAILURE"],
-      "description": "Type of lifecycle event. START is sent when main() begins, VALIDATION_COMPLETED after validation finishes, END when the program complete, FAILURE on any error."
+      "description": "Type of lifecycle event. START is sent when main() begins, VALIDATION_COMPLETED after validation finishes, END when the program completes, FAILURE on any error."
     },
     "cliVersion": {
       "type": "string",
