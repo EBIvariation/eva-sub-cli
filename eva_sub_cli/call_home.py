@@ -64,24 +64,23 @@ class CallHomeClient:
     def __init__(self, submission_dir, executor, tasks):
         self.start_time = datetime.now(timezone.utc)
         self.deployment_id = _get_or_create_deployment_id()
-        if not os.path.exists(submission_dir):
-            os.makedirs(submission_dir)
         self.run_id = _get_or_create_run_id(submission_dir)
         self.executor = executor
         self.tasks = tasks
 
     def _build_payload(self, event_type, **kwargs):
+        now = datetime.now(timezone.utc)
         if event_type == EVENT_START:
             runtime_seconds = 0
         else:
-            elapsed = datetime.now(timezone.utc) - self.start_time
+            elapsed = now - self.start_time
             runtime_seconds = int(elapsed.total_seconds())
         payload = {
             'deploymentId': self.deployment_id,
             'runId': self.run_id,
             'eventType': event_type,
             'cliVersion': __version__,
-            'createdAt': datetime.now(timezone.utc).isoformat(),
+            'createdAt': now.isoformat(),
             'runtimeSeconds': runtime_seconds,
             'executor': self.executor,
             'tasks': self.tasks,

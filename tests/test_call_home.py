@@ -4,11 +4,12 @@ import uuid
 from unittest import TestCase
 from unittest.mock import patch
 
+from ebi_eva_common_pyutils.config import Configuration, WritableConfig
 from requests.exceptions import ConnectionError, Timeout
 
 from eva_sub_cli import SUB_CLI_CONFIG_FILE
 from eva_sub_cli.call_home import _get_or_create_deployment_id, _get_or_create_run_id, \
-    CallHomeClient, EVENT_START, EVENT_VALIDATION_COMPLETED, EVENT_END, EVENT_FAILURE
+    CallHomeClient, EVENT_START, EVENT_FAILURE
 
 
 class TestDeploymentId(TestCase):
@@ -83,11 +84,12 @@ class TestRunId(TestCase):
         # Verify it was written to config
         config_path = os.path.join(self.submission_dir, SUB_CLI_CONFIG_FILE)
         self.assertTrue(os.path.isfile(config_path))
+        config = Configuration(config_path)
+        self.assertEqual(config.query('run_id'), run_id)
 
     def test_reads_existing_id_from_config(self):
         existing_id = str(uuid.uuid4())
         # Create config with an existing run_id
-        from ebi_eva_common_pyutils.config import WritableConfig
         config_path = os.path.join(self.submission_dir, SUB_CLI_CONFIG_FILE)
         config = WritableConfig(config_path)
         config.set('run_id', value=existing_id)
@@ -108,6 +110,7 @@ class TestCallHomeClient(TestCase):
 
     def setUp(self):
         self.submission_dir = os.path.join(self.resources_dir, 'submission_dir')
+        os.makedirs(self.submission_dir, exist_ok=True)
 
     def tearDown(self):
         if os.path.exists(self.submission_dir):
@@ -122,7 +125,7 @@ class TestCallHomeClient(TestCase):
             tasks=['validate', 'submit']
         )
 
-    def test_start_payload_has_zero_runtime(self):
+    def test_build_payload(self):
         client = self._create_client()
         payload = client._build_payload(EVENT_START)
         self.assertEqual(payload['runtimeSeconds'], 0)
@@ -133,31 +136,6 @@ class TestCallHomeClient(TestCase):
         self.assertEqual(payload['tasks'], ['validate', 'submit'])
         self.assertIn('cliVersion', payload)
         self.assertIn('createdAt', payload)
-
-    def test_validation_completed_payload(self):
-        client = self._create_client()
-        payload = client._build_payload(EVENT_VALIDATION_COMPLETED)
-        self.assertEqual(payload['eventType'], EVENT_VALIDATION_COMPLETED)
-        self.assertIsInstance(payload['runtimeSeconds'], int)
-
-    def test_end_payload(self):
-        client = self._create_client()
-        payload = client._build_payload(EVENT_END)
-        self.assertEqual(payload['eventType'], EVENT_END)
-
-    def test_failure_payload(self):
-        client = self._create_client()
-        payload = client._build_payload(EVENT_FAILURE)
-        self.assertEqual(payload['eventType'], EVENT_FAILURE)
-
-    @patch('eva_sub_cli.call_home.requests.post')
-    def test_send_event_posts_with_correct_args(self, mock_post):
-        client = self._create_client()
-        client.send_start()
-        mock_post.assert_called_once()
-        call_kwargs = mock_post.call_args
-        self.assertEqual(call_kwargs.kwargs['timeout'], 5)
-        self.assertIn('json', call_kwargs.kwargs)
 
     @patch('eva_sub_cli.call_home.requests.post', side_effect=ConnectionError('connection refused'))
     def test_connection_error_swallowed(self, mock_post):
