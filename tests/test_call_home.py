@@ -1,5 +1,6 @@
 import os
 import shutil
+import time
 import uuid
 from unittest import TestCase
 from unittest.mock import patch
@@ -9,7 +10,7 @@ from requests.exceptions import ConnectionError, Timeout
 
 from eva_sub_cli import SUB_CLI_CONFIG_FILE
 from eva_sub_cli.call_home import _get_or_create_deployment_id, _get_or_create_run_id, \
-    CallHomeClient, EVENT_START, EVENT_FAILURE
+    CallHomeClient, EVENT_START, EVENT_FAILURE, EVENT_END
 
 
 class TestDeploymentId(TestCase):
@@ -136,6 +137,13 @@ class TestCallHomeClient(TestCase):
         self.assertEqual(payload['tasks'], ['validate', 'submit'])
         self.assertIn('cliVersion', payload)
         self.assertIn('createdAt', payload)
+
+    def test_non_zero_runtime_on_non_start(self):
+        client = self._create_client()
+        time.sleep(1)
+        payload = client._build_payload(EVENT_END)
+        self.assertNotEqual(payload['runtimeSeconds'], 0)
+        self.assertEqual(payload['eventType'], EVENT_END)
 
     @patch('eva_sub_cli.call_home.requests.post', side_effect=ConnectionError('connection refused'))
     def test_connection_error_swallowed(self, mock_post):
