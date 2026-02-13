@@ -9,6 +9,16 @@ from eva_sub_cli import SUBMISSION_WS_VAR
 from eva_sub_cli.auth import get_auth
 from eva_sub_cli.exceptions.submission_upload_exception import SubmissionUploadException
 
+DEFAULT_SUBMISSION_WS_URL = 'https://www.ebi.ac.uk/eva/webservices/submission-ws/v1/'
+
+
+def _submission_ws_base_url():
+    """Retrieve the base URL for the submission web services.
+    In order of preference from the environment variable or the hardcoded value."""
+    if os.environ.get(SUBMISSION_WS_VAR):
+        return os.environ.get(SUBMISSION_WS_VAR)
+    else:
+        return DEFAULT_SUBMISSION_WS_URL
 
 class SubmissionWSClient(AppLogger):
     """
@@ -19,19 +29,13 @@ class SubmissionWSClient(AppLogger):
         self.auth = get_auth(username, password)
         self.base_url = self._submission_ws_url
 
-    SUBMISSION_WS_URL = 'https://www.ebi.ac.uk/eva/webservices/submission-ws/v1/'
     SUBMISSION_INITIATE_PATH = 'submission/initiate'
     SUBMISSION_UPLOADED_PATH = 'submission/{submissionId}/uploaded'
     SUBMISSION_STATUS_PATH = 'submission/{submissionId}/status'
 
     @property
     def _submission_ws_url(self):
-        """Retrieve the base URL for the submission web services.
-        In order of preference from the environment variable or the hardcoded value."""
-        if os.environ.get(SUBMISSION_WS_VAR):
-            return os.environ.get(SUBMISSION_WS_VAR)
-        else:
-            return self.SUBMISSION_WS_URL
+        return _submission_ws_base_url()
 
     def _submission_initiate_url(self):
         return os.path.join(self.base_url, self.SUBMISSION_INITIATE_PATH)

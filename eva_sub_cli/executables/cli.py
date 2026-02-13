@@ -19,6 +19,7 @@ from eva_sub_cli.exceptions.metadata_template_version_exception import MetadataT
     MetadataTemplateVersionNotFoundException
 from eva_sub_cli.exceptions.submission_status_exception import SubmissionStatusException
 from eva_sub_cli.exceptions.submission_not_found_exception import SubmissionNotFoundException
+from eva_sub_cli.call_home import CallHomeClient
 from eva_sub_cli.file_utils import is_submission_dir_writable, DirLockError, DirLock
 from eva_sub_cli.orchestrator import VALIDATE, SUBMIT, DOCKER, NATIVE
 from eva_sub_cli.validators.validator import ALL_VALIDATION_TASKS
@@ -107,42 +108,71 @@ def main():
     else:
         logging_config.add_stdout_handler(logging.INFO)
 
+    # Initialize call-home
+    call_home = None
+    try:
+        call_home = CallHomeClient(
+            submission_dir=args.submission_dir,
+            executor=args.executor,
+            tasks=args.tasks
+        )
+        call_home.send_start()
+    except Exception:
+        pass
+
+    caught_exception = None
     try:
         # lock the submission directory
         with DirLock(os.path.join(args.submission_dir)) as lock:
             # Create the log file
             logging_config.add_file_handler(os.path.join(args.submission_dir, 'eva_submission.log'), logging.DEBUG)
             # Pass on all the arguments to the orchestrator
-            orchestrator.orchestrate_process(**args.__dict__)
-    except DirLockError:
+            orchestrator.orchestrate_process(call_home=call_home, **args.__dict__)
+    except DirLockError as dle:
         print(f'Could not acquire the lock file for {args.submission_dir} because another process is using this '
               f'directory or a previous process did not terminate correctly. '
               f'If the problem persists, remove the lock file manually.')
+        caught_exception = dle
         exit_status = 65
     except FileNotFoundError as fne:
         print(fne)
+        caught_exception = fne
         exit_status = 66
     except SubmissionNotFoundException as snfe:
         print(f'{snfe}. Please contact EVA Helpdesk')
+        caught_exception = snfe
         exit_status = 67
     except SubmissionStatusException as sse:
         print(f'{sse}. Please try again later. If the problem persists, please contact EVA Helpdesk')
+        caught_exception = sse
         exit_status = 68
     except MetadataTemplateVersionException as mte:
         print(mte)
+        caught_exception = mte
         exit_status = 69
     except MetadataTemplateVersionNotFoundException as mte:
         print(mte)
+        caught_exception = mte
         exit_status = 70
     except SubmissionUploadException as sue:
         print(sue)
+        caught_exception = sue
         exit_status = 71
     except HTTPError as http_err:
         print(http_err)
         if http_err.response is not None and http_err.response.text:
             print(http_err.response.text)
+        caught_exception = http_err
         exit_status = 72
     except Exception as ex:
         print(ex)
+        caught_exception = ex
         exit_status = 73
+
+    if call_home is not None:
+        if exit_status == 0:
+            call_home.send_end()
+        else:
+            call_home.send_failure(caught_exception)
+
     return exit_status
