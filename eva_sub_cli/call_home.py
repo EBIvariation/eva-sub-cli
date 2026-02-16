@@ -12,7 +12,7 @@ from eva_sub_cli.submission_ws import _submission_ws_base_url
 
 logger = log_cfg.get_logger(__name__)
 
-CALL_HOME_PATH = 'call-home'
+CALL_HOME_PATH = 'call-home/events'
 DEPLOYMENT_ID_DIR = os.path.join(os.path.expanduser('~'), '.eva-sub-cli')
 DEPLOYMENT_ID_FILE = os.path.join(DEPLOYMENT_ID_DIR, 'deployment_id')
 
