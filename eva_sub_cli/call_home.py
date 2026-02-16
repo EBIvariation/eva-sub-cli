@@ -5,12 +5,12 @@ from datetime import datetime, timezone
 
 import requests
 from ebi_eva_common_pyutils.config import WritableConfig
-from ebi_eva_common_pyutils.logger import logging_config
+from ebi_eva_common_pyutils.logger import logging_config as log_cfg
 
 from eva_sub_cli import __version__, SUB_CLI_CONFIG_FILE
 from eva_sub_cli.submission_ws import _submission_ws_base_url
 
-logger = logging_config.getLogger(__name__)
+logger = log_cfg.get_logger(__name__)
 
 CALL_HOME_PATH = 'call-home'
 DEPLOYMENT_ID_DIR = os.path.join(os.path.expanduser('~'), '.eva-sub-cli')
