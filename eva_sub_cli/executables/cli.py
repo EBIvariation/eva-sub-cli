@@ -24,6 +24,7 @@ from eva_sub_cli.file_utils import is_submission_dir_writable, DirLockError, Dir
 from eva_sub_cli.orchestrator import VALIDATE, SUBMIT, DOCKER, NATIVE
 from eva_sub_cli.validators.validator import ALL_VALIDATION_TASKS
 
+logger = logging_config.getLogger(__name__)
 
 def validate_command_line_arguments(args, argparser):
     fail = False
@@ -168,6 +169,9 @@ def main():
         print(ex)
         caught_exception = ex
         exit_status = 73
+    
+    if caught_exception:
+        logger.exception(caught_exception)
 
     if call_home is not None:
         if exit_status == 0:
