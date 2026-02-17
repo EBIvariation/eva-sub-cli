@@ -153,7 +153,7 @@ class DockerValidator(Validator):
             try:
                 self._run_quiet_command(
                     "Running container",
-                    f"{self.docker_path} run -it --rm -d --name {self.container_name} {self.container_image}:{self.container_tag}"
+                    f"{self.docker_path} run --platform linux/amd64 -it --rm -d --name {self.container_name} {self.container_image}:{self.container_tag}"
                 )
                 # Wait to give some time to container to get up and running
                 time.sleep(5)
@@ -176,7 +176,7 @@ class DockerValidator(Validator):
             self.debug(f"Pulling container ({self.container_image}) image")
             try:
                 self._run_quiet_command("pull container image",
-                                        f"{self.docker_path} pull {self.container_image}:{self.container_tag}")
+                                        f"{self.docker_path} pull --platform linux/amd64 {self.container_image}:{self.container_tag}")
             except subprocess.CalledProcessError as ex:
                 self.error(ex)
                 raise RuntimeError(f"Cannot pull container ({self.container_image}) image")
