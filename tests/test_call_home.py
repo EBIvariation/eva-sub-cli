@@ -8,7 +8,7 @@ from unittest.mock import patch
 from ebi_eva_common_pyutils.config import Configuration, WritableConfig
 from requests.exceptions import ConnectionError, Timeout
 
-from eva_sub_cli import SUB_CLI_CONFIG_FILE
+from eva_sub_cli import SUB_CLI_CONFIG_FILE, ROOT_DIR
 from eva_sub_cli.call_home import _get_or_create_deployment_id, _get_or_create_run_id, \
     CallHomeClient, EVENT_START, EVENT_FAILURE, EVENT_END
 
@@ -190,3 +190,4 @@ class TestCallHomeClient(TestCase):
         self.assertEqual(payload['exceptionMessage'], 'something went wrong')
         self.assertIn('ValueError', payload['exceptionStacktrace'])
         self.assertIn('something went wrong', payload['exceptionStacktrace'])
+        self.assertNotIn(ROOT_DIR, payload['exceptionStacktrace'])

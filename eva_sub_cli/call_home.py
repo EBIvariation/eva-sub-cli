@@ -1,4 +1,3 @@
-import logging
 import os
 import traceback
 import uuid
@@ -6,13 +5,14 @@ from datetime import datetime, timezone
 
 import requests
 from ebi_eva_common_pyutils.config import WritableConfig
+from ebi_eva_common_pyutils.logger import logging_config as log_cfg
 
-from eva_sub_cli import __version__, SUB_CLI_CONFIG_FILE
+from eva_sub_cli import __version__, SUB_CLI_CONFIG_FILE, ROOT_DIR
 from eva_sub_cli.submission_ws import _submission_ws_base_url
 
-logger = logging.getLogger(__name__)
+logger = log_cfg.get_logger(__name__)
 
-CALL_HOME_PATH = 'call-home'
+CALL_HOME_PATH = 'call-home/events'
 DEPLOYMENT_ID_DIR = os.path.join(os.path.expanduser('~'), '.eva-sub-cli')
 DEPLOYMENT_ID_FILE = os.path.join(DEPLOYMENT_ID_DIR, 'deployment_id')
 
@@ -109,7 +109,10 @@ class CallHomeClient:
         kwargs = {}
         if exception is not None:
             kwargs['exceptionMessage'] = str(exception)
-            kwargs['exceptionStacktrace'] = ''.join(
+            stack_trace = ''.join(
                 traceback.format_exception(type(exception), exception, exception.__traceback__)
             )
+            # Remove the location of the file to preserve anonymity in case usernames are in the path
+            stack_trace = stack_trace.replace(ROOT_DIR, '')
+            kwargs['exceptionStacktrace'] = stack_trace
         self._send_event(EVENT_FAILURE, **kwargs)
