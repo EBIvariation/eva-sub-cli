@@ -1,7 +1,7 @@
 import json
 from collections import Counter
 from copy import deepcopy
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import yaml
 from ebi_eva_common_pyutils.biosamples_communicators import NoAuthHALCommunicator
@@ -27,6 +27,7 @@ TAX_ID_KEY = 'taxId'
 SCI_NAME_KEYS = ['species', 'Species', 'organism', 'Organism']
 ANALYSIS_ALIAS_KEY = 'analysisAlias'
 ANALYSIS_RUNS_KEY = 'runAccessions'
+HOLD_DATE_KEY = 'holdDate'
 
 # Samples created before this date are not required to have collection date or geographic location
 threshold_2023 = datetime(2023, 1, 1)
@@ -59,6 +60,16 @@ class SemanticMetadataChecker(AppLogger):
         self.check_all_analysis_run_accessions()
         self.check_analysis_alias_coherence()
         self.check_all_analysis_contain_samples()
+        self.check_hold_date()
+
+    def check_hold_date(self):
+        """Check that holdDate is no later than 2 years from today."""
+        project = self.metadata[PROJECT_KEY]
+        if HOLD_DATE_KEY in project:
+            hold_date = datetime.strptime(project[HOLD_DATE_KEY], '%Y-%m-%d')
+            max_date = datetime.now() + timedelta(days=365 * 2)
+            if hold_date > max_date:
+                self.add_error(f'/{PROJECT_KEY}/{HOLD_DATE_KEY}', 'holdDate is more than 2 years in the future')
 
     def check_all_project_accessions(self):
         """Check that ENA project accessions exist and are public."""
