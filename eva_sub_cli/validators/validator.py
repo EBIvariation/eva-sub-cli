@@ -350,7 +350,7 @@ class Validator(AppLogger):
         # detect output files for vcf check
         self.results[VCF_CHECK] = {RUN_STATUS_KEY: True}
         if self.shallow_validation and self.results[SHALLOW_VALIDATION][TRIM_DOWN] is True:
-            self.results[VCF_CHECK].update(TRIM_DOWN, True)
+            self.results[VCF_CHECK].update({TRIM_DOWN: True})
 
         for vcf_file in self.vcf_files:
             vcf_name = os.path.basename(vcf_file)
@@ -378,7 +378,7 @@ class Validator(AppLogger):
         # detect output files for assembly check
         self.results[ASSEMBLY_CHECK] = {RUN_STATUS_KEY: True}
         if self.shallow_validation and self.results[SHALLOW_VALIDATION][TRIM_DOWN] is True:
-            self.results[ASSEMBLY_CHECK].update(TRIM_DOWN, True)
+            self.results[ASSEMBLY_CHECK].update({TRIM_DOWN: True})
 
         for vcf_file in self.vcf_files:
             vcf_name = os.path.basename(vcf_file)
@@ -408,7 +408,7 @@ class Validator(AppLogger):
     def _load_fasta_check_results(self):
         self.results[FASTA_CHECK] = {RUN_STATUS_KEY: True}
         if self.shallow_validation and self.results[SHALLOW_VALIDATION][TRIM_DOWN] is True:
-            self.results[FASTA_CHECK].update(TRIM_DOWN, True)
+            self.results[FASTA_CHECK].update({TRIM_DOWN: True})
 
         for fasta_file in self.fasta_files:
             fasta_file_name = os.path.basename(fasta_file)
