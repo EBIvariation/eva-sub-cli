@@ -325,11 +325,6 @@ class TestValidator(TestCase):
     def test__collect_validation_workflow_results_previous_not_shallow_current_shallow(self):
         # Save previous results (full, no shallow validation)
         results_to_be_saved = deepcopy(expected_validation_results)
-        # Remove vcf/assembly checks so they get re-collected
-        del results_to_be_saved['vcf_check']
-        del results_to_be_saved['evidence_type_check']
-        del results_to_be_saved['assembly_check']
-        del results_to_be_saved['fasta_check']
         self.save_validation_results_file(self.validator_json, results_to_be_saved)
 
         # Create a shallow validator running VCF_CHECK and ASSEMBLY_CHECK
