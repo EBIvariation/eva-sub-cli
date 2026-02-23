@@ -25,7 +25,7 @@ Key points to note before validating your metadata spreadsheet with the eva-sub-
 - Any pre-registered projects and samples must be released and not kept in private status.
 - Sample names in the spreadsheet must match those in the VCF file.
 - Analysis aliases must match across the sheets (Analysis, Sample, and File sheets).
-- Use the Hold Date field in the Project sheet for data that needs to be kept under embargo.
+- Use the Hold Date field in the Project sheet for data that needs to be kept under embargo. The Hold Date cannot be more than 2 years in the future.
 
 Common errors seen with metadata checks:
 

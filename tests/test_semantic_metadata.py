@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from unittest import TestCase
 from unittest.mock import patch
 from requests import HTTPError, Response
@@ -355,3 +356,26 @@ class TestSemanticMetadata(TestCase):
         self.assertEqual(checker.errors[0]["property"], "/analysis/0")
         self.assertEqual(checker.errors[0]["description"],
                          "No sample found for the analysis. Should have at the least one sample.")
+
+    def test_check_hold_date(self):
+        # No error when holdDate is within 2 years
+        hold_date_ok = (datetime.now() + timedelta(days=365)).strftime('%Y-%m-%d')
+        metadata = {"project": {"holdDate": hold_date_ok}, "sample": [], "analysis": [], "files": []}
+        checker = SemanticMetadataChecker(metadata)
+        checker.check_hold_date()
+        self.assertEqual(checker.errors, [])
+
+        # Error when holdDate is more than 2 years in the future
+        hold_date_bad = (datetime.now() + timedelta(days=365 * 3)).strftime('%Y-%m-%d')
+        metadata = {"project": {"holdDate": hold_date_bad}, "sample": [], "analysis": [], "files": []}
+        checker = SemanticMetadataChecker(metadata)
+        checker.check_hold_date()
+        self.assertEqual(checker.errors, [
+            {'property': '/project/holdDate', 'description': 'holdDate is more than 2 years in the future'}
+        ])
+
+        # No error when holdDate is absent
+        metadata = {"project": {}, "sample": [], "analysis": [], "files": []}
+        checker = SemanticMetadataChecker(metadata)
+        checker.check_hold_date()
+        self.assertEqual(checker.errors, [])
