@@ -322,6 +322,80 @@ class TestValidator(TestCase):
         self.drop_report_paths_from_validation_results(saved_results)
         assert saved_results == self.format_data_structure(expected_results)
 
+    def test__collect_validation_workflow_results_previous_not_shallow_current_shallow(self):
+        # Save previous results (full, no shallow validation)
+        results_to_be_saved = deepcopy(expected_validation_results)
+        self.save_validation_results_file(self.validator_json, results_to_be_saved)
+
+        # Create a shallow validator running VCF_CHECK and ASSEMBLY_CHECK
+        from eva_sub_cli.validators.validator import ASSEMBLY_CHECK
+        validator_json_shallow = Validator(self.mapping_file, self.output_dir,
+                                           metadata_json=self.metadata_json_file,
+                                           validation_tasks=[VCF_CHECK, ASSEMBLY_CHECK],
+                                           shallow_validation=True)
+
+        # load previous validation results
+        validator_json_shallow._load_previous_validation_results()
+        # run collect result
+        validator_json_shallow._collect_validation_workflow_results()
+        # run assess result
+        validator_json_shallow._assess_validation_results()
+        # run save result
+        validator_json_shallow._save_validation_results()
+
+        # assert saved results
+        with open(validator_json_shallow.validation_result_file, 'r') as val_res_file:
+            saved_results = yaml.safe_load(val_res_file) or {}
+        self.drop_report_paths_from_validation_results(saved_results)
+
+        # Shallow validation metrics should be present
+        assert SHALLOW_VALIDATION in saved_results
+        assert saved_results[SHALLOW_VALIDATION][TRIM_DOWN] is True
+        # VCF check and assembly check should be marked as trimmed down
+        assert saved_results['vcf_check'][TRIM_DOWN] is True
+        assert saved_results['assembly_check'][TRIM_DOWN] is True
+        assert saved_results['fasta_check'][TRIM_DOWN] is True
+        # Overall trim_down should be True
+        assert saved_results[TRIM_DOWN] is True
+
+    def test__collect_validation_workflow_results_previous_shallow_current_not_shallow(self):
+        # Save previous results with shallow validation trim_down markers
+        results_to_be_saved = deepcopy(expected_validation_results)
+        results_to_be_saved[SHALLOW_VALIDATION] = {TRIM_DOWN: True}
+        results_to_be_saved['vcf_check'][TRIM_DOWN] = True
+        results_to_be_saved['assembly_check'][TRIM_DOWN] = True
+        results_to_be_saved['fasta_check'][TRIM_DOWN] = True
+        results_to_be_saved[TRIM_DOWN] = True
+        self.save_validation_results_file(self.validator_json, results_to_be_saved)
+
+        # Create a non-shallow validator running VCF_CHECK and ASSEMBLY_CHECK
+        from eva_sub_cli.validators.validator import ASSEMBLY_CHECK
+        validator_json_full = Validator(self.mapping_file, self.output_dir,
+                                        metadata_json=self.metadata_json_file,
+                                        validation_tasks=[VCF_CHECK, ASSEMBLY_CHECK],
+                                        shallow_validation=False)
+
+        # load previous validation results (which have trim_down markers)
+        validator_json_full._load_previous_validation_results()
+        # run collect result (non-shallow, so should overwrite trim_down markers)
+        validator_json_full._collect_validation_workflow_results()
+        # run assess result
+        validator_json_full._assess_validation_results()
+        # run save result
+        validator_json_full._save_validation_results()
+
+        # assert saved results
+        with open(validator_json_full.validation_result_file, 'r') as val_res_file:
+            saved_results = yaml.safe_load(val_res_file) or {}
+        self.drop_report_paths_from_validation_results(saved_results)
+
+        # VCF check and assembly check should NOT be marked as trimmed down anymore
+        assert saved_results['vcf_check'].get(TRIM_DOWN, False) is False
+        assert saved_results['assembly_check'].get(TRIM_DOWN, False) is False
+        assert saved_results['fasta_check'].get(TRIM_DOWN, False) is False
+        # Overall trim_down should be False
+        assert saved_results[TRIM_DOWN] is False
+
     def test__collect_validation_workflow_results_with_metadata_xlsx(self):
         expected_results = deepcopy(expected_validation_results)
         expected_results['metadata_check']['spreadsheet_errors'] = [
