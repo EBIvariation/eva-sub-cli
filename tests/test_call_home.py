@@ -1,3 +1,4 @@
+import json
 import os
 import shutil
 import time
@@ -5,12 +6,15 @@ import uuid
 from unittest import TestCase
 from unittest.mock import patch
 
+import jsonschema
+
 from ebi_eva_common_pyutils.config import Configuration, WritableConfig
 from requests.exceptions import ConnectionError, Timeout
 
 from eva_sub_cli import SUB_CLI_CONFIG_FILE, ROOT_DIR
 from eva_sub_cli.call_home import _get_or_create_deployment_id, _get_or_create_run_id, \
     CallHomeClient, EVENT_START, EVENT_FAILURE, EVENT_END
+from tests.test_report import common_validation_results
 
 
 class TestDeploymentId(TestCase):
@@ -163,11 +167,21 @@ class TestCallHomeClient(TestCase):
 
     @patch('eva_sub_cli.call_home.requests.post')
     def test_send_all_event_types(self, mock_post):
+        schema_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                   '..', 'eva_sub_cli', 'etc', 'call_home_payload_schema.json')
+        with open(schema_path) as f:
+            schema = json.load(f)
+
         client = self._create_client()
         client.send_start()
-        client.send_validation_completed('PASS')
+        client.send_validation_completed({'Results': common_validation_results})
         client.send_end()
         self.assertEqual(mock_post.call_count, 3)
+
+        for call in mock_post.call_args_list:
+            payload = call.kwargs['json']
+            jsonschema.validate(instance=payload, schema=schema)
+
 
     @patch('eva_sub_cli.call_home.requests.post')
     def test_send_failure_event(self, mock_post):

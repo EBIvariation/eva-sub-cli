@@ -99,7 +99,7 @@ class CallHomeClient:
     def send_start(self):
         self._send_event(EVENT_START)
 
-    def send_validation_completed(self, validation_result):
+    def send_validation_completed(self, validation_result: dict):
         self._send_event(EVENT_VALIDATION_COMPLETED, validation_result=validation_result)
 
     def send_end(self):
