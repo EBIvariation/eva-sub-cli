@@ -9,7 +9,7 @@ from retry import retry
 from eva_sub_cli.validators.validator import Validator, ALL_VALIDATION_TASKS
 
 default_container_image = 'ebivariation/eva-sub-cli'
-default_container_tag = 'v0.0.10'
+default_container_tag = 'v0.0.11'
 container_validation_dir = '/opt/vcf_validation'
 container_validation_output_dir = 'vcf_validation_output'
 
