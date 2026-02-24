@@ -47,7 +47,7 @@
       "description": "List of tasks requested by the user."
     },
     "validation_result": {
-      "type": "string",
+      "type": "object",
       "description": "Outcome of the validation step. Only present in VALIDATION_COMPLETED events."
     },
     "exceptionMessage": {
