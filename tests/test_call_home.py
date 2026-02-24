@@ -174,7 +174,7 @@ class TestCallHomeClient(TestCase):
 
         client = self._create_client()
         client.send_start()
-        client.send_validation_completed({'Results': common_validation_results})
+        client.send_validation_completed(common_validation_results)
         client.send_end()
         self.assertEqual(mock_post.call_count, 3)
 
