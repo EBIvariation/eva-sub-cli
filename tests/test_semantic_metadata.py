@@ -72,7 +72,7 @@ class TestSemanticMetadata(TestCase):
                 "projectAccession": "PRJEB12345"
             }
         }
-        checker = SemanticMetadataChecker(metadata)
+        checker = SemanticMetadataChecker(metadata, {})
         with patch('eva_sub_cli.semantic_metadata.download_xml_from_ena') as m_ena_download:
             m_ena_download.side_effect = [True, HTTPError('problem downloading', response=Response())]
             checker.check_all_project_accessions()
@@ -84,7 +84,7 @@ class TestSemanticMetadata(TestCase):
                 "projectAccession": "PRJEBXYZ99"
             }
         }
-        checker = SemanticMetadataChecker(metadata)
+        checker = SemanticMetadataChecker(metadata, {})
         with patch('eva_sub_cli.semantic_metadata.download_xml_from_ena') as m_ena_download:
             m_ena_download.side_effect = [HTTPError('problem downloading', response=Response())]
             checker.check_all_project_accessions()
@@ -100,7 +100,7 @@ class TestSemanticMetadata(TestCase):
                 "childProjects": ["PRJEB456", "PRJEBNA"]
             },
         }
-        checker = SemanticMetadataChecker(metadata)
+        checker = SemanticMetadataChecker(metadata, {})
         with patch('eva_sub_cli.semantic_metadata.download_xml_from_ena') as m_ena_download:
             m_ena_download.side_effect = [True, True, HTTPError('problem downloading', response=Response())]
             checker.check_all_project_accessions()
@@ -133,7 +133,7 @@ class TestSemanticMetadata(TestCase):
                 }
             ]
         }
-        checker = SemanticMetadataChecker(metadata)
+        checker = SemanticMetadataChecker(metadata, {})
         with patch('eva_sub_cli.semantic_metadata.get_scientific_name_and_common_name') as m_get_sci_name:
             # Mock should only be called once per taxonomy code
             m_get_sci_name.side_effect = [('Homo sapiens', 'human'), Exception('problem downloading')]
@@ -153,7 +153,7 @@ class TestSemanticMetadata(TestCase):
                 {"analysisAlias": "alias1"}
             ]
         }
-        checker = SemanticMetadataChecker(metadata)
+        checker = SemanticMetadataChecker(metadata, {})
         checker.check_uniqueness_analysis_alias()
         self.assertEqual(checker.errors, [
             {
@@ -194,7 +194,7 @@ class TestSemanticMetadata(TestCase):
                 }
             ]
         }
-        checker = SemanticMetadataChecker(metadata)
+        checker = SemanticMetadataChecker(metadata, {})
         checker.taxonomy_valid = {
             1234: False,
             9606: "Homo sapiens"
@@ -208,7 +208,7 @@ class TestSemanticMetadata(TestCase):
         ])
 
     def test_check_existing_biosamples_with_checklist(self):
-        checker = SemanticMetadataChecker(metadata)
+        checker = SemanticMetadataChecker(metadata, {})
         with patch.object(SemanticMetadataChecker, '_get_biosample',
                           side_effect=[valid_sample, ValueError, invalid_sample1, invalid_sample2, old_invalid_sample, old_invalid_sample2]) as m_get_sample:
             checker.check_existing_biosamples()
@@ -234,7 +234,7 @@ class TestSemanticMetadata(TestCase):
             self.assertTrue(len(checker.errors) == 5)
 
     def test_check_existing_biosamples(self):
-        checker = SemanticMetadataChecker(metadata, sample_checklist=None)
+        checker = SemanticMetadataChecker(metadata, {}, sample_checklist=None)
         with patch.object(NoAuthHALCommunicator, 'follows_link',
                           side_effect=[valid_sample, ValueError, invalid_sample1, invalid_sample2, old_invalid_sample, old_invalid_sample2]) as m_follows_link:
             checker.check_existing_biosamples()
@@ -251,7 +251,7 @@ class TestSemanticMetadata(TestCase):
                 {"bioSampleAccession": "SAMN01894452"}
             ]
         }
-        checker = SemanticMetadataChecker(metadata, sample_checklist=None)
+        checker = SemanticMetadataChecker(metadata, {}, sample_checklist=None)
         checker.check_existing_biosamples()
         print(checker.errors)
 
@@ -282,7 +282,7 @@ class TestSemanticMetadata(TestCase):
                 }
             ]
         }
-        checker = SemanticMetadataChecker(metadata)
+        checker = SemanticMetadataChecker(metadata, {})
         checker.check_analysis_alias_coherence()
         self.assertEqual(checker.errors, [
             {'property': '/sample/analysisAlias', 'description': 'alias1 present in Analysis not in Samples'},
@@ -295,7 +295,7 @@ class TestSemanticMetadata(TestCase):
                 {'runAccessions': ['SRR000001', 'SRR000002']}
             ]
         }
-        checker = SemanticMetadataChecker(metadata)
+        checker = SemanticMetadataChecker(metadata, {})
         checker.check_all_analysis_run_accessions()
         assert checker.errors == []
 
@@ -318,7 +318,7 @@ class TestSemanticMetadata(TestCase):
             ]
         }
 
-        checker = SemanticMetadataChecker(metadata)
+        checker = SemanticMetadataChecker(metadata, {})
         checker.check_all_analysis_contain_samples()
         assert checker.errors == []
 
@@ -334,7 +334,7 @@ class TestSemanticMetadata(TestCase):
             ]
         }
 
-        checker = SemanticMetadataChecker(metadata)
+        checker = SemanticMetadataChecker(metadata, {})
         checker.check_all_analysis_contain_samples()
         self.assertEqual(len(checker.errors), 2)
         self.assertEqual(checker.errors[0]["property"], "/analysis/1")
@@ -350,25 +350,51 @@ class TestSemanticMetadata(TestCase):
             "sample": []
         }
 
-        checker = SemanticMetadataChecker(metadata)
+        checker = SemanticMetadataChecker(metadata, {})
         checker.check_all_analysis_contain_samples()
         self.assertEqual(len(checker.errors), 1)
         self.assertEqual(checker.errors[0]["property"], "/analysis/0")
         self.assertEqual(checker.errors[0]["description"],
                          "No sample found for the analysis. Should have at the least one sample.")
 
+    def test_check_all_samples_have_sample_in_vcf(self):
+        # Sample with genotype evidence + sampleInVCF present → no error
+        metadata = {
+            "sample": [{"analysisAlias": ["A1"], "sampleInVCF": "sample1"}]
+        }
+        checker = SemanticMetadataChecker(metadata, evidence_type_results={'A1': {'evidence_type': 'genotype'}})
+        checker.check_all_samples_have_sample_in_vcf()
+        self.assertEqual(checker.errors, [])
+
+        # Sample with genotype evidence + sampleInVCF missing → error
+        metadata = {
+            "sample": [{"analysisAlias": ["A1"]}]
+        }
+        checker = SemanticMetadataChecker(metadata, evidence_type_results={'A1': {'evidence_type': 'genotype'}})
+        checker.check_all_samples_have_sample_in_vcf()
+        self.assertEqual(len(checker.errors), 1)
+        self.assertEqual(checker.errors[0]['property'], '/sample/0/sampleInVCF')
+
+        # Sample with allele_frequency evidence + sampleInVCF missing → no error
+        metadata = {
+            "sample": [{"analysisAlias": ["A1"]}]
+        }
+        checker = SemanticMetadataChecker(metadata, evidence_type_results={'A1': {'evidence_type': 'allele_frequency'}})
+        checker.check_all_samples_have_sample_in_vcf()
+        self.assertEqual(checker.errors, [])
+
     def test_check_hold_date(self):
         # No error when holdDate is within 2 years
         hold_date_ok = (datetime.now() + timedelta(days=365)).strftime('%Y-%m-%d')
         metadata = {"project": {"holdDate": hold_date_ok}, "sample": [], "analysis": [], "files": []}
-        checker = SemanticMetadataChecker(metadata)
+        checker = SemanticMetadataChecker(metadata, {})
         checker.check_hold_date()
         self.assertEqual(checker.errors, [])
 
         # Error when holdDate is more than 2 years in the future
         hold_date_bad = (datetime.now() + timedelta(days=365 * 3)).strftime('%Y-%m-%d')
         metadata = {"project": {"holdDate": hold_date_bad}, "sample": [], "analysis": [], "files": []}
-        checker = SemanticMetadataChecker(metadata)
+        checker = SemanticMetadataChecker(metadata, {})
         checker.check_hold_date()
         self.assertEqual(checker.errors, [
             {'property': '/project/holdDate', 'description': 'holdDate is more than 2 years in the future'}
@@ -376,6 +402,6 @@ class TestSemanticMetadata(TestCase):
 
         # No error when holdDate is absent
         metadata = {"project": {}, "sample": [], "analysis": [], "files": []}
-        checker = SemanticMetadataChecker(metadata)
+        checker = SemanticMetadataChecker(metadata, {})
         checker.check_hold_date()
         self.assertEqual(checker.errors, [])
