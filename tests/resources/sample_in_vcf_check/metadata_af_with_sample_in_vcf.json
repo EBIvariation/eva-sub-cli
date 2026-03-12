@@ -1,0 +1,33 @@
+{
+  "project": {
+    "title": "Test AF Project",
+    "description": "Project with allele frequency VCF",
+    "taxId": 9606,
+    "centre": "Test Centre"
+  },
+  "sample": [
+    {
+      "analysisAlias": ["AF1"],
+      "sampleInVCF": "sample1",
+      "bioSampleAccession": "SAME00001"
+    }
+  ],
+  "analysis": [
+    {
+      "analysisTitle": "AF Analysis",
+      "analysisAlias": "AF1",
+      "description": "Allele frequency analysis",
+      "experimentType": "Whole genome sequencing",
+      "referenceGenome": "GCA_000001405.27"
+    }
+  ],
+  "files": [
+    {
+      "analysisAlias": "AF1",
+      "fileName": "allele_freq.vcf",
+      "fileType": "vcf",
+      "md5": "b8ab2c9d58e5f430ce70783d8d0a0b88",
+      "fileSize": 458
+    }
+  ]
+}

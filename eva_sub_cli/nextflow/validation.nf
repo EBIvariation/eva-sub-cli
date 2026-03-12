@@ -368,7 +368,8 @@ process metadata_semantic_check {
             mode: "copy"
 
     input:
-    path(metadata_json), path(evidence_type_results)
+    path(metadata_json)
+    path(evidence_type_results)
 
     output:
     path "metadata_semantic_check.yml", emit: metadata_semantic_check_yml
