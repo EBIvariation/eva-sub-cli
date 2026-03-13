@@ -1,6 +1,5 @@
 import os
 import shutil
-import tempfile
 from unittest import TestCase
 
 import pytest
@@ -44,7 +43,7 @@ class TestNativeValidatorSampleInVCF(TestCase):
 
     def _get_semantic_errors(self):
         semantic_yaml = os.path.join(
-            self.test_run_dir, 'other_validations', 'metadata_semantic_check.yml'
+            self.test_run_dir, 'validation_output', 'other_validations', 'metadata_semantic_check.yml'
         )
         with open(semantic_yaml) as f:
             return yaml.safe_load(f) or []
