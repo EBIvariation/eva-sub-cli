@@ -1,0 +1,60 @@
+name: Integration tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main]
+
+jobs:
+  integration-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Install Nextflow
+        run: |
+          curl -s https://get.nextflow.io | bash
+          sudo mv nextflow /usr/local/bin/
+          nextflow -version
+
+      - name: Install biovalidator
+        run: |
+          npm install -g @elixir-europe/biovalidator
+          biovalidator --version
+
+      - name: Install vcf-validator
+        run: |
+          wget -q https://github.com/EBIvariation/vcf-validator/releases/latest/download/vcf_validator_linux
+          chmod +x vcf_validator_linux
+          sudo mv vcf_validator_linux /usr/local/bin/vcf_validator
+          vcf_validator --version
+
+      - name: Install vcf-assembly-checker
+        run: |
+          wget -q https://github.com/EBIvariation/vcf-validator/releases/latest/download/vcf_assembly_checker_linux
+          chmod +x vcf_assembly_checker_linux
+          sudo mv vcf_assembly_checker_linux /usr/local/bin/vcf_assembly_checker
+          vcf_assembly_checker --version
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+          python -m pip install .
+
+      - name: Run integration tests
+        run: |
+          PYTHONPATH=. pytest tests -m integration

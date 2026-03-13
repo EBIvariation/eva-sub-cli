@@ -26,7 +26,7 @@ class TestNativeValidatorSampleInVCF(TestCase):
     def tearDown(self):
         shutil.rmtree(self.test_run_dir)
 
-    def _build_validator(self, metadata_json, vcf_file):
+    def _build_validator(self, metadata_json, vcf_file, tasks):
         create_mapping_file(
             self.mapping_file,
             vcf_files=[vcf_file],
@@ -38,7 +38,7 @@ class TestNativeValidatorSampleInVCF(TestCase):
             submission_dir=self.test_run_dir,
             project_title='Test Project',
             metadata_json=metadata_json,
-            validation_tasks=[METADATA_CHECK],
+            validation_tasks=tasks,
         )
 
     def _get_semantic_errors(self):
@@ -56,7 +56,8 @@ class TestNativeValidatorSampleInVCF(TestCase):
         """AF evidence type: omitting sampleInVCF should produce no error."""
         validator = self._build_validator(
             os.path.join(self.sample_in_vcf_dir, 'metadata_af_no_sample_in_vcf.json'),
-            os.path.join(self.sample_in_vcf_dir, 'allele_freq.vcf')
+            os.path.join(self.sample_in_vcf_dir, 'allele_freq.vcf'),
+            [METADATA_CHECK]
         )
         validator.validate()
         errors = self._get_semantic_errors()
@@ -67,6 +68,7 @@ class TestNativeValidatorSampleInVCF(TestCase):
         validator = self._build_validator(
             os.path.join(self.sample_in_vcf_dir, 'metadata_af_with_sample_in_vcf.json'),
             os.path.join(self.sample_in_vcf_dir, 'allele_freq.vcf'),
+            [METADATA_CHECK]
         )
         validator.validate()
         errors = self._get_semantic_errors()
@@ -77,6 +79,7 @@ class TestNativeValidatorSampleInVCF(TestCase):
         validator = self._build_validator(
             os.path.join(self.sample_in_vcf_dir, 'metadata_genotype_no_sample_in_vcf.json'),
             os.path.join(self.sample_in_vcf_dir, 'genotype.vcf'),
+            [METADATA_CHECK]
         )
         validator.validate()
         errors = self._get_semantic_errors()
@@ -88,6 +91,7 @@ class TestNativeValidatorSampleInVCF(TestCase):
         validator = self._build_validator(
             os.path.join(self.sample_in_vcf_dir, 'metadata_genotype_with_sample_in_vcf.json'),
             os.path.join(self.sample_in_vcf_dir, 'genotype.vcf'),
+            [METADATA_CHECK]
         )
         validator.validate()
         errors = self._get_semantic_errors()
