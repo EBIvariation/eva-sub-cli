@@ -225,8 +225,9 @@ class XlsxParser:
         return str(value)
 
     def get_sample_data_with_split_analysis_alias(self, data, analysis_alias, sample_name_in_vcf):
-        analysis_alias_list = data[analysis_alias].split(',')
-        sample_in_vcf_val = data[sample_name_in_vcf]
+        analysis_alias_val = data.get(analysis_alias)
+        analysis_alias_list = analysis_alias_val.split(',') if analysis_alias_val else []
+        sample_in_vcf_val = data.get(sample_name_in_vcf)
         return {analysis_alias: analysis_alias_list, sample_name_in_vcf: sample_in_vcf_val}
 
     def get_sample_json_data(self):
@@ -245,8 +246,8 @@ class XlsxParser:
                 sample_data.update(bioSampleAccession=json_value[bio_sample_acc])
                 sample_json[json_key].append(sample_data)
             else:
-                json_value.pop(analysis_alias)
-                json_value.pop(sample_name_in_vcf)
+                json_value.pop(analysis_alias, None)
+                json_value.pop(sample_name_in_vcf, None)
 
                 biosample_obj = self.get_biosample_object(json_value)
                 sample_data.update(bioSampleObject=biosample_obj)
