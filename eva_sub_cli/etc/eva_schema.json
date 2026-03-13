@@ -318,7 +318,6 @@
           {
             "required": [
               "analysisAlias",
-              "sampleInVCF",
               "bioSampleObject"
             ]
           }
@@ -334,7 +333,7 @@
           },
           "sampleInVCF": {
             "type": "string",
-            "description": "Sample Name used in the VCF file"
+            "description": "Sample Name used in the VCF file. It is a required field when genotypes are provided."
           },
           "bioSampleAccession": {
             "type": "string",

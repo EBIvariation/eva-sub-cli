@@ -1,0 +1,56 @@
+name: Integration tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main]
+
+env:
+  VCF_VALIDATOR_VERSION: "0.10.2"
+  NXF_VER: "23.10.0"
+
+jobs:
+  integration-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Java and Node
+        run: sudo apt update && sudo apt install -y default-jdk nodejs npm git curl
+
+      - name: Install vcf-validator and vcf-assembly-checker
+        run: |
+          curl -LJo /usr/local/bin/vcf_validator \
+            https://github.com/EBIvariation/vcf-validator/releases/download/v${VCF_VALIDATOR_VERSION}/vcf_validator_linux
+          curl -LJo /usr/local/bin/vcf_assembly_checker \
+            https://github.com/EBIvariation/vcf-validator/releases/download/v${VCF_VALIDATOR_VERSION}/vcf_assembly_checker_linux
+          chmod 755 /usr/local/bin/vcf_validator /usr/local/bin/vcf_assembly_checker
+
+      - name: Install biovalidator
+        run: |
+          git clone https://github.com/elixir-europe/biovalidator.git
+          cd biovalidator
+          npm install
+          sudo npm link
+
+      - name: Install Nextflow
+        run: |
+          curl -L "https://github.com/nextflow-io/nextflow/releases/download/v${NXF_VER}/nextflow-${NXF_VER}-all" | bash
+          sudo mv nextflow /usr/local/bin/
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+          python -m pip install .
+
+      - name: Run integration tests
+        run: |
+          PYTHONPATH=. pytest tests -m integration

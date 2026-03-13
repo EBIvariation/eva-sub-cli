@@ -105,17 +105,24 @@ workflow {
 	collect_file_size_and_md5(generate_file_size_and_md5_digests.out.file_size_and_digest_info.collect())
 
 	// Task-specific processing
+	evidence_type_results = null
+
     if (params.tasks.contains(VCF_CHECK)) {
         check_vcf_valid(vcf_and_ref_ch)
         evidence_type_check(metadata_json, vcf_files.collect())
+        evidence_type_results = evidence_type_check.out.evidence_type_checker_yml
 	}
 	if (params.tasks.contains(ASSEMBLY_CHECK)) {
 		check_vcf_reference(vcf_and_ref_ch)
 		insdc_checker(metadata_json, fasta_to_vcfs)
 	}
 	if (params.tasks.contains(METADATA_CHECK)) {
+	    if (!evidence_type_results){
+            evidence_type_check(metadata_json, vcf_files.collect())
+            evidence_type_results = evidence_type_check.out.evidence_type_checker_yml
+	    }
 		metadata_json_validation(metadata_json)
-		metadata_semantic_check(metadata_json)
+		metadata_semantic_check(metadata_json, evidence_type_results)
 	}
 	if (params.tasks.contains(SAMPLE_CHECK)) {
 		sample_name_concordance(metadata_json, vcf_files.collect())
@@ -362,6 +369,7 @@ process metadata_semantic_check {
 
     input:
     path(metadata_json)
+    path(evidence_type_results)
 
     output:
     path "metadata_semantic_check.yml", emit: metadata_semantic_check_yml
@@ -369,6 +377,9 @@ process metadata_semantic_check {
 
     script:
     """
-    $params.python_scripts.semantic_checker --metadata_json $metadata_json --output_yaml metadata_semantic_check.yml > semantic_checker.log 2>&1
+    $params.python_scripts.semantic_checker \
+    --metadata_json $metadata_json \
+    --evidence_type_results $evidence_type_results \
+    --output_yaml metadata_semantic_check.yml > semantic_checker.log 2>&1
     """
 }

@@ -20,6 +20,7 @@ PROJECT_ACCESSION_KEY = 'projectAccession'
 PARENT_PROJECT_KEY = 'parentProject'
 CHILD_PROJECTS_KEY = 'childProjects'
 PEER_PROJECTS_KEY = 'peerProjects'
+SAMPLE_IN_VCF_KEY = 'sampleInVCF'
 BIOSAMPLE_OBJECT_KEY = 'bioSampleObject'
 BIOSAMPLE_ACCESSION_KEY = 'bioSampleAccession'
 CHARACTERISTICS_KEY = 'characteristics'
@@ -40,9 +41,10 @@ def cast_list(l, type_to_cast=str):
 
 class SemanticMetadataChecker(AppLogger):
 
-    def __init__(self, metadata, sample_checklist='ERC000011'):
+    def __init__(self, metadata, evidence_type_results, sample_checklist='ERC000011'):
         self.sample_checklist = sample_checklist
         self.metadata = metadata
+        self.evidence_type_results = evidence_type_results
         self.errors = []
         # Caches whether taxonomy code is valid or not, and maps to scientific name if valid
         self.taxonomy_valid = {}
@@ -60,6 +62,7 @@ class SemanticMetadataChecker(AppLogger):
         self.check_all_analysis_run_accessions()
         self.check_analysis_alias_coherence()
         self.check_all_analysis_contain_samples()
+        self.check_all_samples_have_sample_in_vcf()
         self.check_hold_date()
 
     def check_hold_date(self):
@@ -316,3 +319,14 @@ class SemanticMetadataChecker(AppLogger):
                 json_path = f'/{ANALYSIS_KEY}/{idx}'
                 self.add_error(property=json_path,
                                description=f'No sample found for the analysis. Should have at the least one sample.')
+
+    def check_all_samples_have_sample_in_vcf(self):
+        for idx, sample in enumerate(self.metadata[SAMPLE_KEY]):
+            json_path = f'/{SAMPLE_KEY}/{idx}/{SAMPLE_IN_VCF_KEY}'
+            analysis_aliases = sample.get(ANALYSIS_ALIAS_KEY, [])
+            if any([self.evidence_type_results.get(analysis_alias, {}).get('evidence_type') != 'allele_frequency' for
+             analysis_alias in analysis_aliases]):
+                # SampleInVCF is required
+                if sample.get(SAMPLE_IN_VCF_KEY) is None or sample.get(SAMPLE_IN_VCF_KEY) == '':
+                    self.add_error(json_path, f'{SAMPLE_IN_VCF_KEY} must be provided when Genotypes are present in the VCF file')
+
