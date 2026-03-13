@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ main]
 
+env:
+  VCF_VALIDATOR_VERSION: "0.10.0"
+  NXF_VER: "23.10.0"
+
 jobs:
   integration-tests:
     runs-on: ubuntu-latest
@@ -18,36 +22,28 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "21"
+      - name: Install Java and Node
+        run: sudo apt update && sudo apt install -y default-jdk nodejs npm git curl
 
-      - name: Install Nextflow
+      - name: Install vcf-validator and vcf-assembly-checker
         run: |
-          curl -s https://get.nextflow.io | bash
-          sudo mv nextflow /usr/local/bin/
-          nextflow -version
+          curl -LJo /usr/local/bin/vcf_validator \
+            https://github.com/EBIvariation/vcf-validator/releases/download/v${VCF_VALIDATOR_VERSION}/vcf_validator_linux
+          curl -LJo /usr/local/bin/vcf_assembly_checker \
+            https://github.com/EBIvariation/vcf-validator/releases/download/v${VCF_VALIDATOR_VERSION}/vcf_assembly_checker_linux
+          chmod 755 /usr/local/bin/vcf_validator /usr/local/bin/vcf_assembly_checker
 
       - name: Install biovalidator
         run: |
-          npm install -g @elixir-europe/biovalidator
-          biovalidator --version
+          git clone https://github.com/elixir-europe/biovalidator.git
+          cd biovalidator
+          npm install
+          sudo npm link
 
-      - name: Install vcf-validator
+      - name: Install Nextflow
         run: |
-          wget -q https://github.com/EBIvariation/vcf-validator/releases/latest/download/vcf_validator_linux
-          chmod +x vcf_validator_linux
-          sudo mv vcf_validator_linux /usr/local/bin/vcf_validator
-          vcf_validator --version
-
-      - name: Install vcf-assembly-checker
-        run: |
-          wget -q https://github.com/EBIvariation/vcf-validator/releases/latest/download/vcf_assembly_checker_linux
-          chmod +x vcf_assembly_checker_linux
-          sudo mv vcf_assembly_checker_linux /usr/local/bin/vcf_assembly_checker
-          vcf_assembly_checker --version
+          curl -L "https://github.com/nextflow-io/nextflow/releases/download/v${NXF_VER}/nextflow-${NXF_VER}-all" | bash
+          sudo mv nextflow /usr/local/bin/
 
       - name: Install Python dependencies
         run: |
