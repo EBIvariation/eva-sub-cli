@@ -10,8 +10,6 @@ from eva_sub_cli.validators.validator import METADATA_CHECK
 from tests.test_utils import create_mapping_file
 
 
-
-
 @pytest.mark.integration('You need to install java, nextflow, vcf_validator, vcf_assembly_checker, biovalidator (and md5sum, stat for mac)')
 class TestNativeValidatorSampleInVCF(TestCase):
     resource_dir = os.path.join(os.path.dirname(__file__), 'resources')
