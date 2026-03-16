@@ -98,8 +98,8 @@ alias, which is a shortened identifier you must provide for each analysis.
 
 This is where you describe the biological samples used for your analyses. Each row describes one sample and must include
 the Analysis Alias to indicate which analysis it belongs to, and "Sample Name in VCF" which is the exact name of the 
-sample as it appears in the VCF file. If you are submitting a VCF without sample names (containing only allele frequencies)
-Then you can omit to fill the "Sample Name in VCF" column.
+sample as it appears in the VCF file. If you are submitting a VCF without sample names (containing only allele frequencies),
+then you can omit the "Sample Name in VCF" column.
 
 We accept preregistered samples, which should be provided using BioSamples sample or sampleset accessions. Please
 ensure these are publicly accessible, as otherwise EVA will not be able to validate them.

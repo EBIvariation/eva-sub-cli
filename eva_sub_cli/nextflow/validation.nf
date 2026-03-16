@@ -117,7 +117,7 @@ workflow {
 		insdc_checker(metadata_json, fasta_to_vcfs)
 	}
 	if (params.tasks.contains(METADATA_CHECK)) {
-	    if (!evidence_type_results){
+	    if (!evidence_type_results) {
             evidence_type_check(metadata_json, vcf_files.collect())
             evidence_type_results = evidence_type_check.out.evidence_type_checker_yml
 	    }

@@ -325,7 +325,7 @@ class SemanticMetadataChecker(AppLogger):
             json_path = f'/{SAMPLE_KEY}/{idx}/{SAMPLE_IN_VCF_KEY}'
             analysis_aliases = sample.get(ANALYSIS_ALIAS_KEY, [])
             if any([self.evidence_type_results.get(analysis_alias, {}).get('evidence_type') != 'allele_frequency' for
-             analysis_alias in analysis_aliases]):
+                        analysis_alias in analysis_aliases]):
                 # SampleInVCF is required
                 if sample.get(SAMPLE_IN_VCF_KEY) is None or sample.get(SAMPLE_IN_VCF_KEY) == '':
                     self.add_error(json_path, f'{SAMPLE_IN_VCF_KEY} must be provided when Genotypes are present in the VCF file')
