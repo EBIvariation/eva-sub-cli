@@ -49,7 +49,8 @@ class TestSampleChecker(TestCase):
             os.remove(updated_metadata)
 
     def run_and_assert_sample_check(self, metadata_json, vcf_files):
-        check_sample_name_concordance(metadata_json, vcf_files, self.output_yaml)
+        evidence_type_yaml = os.path.join(self.resource_dir, 'sample_checker', 'evidence_type.yaml')
+        check_sample_name_concordance(metadata_json, vcf_files, self.output_yaml, evidence_type_yaml)
         expected_results = {
             'overall_differences': True,
             'results_per_analysis': {

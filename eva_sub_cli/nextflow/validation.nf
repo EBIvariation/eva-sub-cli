@@ -125,7 +125,11 @@ workflow {
 		metadata_semantic_check(metadata_json, evidence_type_results)
 	}
 	if (params.tasks.contains(SAMPLE_CHECK)) {
-		sample_name_concordance(metadata_json, vcf_files.collect())
+	    if (!evidence_type_results){
+            evidence_type_check(metadata_json, vcf_files.collect())
+            evidence_type_results = evidence_type_check.out.evidence_type_checker_yml
+	    }
+		sample_name_concordance(metadata_json, vcf_files.collect(), evidence_type_results)
 	}
 }
 
@@ -301,6 +305,7 @@ process sample_name_concordance {
     input:
     path(metadata_json)
     path(vcf_files)
+    path(evidence_type_results)
 
     output:
     path "sample_checker.yml", emit: sample_checker_yml
@@ -308,7 +313,9 @@ process sample_name_concordance {
 
     script:
     """
-    $params.python_scripts.samples_checker --metadata_json $metadata_json --vcf_files $vcf_files --output_yaml sample_checker.yml > sample_checker.log 2>&1
+    $params.python_scripts.samples_checker --metadata_json $metadata_json \
+        --vcf_files $vcf_files --output_yaml sample_checker.yml \
+        --evidence_type_results $evidence_type_results > sample_checker.log 2>&1
     """
 }
 
