@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 python:3.10
+FROM python:3.10
 
 ENV vcf_validator_version=0.10.2
 ENV NXF_VER=23.10.0

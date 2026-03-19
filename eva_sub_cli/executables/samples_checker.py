@@ -54,7 +54,7 @@ def compare_names_in_files_and_samples(sample_name_in_analysis, sample_name_per_
             more_metadata_submitted_files)
 
 
-def compare_all_analysis(metadata, files_per_analysis):
+def compare_all_analysis(metadata, files_per_analysis, evidence_type_results):
     overall_differences = False
     results_per_analysis_alias = {}
     all_analysis_alias = set(metadata.samples_per_analysis) | set(files_per_analysis)
@@ -65,7 +65,7 @@ def compare_all_analysis(metadata, files_per_analysis):
             for file_path in files_per_analysis.get(analysis_alias, [])
         }
 
-        if need_to_check_samples(sample_name_per_file):
+        if need_to_check_samples(evidence_type_results, analysis_alias):
             (
                 has_difference, more_per_submitted_files_metadata,
                 more_submitted_files_metadata, more_metadata_submitted_files
@@ -89,13 +89,9 @@ def compare_all_analysis(metadata, files_per_analysis):
     return overall_differences, results_per_analysis_alias
 
 
-def need_to_check_samples(sample_name_per_file):
-    no_samples_in_vcf = all(len(v) == 0 for v in sample_name_per_file.values())
-    if no_samples_in_vcf:
-        evidence_types_for_vcf_files = [detect_vcf_evidence_type(vcf_file) for vcf_file in sample_name_per_file.keys()]
-        if set(evidence_types_for_vcf_files) == {'allele_frequency'}:
-            return False
-
+def need_to_check_samples(evidence_type_results, analysis_alias):
+    if evidence_type_results.get(analysis_alias, {}).get('evidence_type') == 'allele_frequency':
+        return False
     return True
 
 
@@ -107,14 +103,16 @@ def write_result_yaml(output_yaml, overall_differences, results_per_analysis_ali
         }, stream=open_yaml)
 
 
-def check_sample_name_concordance(metadata_json, vcf_files, output_yaml):
+def check_sample_name_concordance(metadata_json, vcf_files, output_yaml, evidence_type_result_file):
     """
     Take the metadata following EVA standard and formatted in JSON then compare the sample names in it to the ones
     found in the VCF files
     """
     metadata = EvaMetadataJson(metadata_json)
+    with open(evidence_type_result_file) as open_yaml:
+        evidence_type_results = yaml.safe_load(open_yaml)
     file_path_per_analysis = associate_vcf_path_with_analysis(metadata, vcf_files)
-    overall_differences, results_per_analysis_alias = compare_all_analysis(metadata, file_path_per_analysis)
+    overall_differences, results_per_analysis_alias = compare_all_analysis(metadata, file_path_per_analysis, evidence_type_results)
     write_result_yaml(output_yaml, overall_differences, results_per_analysis_alias)
 
 
@@ -127,7 +125,10 @@ def main():
                             help='Path to the vcf files to compare to the metadata')
     arg_parser.add_argument('--output_yaml', required=True, dest='output_yaml',
                             help='Path to the location of the results')
+    arg_parser.add_argument('--evidence_type_results', required=True, dest='evidence_type_results',
+                            help='Results of the evidence check')
+
 
     args = arg_parser.parse_args()
     logging_config.add_stdout_handler()
-    check_sample_name_concordance(args.metadata_json, args.vcf_files, args.output_yaml)
+    check_sample_name_concordance(args.metadata_json, args.vcf_files, args.output_yaml, args.evidence_type_results)
