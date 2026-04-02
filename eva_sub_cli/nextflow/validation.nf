@@ -42,7 +42,8 @@ params.python_scripts = [
     "fasta_checker": "check_fasta_insdc.py",
     "xlsx2json": "xlsx2json.py",
     "semantic_checker": "check_metadata_semantics.py",
-    "trim_down": "trim_down.py"
+    "trim_down": "trim_down.py",
+    "format_metadata": "/YOUR/PATH/TO/PycharmProjects/eva-sub-cli/eva_sub_cli/executables/format_metadata.py"
 ]
 // prefix to prepend to all provided path
 params.base_dir = ""
@@ -98,8 +99,10 @@ workflow {
 		convert_xlsx_2_json(joinBasePath(params.metadata_xlsx))
 		metadata_json = convert_xlsx_2_json.out.metadata_json
 	} else {
-		metadata_json = joinBasePath(params.metadata_json)
+		metadata_json = file(joinBasePath(params.metadata_json), checkIfExists:true)
 	}
+
+    metadata_json_format(metadata_json)
 	// File size and MD5
 	generate_file_size_and_md5_digests(vcf_files)
 	collect_file_size_and_md5(generate_file_size_and_md5_digests.out.file_size_and_digest_info.collect())
@@ -274,6 +277,29 @@ process convert_xlsx_2_json {
     """
 }
 
+process metadata_json_format {
+
+    label 'short_time', 'small_mem'
+
+    publishDir output_dir,
+            overwrite: true,
+            mode: "copy"
+
+    input:
+    path(metadata_json)
+
+    output:
+    path "metadata_formatted.log", emit: metadata_formatted
+
+    script:
+    // THIS WORKS
+    //python $params.python_scripts.format_metadata --metadata_json $metadata_json > metadata_formatted.log 2>&1
+    """
+    cp $params.python_scripts.format_metadata .
+    python format_metadata.py --metadata_json $metadata_json > metadata_formatted.log 2>&1
+    """
+}
+
 process metadata_json_validation {
 
     label 'short_time', 'small_mem'
@@ -286,7 +312,7 @@ process metadata_json_validation {
     path(metadata_json)
 
     output:
-    path "metadata_validation.txt", emit: metadata_validation
+    path "metadata_formatted.json", emit: metadata_validation
 
     script:
     """
