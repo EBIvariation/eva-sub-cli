@@ -8,12 +8,12 @@ from functools import lru_cache, cached_property
 import yaml
 from ebi_eva_common_pyutils.command_utils import run_command_with_output
 from ebi_eva_common_pyutils.config import WritableConfig
-from ebi_eva_common_pyutils.logger import logging_config, AppLogger
+from ebi_eva_common_pyutils.logger import AppLogger
 from packaging import version
 
 import eva_sub_cli
 from eva_sub_cli import ETC_DIR, SUB_CLI_CONFIG_FILE, __version__
-from eva_sub_cli.file_utils import backup_file_or_directory, resolve_single_file_path
+from eva_sub_cli.file_utils import resolve_single_file_path
 from eva_sub_cli.metadata import EvaMetadataJson
 from eva_sub_cli.report import generate_html_report, generate_text_report
 from eva_sub_cli.validators.validation_results_parsers import parse_assembly_check_log, parse_assembly_check_report, \
@@ -41,7 +41,6 @@ SHALLOW_VALIDATION = 'shallow_validation'
 TRIM_DOWN = 'trim_down'
 RUN_STATUS_KEY = 'run_status'
 PASS = 'pass'
-
 
 
 class Validator(AppLogger):
@@ -130,16 +129,15 @@ class Validator(AppLogger):
         raise NotImplementedError
 
     def set_up_output_dir(self):
-        if os.path.exists(self.output_dir):
-            backup_file_or_directory(self.output_dir, max_backups=9)
-        os.makedirs(self.output_dir, exist_ok=True)
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir, exist_ok=True)
 
     def clean_up_output_dir(self):
         # Move intermediate validation outputs into a subdir except metadata.json
         subdir = os.path.join(self.output_dir, 'other_validations')
-        os.mkdir(subdir)
+        os.makedirs(subdir, exist_ok=True)
         for file_name in os.listdir(self.output_dir):
-            if file_name == 'metadata.json':
+            if file_name in ['metadata.json', 'report.txt', 'report.html']:
                 continue
             file_path = os.path.join(self.output_dir, file_name)
             if os.path.isfile(file_path):
@@ -209,7 +207,6 @@ class Validator(AppLogger):
 
                 del self.results[SHALLOW_VALIDATION]['required']
             del self.results[SHALLOW_VALIDATION]['requested']
-
 
     def _collect_validation_workflow_results(self):
         # Collect information from the output and summarise in the config
@@ -550,7 +547,7 @@ class Validator(AppLogger):
                     file_path_2_file_size[vcf_file] = file_size
                     file_name_2_file_size[os.path.basename(vcf_file)] = file_size
         else:
-            error_txt =  f"Cannot locate file_info.txt at {os.path.join(self.output_dir, 'other_validations', 'file_info.txt')}"
+            error_txt = f"Cannot locate file_info.txt at {os.path.join(self.output_dir, 'other_validations', 'file_info.txt')}"
             self.error(error_txt)
             raise FileNotFoundError(error_txt)
 
