@@ -1,6 +1,5 @@
 
 from unittest import TestCase
-from unittest.mock import MagicMock
 from eva_sub_cli.executables import format_metadata
 import tempfile
 import json
