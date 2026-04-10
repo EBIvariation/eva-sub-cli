@@ -290,10 +290,12 @@ process metadata_json_format {
 
     output:
     path "metadata_formatted.log", emit: metadata_formatted
+    path "metadata_formatted_case_insensitive.json", emit: metadata_formatted_json
 
     script:
+    def output_json = "metadata_formatted_case_insensitive.json"
     """
-    format_metadata.py --metadata_json $metadata_json > metadata_formatted.log 2>&1
+    format_metadata.py --metadata_json_input $metadata_json --metadata_json_output $output_json > metadata_formatted.log 2>&1
     """
 }
 
