@@ -308,14 +308,14 @@ process metadata_json_validation {
             mode: "copy"
 
     input:
-    path(metadata_json)
+    path(output_json)
 
     output:
     path "metadata_formatted.json", emit: metadata_validation
 
     script:
     """
-    $params.executable.biovalidator --schema $schema_dir/eva_schema.json --ref $schema_dir/eva-biosamples.json --data $metadata_json > metadata_validation.txt 2>&1
+    $params.executable.biovalidator --schema $schema_dir/eva_schema.json --ref $schema_dir/eva-biosamples.json --data $output_json > metadata_validation.txt 2>&1
     """
 }
 
