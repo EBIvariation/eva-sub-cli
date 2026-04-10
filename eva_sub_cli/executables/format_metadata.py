@@ -8,7 +8,7 @@ def format_experiment_type_lowercase(json_file):
         json_data = json.load(file)
 
     for index in range(len(json_data["analysis"])):
-        logger.info(f"Formatting metadata - experiment type to lower case - {json_data["analysis"][index]["experimentType"]}")
+        logger.info(f"Formatting metadata - experiment type to lower case - {json_data['analysis'][index]['experimentType']}")
         json_data["analysis"][index]["experimentType"] = json_data["analysis"][index]["experimentType"].lower()
 
     with open(json_file, 'w') as file:
