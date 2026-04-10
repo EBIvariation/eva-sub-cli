@@ -37,6 +37,7 @@ classifiers = [
 'evidence_type_checker.py'='eva_sub_cli.executables.evidence_type_checker:main'
 'xlsx2json.py'='eva_sub_cli.executables.xlsx2json:main'
 'trim_down.py'='eva_sub_cli.executables.trim_down:main'
+'format_metadata.py'='eva_sub_cli.executables.format_metadata:main'
 
 [tool.setuptools]
 packages = ['eva_sub_cli', 'eva_sub_cli.exceptions', 'eva_sub_cli.executables', 'eva_sub_cli.validators']

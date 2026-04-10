@@ -292,9 +292,7 @@ process metadata_json_format {
     path "metadata_formatted.log", emit: metadata_formatted
 
     script:
-    //python $params.python_scripts.format_metadata --metadata_json $metadata_json > metadata_formatted.log 2>&1
     """
-    cp $params.python_scripts.format_metadata .
     format_metadata.py --metadata_json $metadata_json > metadata_formatted.log 2>&1
     """
 }
