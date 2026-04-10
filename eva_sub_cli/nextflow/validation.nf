@@ -43,7 +43,7 @@ params.python_scripts = [
     "xlsx2json": "xlsx2json.py",
     "semantic_checker": "check_metadata_semantics.py",
     "trim_down": "trim_down.py",
-    "format_metadata": "/YOUR/PATH/TO/PycharmProjects/eva-sub-cli/eva_sub_cli/executables/format_metadata.py"
+    "format_metadata": "format_metadata.py"
 ]
 // prefix to prepend to all provided path
 params.base_dir = ""
@@ -295,7 +295,7 @@ process metadata_json_format {
     //python $params.python_scripts.format_metadata --metadata_json $metadata_json > metadata_formatted.log 2>&1
     """
     cp $params.python_scripts.format_metadata .
-    python format_metadata.py --metadata_json $metadata_json > metadata_formatted.log 2>&1
+    format_metadata.py --metadata_json $metadata_json > metadata_formatted.log 2>&1
     """
 }
 

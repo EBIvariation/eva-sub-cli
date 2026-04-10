@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import argparse
 import json
 from ebi_eva_common_pyutils.logger import logging_config
