@@ -103,6 +103,7 @@ workflow {
 	}
 
     metadata_json_format(metadata_json)
+    metadata_json = metadata_json_format.out.metadata_formatted_json
 	// File size and MD5
 	generate_file_size_and_md5_digests(vcf_files)
 	collect_file_size_and_md5(generate_file_size_and_md5_digests.out.file_size_and_digest_info.collect())
@@ -290,10 +291,12 @@ process metadata_json_format {
 
     output:
     path "metadata_formatted.log", emit: metadata_formatted
+    path "metadata_formatted_case_insensitive.json", emit: metadata_formatted_json
 
     script:
+    def output_json = "metadata_formatted_case_insensitive.json"
     """
-    format_metadata.py --metadata_json $metadata_json > metadata_formatted.log 2>&1
+    format_metadata.py --metadata_json_input $metadata_json --metadata_json_output $output_json > metadata_formatted.log 2>&1
     """
 }
 
@@ -306,14 +309,14 @@ process metadata_json_validation {
             mode: "copy"
 
     input:
-    path(metadata_json)
+    path(output_json)
 
     output:
-    path "metadata_formatted.json", emit: metadata_validation
+    path "metadata_validation.txt", emit: metadata_validation
 
     script:
     """
-    $params.executable.biovalidator --schema $schema_dir/eva_schema.json --ref $schema_dir/eva-biosamples.json --data $metadata_json > metadata_validation.txt 2>&1
+    $params.executable.biovalidator --schema $schema_dir/eva_schema.json --ref $schema_dir/eva-biosamples.json --data $output_json > metadata_validation.txt 2>&1
     """
 }
 
