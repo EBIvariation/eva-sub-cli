@@ -1,7 +1,6 @@
 import glob
 import gzip
 import os
-import shutil
 import time
 from itertools import groupby
 
@@ -130,28 +129,6 @@ def _assess_vcf_evidence_type_manual(vcf_file):
         return samples, af_in_info, gt_in_format
     finally:
         open_file.close()
-
-
-def backup_file_or_directory(file_name, max_backups=None):
-    """
-    Rename a file or directory by adding a '.1' at the end. If the '.1' file exists it move it to a '.2' and so on.
-    Keep at most the specified number of backups, if None will keep all.
-    """
-    suffix = 1
-    backup_name = f'{file_name}.{suffix}'
-    while os.path.exists(backup_name):
-        suffix += 1
-        backup_name = f'{file_name}.{suffix}'
-
-    for i in range(suffix, 1, -1):
-        if max_backups and i > max_backups:
-            if os.path.isfile(file_name):
-                os.remove(f'{file_name}.{i - 1}')
-            else:
-                shutil.rmtree(f'{file_name}.{i - 1}')
-        else:
-            os.rename(f'{file_name}.{i - 1}', f'{file_name}.{i}')
-    os.rename(file_name, file_name + '.1')
 
 
 def open_gzip_if_required(input_file, mode='r'):
