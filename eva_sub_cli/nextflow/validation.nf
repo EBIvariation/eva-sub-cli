@@ -103,6 +103,7 @@ workflow {
 	}
 
     metadata_json_format(metadata_json)
+    metadata_json = metadata_json_format.out.metadata_formatted_json
 	// File size and MD5
 	generate_file_size_and_md5_digests(vcf_files)
 	collect_file_size_and_md5(generate_file_size_and_md5_digests.out.file_size_and_digest_info.collect())
@@ -311,7 +312,7 @@ process metadata_json_validation {
     path(output_json)
 
     output:
-    path "metadata_formatted.json", emit: metadata_validation
+    path "metadata_validation.txt", emit: metadata_validation
 
     script:
     """
