@@ -177,6 +177,7 @@ process check_vcf_valid {
     """
     trap 'if [[ \$? == 1 ]]; then exit 0; fi' EXIT
 
+    rm -rf ${output_dir}/vcf_format
     mkdir -p vcf_format
     $params.executable.vcf_validator -i $vcf -r text -o vcf_format --require-evidence > vcf_format/${vcf}.vcf_format.log 2>&1
     """
@@ -206,6 +207,7 @@ process check_vcf_reference {
     """
     trap 'if [[ \$? == 1 || \$? == 139 ]]; then exit 0; fi' EXIT
 
+    rm -rf ${output_dir}/assembly_check
     mkdir -p assembly_check
     $params.executable.vcf_assembly_checker -i $vcf -f $fasta $report_opt -r summary,text  -o assembly_check --require-genbank > assembly_check/${vcf}.assembly_check.log 2>&1
     """
