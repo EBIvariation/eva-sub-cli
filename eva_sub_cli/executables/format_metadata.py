@@ -33,7 +33,7 @@ def format_experiment_type(json_file_input, json_file_output):
 
     except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
         logger.error(f"Failed to process JSON: {e}")
-        return None
+        return json_file_input
 
 
 def main():
