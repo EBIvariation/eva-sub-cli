@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import argparse
 import json
+import shutil
+
 from ebi_eva_common_pyutils.logger import logging_config
 logger = logging_config.get_logger(__name__)
 
@@ -32,8 +34,10 @@ def format_experiment_type(json_file_input, json_file_output):
         return json_file_output
 
     except (FileNotFoundError, json.JSONDecodeError, KeyError) as e:
+        # if the try block fails, copy the input file (because nextflow is expecting the output file).
         logger.error(f"Failed to process JSON: {e}")
-        return json_file_input
+        shutil.copy(json_file_input, json_file_output)
+        return None
 
 
 def main():
