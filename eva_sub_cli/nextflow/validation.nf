@@ -42,7 +42,8 @@ params.python_scripts = [
     "fasta_checker": "check_fasta_insdc.py",
     "xlsx2json": "xlsx2json.py",
     "semantic_checker": "check_metadata_semantics.py",
-    "trim_down": "trim_down.py"
+    "trim_down": "trim_down.py",
+    "format_metadata": "format_metadata.py"
 ]
 // prefix to prepend to all provided path
 params.base_dir = ""
@@ -98,8 +99,11 @@ workflow {
 		convert_xlsx_2_json(joinBasePath(params.metadata_xlsx))
 		metadata_json = convert_xlsx_2_json.out.metadata_json
 	} else {
-		metadata_json = joinBasePath(params.metadata_json)
+		metadata_json = file(joinBasePath(params.metadata_json), checkIfExists:true)
 	}
+
+    metadata_json_format(metadata_json)
+    metadata_json = metadata_json_format.out.metadata_formatted_json
 	// File size and MD5
 	generate_file_size_and_md5_digests(vcf_files)
 	collect_file_size_and_md5(generate_file_size_and_md5_digests.out.file_size_and_digest_info.collect())
@@ -273,6 +277,28 @@ process convert_xlsx_2_json {
     metadata_json = metadata_xlsx.getBaseName() + '.json'
     """
     $params.python_scripts.xlsx2json --metadata_xlsx $metadata_xlsx --metadata_json metadata.json --errors_yaml metadata_conversion_errors.yml --conversion_configuration $conversion_configuration > xlsx2json.log 2>&1
+    """
+}
+
+process metadata_json_format {
+
+    label 'short_time', 'small_mem'
+
+    publishDir output_dir,
+            overwrite: true,
+            mode: "copy"
+
+    input:
+    path(metadata_json)
+
+    output:
+    path "metadata_formatted.log", emit: metadata_formatted
+    path "metadata_formatted_case_insensitive.json", emit: metadata_formatted_json
+
+    script:
+    def output_json = "metadata_formatted_case_insensitive.json"
+    """
+    format_metadata.py --metadata_json_input $metadata_json --metadata_json_output $output_json > metadata_formatted.log 2>&1
     """
 }
 
