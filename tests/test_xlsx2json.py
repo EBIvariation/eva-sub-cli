@@ -126,6 +126,35 @@ class TestXlsReader(TestCase):
 
         jsonschema.validate(json_data, eva_json_schema)
 
+    def test_conversion_2_json_with_links(self) -> None:
+        xls_filename = os.path.join(self.resource_dir, 'EVA_Submission_test_with_links.xlsx')
+        self.parser = XlsxParser(xls_filename, self.conf_filename)
+        output_json = os.path.join(self.resource_dir, 'EVA_Submission_test_output.json')
+        errors_yaml = os.path.join(self.resource_dir, 'EVA_Submission_test_errors.yml')
+        self.parser.json(output_json)
+        self.parser.save_errors(errors_yaml)
+
+        # confirm no errors
+        with open(errors_yaml) as open_file:
+            errors_data = yaml.safe_load(open_file)
+            assert errors_data == []
+
+        with open(output_json) as open_file:
+            json_data = json.load(open_file)
+            # assert json file is created with expected data
+            assert sorted(json_data.keys()) == ['$schema', 'analysis', 'files', 'project', 'sample', 'submitterDetails']
+            json_data.pop('$schema', None)
+            expected_json = self.get_expected_json()
+            expected_json['analysis'][0]['links'] = ['BioProject:PRJNA1435562']
+            self.assertEqual(expected_json, json_data)
+
+        # assert json schema
+        with open(self.eva_schema) as eva_schema_file:
+            eva_json_schema = json.load(eva_schema_file)
+
+        # assert created json file conform to eva_schema
+        jsonschema.validate(json_data, eva_json_schema)
+
     def test_create_xls_template(self):
         metadata_file = os.path.join(self.resource_dir, 'metadata_not_existing.xlsx')
         create_xls_template_from_yaml(metadata_file, self.conf_filename)
