@@ -298,7 +298,7 @@ process metadata_json_format {
     script:
     def output_json = "metadata_formatted_case_insensitive.json"
     """
-    format_metadata.py --metadata_json_input $metadata_json --metadata_json_output $output_json > metadata_formatted.log 2>&1
+    $params.python_scripts.format_metadata --metadata_json_input $metadata_json --metadata_json_output $output_json > metadata_formatted.log 2>&1
     """
 }
 
