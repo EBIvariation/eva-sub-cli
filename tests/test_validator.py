@@ -134,14 +134,6 @@ class TestValidator(TestCase):
         # Restore metadata json file
         shutil.move(self.backup_metadata_json, self.metadata_json_file)
 
-    def create_validator_in_temp_submission_dir(self, submission_dir):
-        mapping_file = os.path.join(submission_dir, 'vcf_files_mapping.csv')
-        create_mapping_file(mapping_file,
-                            [os.path.join(self.vcf_files, 'input_passed.vcf')],
-                            [os.path.join(self.fasta_files, 'input_passed.fa')],
-                            [os.path.join(self.assembly_reports, 'input_passed.txt')])
-        return Validator(mapping_file, submission_dir, metadata_json=self.metadata_json_file)
-
     def format_data_structure(self, source):
         if isinstance(source, dict):
             return {k: self.format_data_structure(v) for k, v in source.items()}
