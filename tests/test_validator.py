@@ -175,25 +175,36 @@ class TestValidator(TestCase):
         with open(validator.validation_result_file, 'w') as val_res_file:
             yaml.safe_dump(results, val_res_file)
 
+
+    def create_validator(self, submission_dir):
+        mapping_file = os.path.join(submission_dir, 'vcf_files_mapping.csv')
+        create_mapping_file(mapping_file,
+                            [os.path.join(self.vcf_files, 'input_passed.vcf')],
+                            [os.path.join(self.fasta_files, 'input_passed.fa')]
+                            )
+        return Validator(mapping_file, submission_dir, metadata_json=self.metadata_json_file)
+
     def test_clean_up_output_dir_moves_intermediate_files_and_removes_nextflow_work_dir(self):
-        os.makedirs(self.validator.output_dir, exist_ok=True)
-        os.makedirs(os.path.join(self.validator.nextflow_work_dir, 'nested'))
+        with TemporaryDirectory() as submission_dir:
+            validator = self.create_validator(submission_dir)
+            os.makedirs(validator.output_dir)
+            os.makedirs(os.path.join(validator.nextflow_work_dir, 'nested'))
 
-        files_to_keep = ['metadata.json', 'report.txt', 'report.html']
-        files_to_move = ['metadata_validation.txt', 'sample_checker.yml']
-        for file_name in files_to_keep + files_to_move:
-            with open(os.path.join(self.validator.output_dir, file_name), 'w') as output_file:
-                output_file.write(file_name)
+            files_to_keep = ['metadata.json', 'report.txt', 'report.html']
+            files_to_move = ['metadata_validation.txt', 'sample_checker.yml']
+            for file_name in files_to_keep + files_to_move:
+                with open(os.path.join(validator.output_dir, file_name), 'w') as output_file:
+                    output_file.write(file_name)
 
-        self.validator.clean_up_output_dir()
+            validator.clean_up_output_dir()
 
-        other_validations_dir = os.path.join(self.validator.output_dir, 'other_validations')
-        assert not os.path.exists(self.validator.nextflow_work_dir)
-        for file_name in files_to_keep:
-            assert os.path.exists(os.path.join(self.validator.output_dir, file_name))
-        for file_name in files_to_move:
-            assert not os.path.exists(os.path.join(self.validator.output_dir, file_name))
-            assert os.path.exists(os.path.join(other_validations_dir, file_name))
+            other_validations_dir = os.path.join(validator.output_dir, 'other_validations')
+            assert not os.path.exists(validator.nextflow_work_dir)
+            for file_name in files_to_keep:
+                assert os.path.exists(os.path.join(validator.output_dir, file_name))
+            for file_name in files_to_move:
+                assert not os.path.exists(os.path.join(validator.output_dir, file_name))
+                assert os.path.exists(os.path.join(other_validations_dir, file_name))
 
 
     def test__collect_validation_workflow_results_with_metadata_json(self):
