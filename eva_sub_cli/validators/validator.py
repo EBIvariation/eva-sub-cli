@@ -3,6 +3,7 @@ import csv
 import datetime
 import logging
 import os
+import shutil
 from functools import lru_cache, cached_property
 
 import yaml
@@ -53,6 +54,7 @@ class Validator(AppLogger):
         self.tasks = validation_tasks
         self.submission_dir = submission_dir
         self.output_dir = os.path.join(submission_dir, VALIDATION_OUTPUT_DIR)
+        self.nextflow_work_dir = os.path.join(self.submission_dir, 'work') # Default location when we chdir in self.submission_dir
         self.validation_result_file = os.path.join(submission_dir, VALIDATION_RESULTS_FILE)
         self.mapping_file = mapping_file
         vcf_files, fasta_files = self._find_vcf_and_fasta_files()
@@ -142,6 +144,9 @@ class Validator(AppLogger):
             file_path = os.path.join(self.output_dir, file_name)
             if os.path.isfile(file_path):
                 os.rename(file_path, os.path.join(subdir, file_name))
+        # Remove the nextflow work directory if it exists
+        if os.path.exists(self.nextflow_work_dir):
+            shutil.rmtree(self.nextflow_work_dir)
 
     @staticmethod
     def _validation_file_path_for(file_path):
