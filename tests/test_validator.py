@@ -1,6 +1,7 @@
 import os.path
 import shutil
 from copy import deepcopy
+from tempfile import TemporaryDirectory
 from unittest import TestCase
 
 import yaml
@@ -174,6 +175,38 @@ class TestValidator(TestCase):
         with open(validator.validation_result_file, 'w') as val_res_file:
             yaml.safe_dump(results, val_res_file)
 
+
+    def create_validator(self, submission_dir):
+        mapping_file = os.path.join(submission_dir, 'vcf_files_mapping.csv')
+        create_mapping_file(mapping_file,
+                            [os.path.join(self.vcf_files, 'input_passed.vcf')],
+                            [os.path.join(self.fasta_files, 'input_passed.fa')]
+                            )
+        return Validator(mapping_file, submission_dir, metadata_json=self.metadata_json_file)
+
+    def test_clean_up_output_dir_moves_intermediate_files_and_removes_nextflow_work_dir(self):
+        with TemporaryDirectory() as submission_dir:
+            validator = self.create_validator(submission_dir)
+            os.makedirs(validator.output_dir)
+            os.makedirs(os.path.join(validator.nextflow_work_dir, 'nested'))
+
+            files_to_keep = ['metadata.json', 'report.txt', 'report.html']
+            files_to_move = ['metadata_validation.txt', 'sample_checker.yml']
+            for file_name in files_to_keep + files_to_move:
+                with open(os.path.join(validator.output_dir, file_name), 'w') as output_file:
+                    output_file.write(file_name)
+
+            validator.clean_up_output_dir()
+
+            other_validations_dir = os.path.join(validator.output_dir, 'other_validations')
+            assert not os.path.exists(validator.nextflow_work_dir)
+            for file_name in files_to_keep:
+                assert os.path.exists(os.path.join(validator.output_dir, file_name))
+            for file_name in files_to_move:
+                assert not os.path.exists(os.path.join(validator.output_dir, file_name))
+                assert os.path.exists(os.path.join(other_validations_dir, file_name))
+
+
     def test__collect_validation_workflow_results_with_metadata_json(self):
         self.run_collect_results(self.validator_json)
         assert self.validator_json.results == self.format_data_structure(expected_validation_results)
@@ -288,7 +321,6 @@ class TestValidator(TestCase):
             saved_results = yaml.safe_load(val_res_file) or {}
         self.drop_report_paths_from_validation_results(saved_results)
         assert saved_results == self.format_data_structure(expected_results)
-
 
 
     def test__collect_validation_workflow_results_for_shallow_validation_no_effect_when_task_not_in_vcf_check_or_assembly_check(
@@ -629,7 +661,6 @@ class TestValidator(TestCase):
             'report_path': '{resource_dir}/validation_reports/validation_output/other_validations/evidence_type_checker.yml'
         }
         assert self.validator_json._check_consent_statement_is_needed_for_submission() is True
-
 
 
 
