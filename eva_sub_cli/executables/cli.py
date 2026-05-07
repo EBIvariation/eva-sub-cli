@@ -130,48 +130,45 @@ def main():
             # Pass on all the arguments to the orchestrator
             orchestrator.orchestrate_process(call_home=call_home, **args.__dict__)
     except DirLockError as dle:
-        print(f'Could not acquire the lock file for {args.submission_dir} because another process is using this '
-              f'directory or a previous process did not terminate correctly. '
-              f'If the problem persists, remove the lock file manually.')
+        logger.exception(f'Could not acquire the lock file for {args.submission_dir} because another process is using this '
+                         f'directory or a previous process did not terminate correctly. '
+                         f'If the problem persists, remove the lock file manually.')
         caught_exception = dle
         exit_status = 65
     except FileNotFoundError as fne:
-        print(fne)
+        logger.exception(fne)
         caught_exception = fne
         exit_status = 66
     except SubmissionNotFoundException as snfe:
-        print(f'{snfe}. Please contact EVA Helpdesk')
+        logger.exception(f'{snfe}. Please contact EVA Helpdesk')
         caught_exception = snfe
         exit_status = 67
     except SubmissionStatusException as sse:
-        print(f'{sse}. Please try again later. If the problem persists, please contact EVA Helpdesk')
+        logger.exception(f'{sse}. Please try again later. If the problem persists, please contact EVA Helpdesk')
         caught_exception = sse
         exit_status = 68
     except MetadataTemplateVersionException as mte:
-        print(mte)
+        logger.exception(mte)
         caught_exception = mte
         exit_status = 69
     except MetadataTemplateVersionNotFoundException as mte:
-        print(mte)
+        logger.exception(mte)
         caught_exception = mte
         exit_status = 70
     except SubmissionUploadException as sue:
-        print(sue)
+        logger.exception(sue)
         caught_exception = sue
         exit_status = 71
     except HTTPError as http_err:
-        print(http_err)
+        logger.exception(http_err)
         if http_err.response is not None and http_err.response.text:
             print(http_err.response.text)
         caught_exception = http_err
         exit_status = 72
     except Exception as ex:
-        print(ex)
+        logger.exception(ex)
         caught_exception = ex
         exit_status = 73
-
-    if caught_exception:
-        logger.exception(caught_exception)
 
     if call_home is not None:
         if exit_status == 0:
