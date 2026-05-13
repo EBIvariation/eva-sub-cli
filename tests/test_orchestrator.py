@@ -10,11 +10,8 @@ from openpyxl.reader.excel import load_workbook
 from requests import HTTPError
 
 from eva_sub_cli import SUB_CLI_CONFIG_FILE
-from eva_sub_cli.exceptions.invalid_file_type_exception import InvalidFileTypeError
-from eva_sub_cli.exceptions.metadata_template_version_exception import MetadataTemplateVersionException, \
-    MetadataTemplateVersionNotFoundException
-from eva_sub_cli.exceptions.submission_not_found_exception import SubmissionNotFoundException
-from eva_sub_cli.exceptions.submission_status_exception import SubmissionStatusException
+from eva_sub_cli.exceptions import InvalidFileTypeError, MetadataTemplateVersionException, \
+    MetadataTemplateVersionNotFoundException, SubmissionNotFoundException, SubmissionStatusException
 from eva_sub_cli.file_utils import is_vcf_file
 from eva_sub_cli.metadata import EvaMetadataJson
 from eva_sub_cli.orchestrator import orchestrate_process, VALIDATE, SUBMIT, DOCKER, check_validation_required, \

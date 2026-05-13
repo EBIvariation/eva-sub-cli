@@ -2,8 +2,6 @@ import sys
 
 from requests import HTTPError
 
-from eva_sub_cli.exceptions.submission_upload_exception import SubmissionUploadException
-
 if not sys.warnoptions:
     import warnings
     warnings.simplefilter("ignore")
@@ -15,10 +13,8 @@ from ebi_eva_common_pyutils.logger import logging_config
 
 import eva_sub_cli
 from eva_sub_cli import orchestrator
-from eva_sub_cli.exceptions.metadata_template_version_exception import MetadataTemplateVersionException, \
-    MetadataTemplateVersionNotFoundException
-from eva_sub_cli.exceptions.submission_status_exception import SubmissionStatusException
-from eva_sub_cli.exceptions.submission_not_found_exception import SubmissionNotFoundException
+from eva_sub_cli.exceptions import MetadataTemplateVersionException, MetadataTemplateVersionNotFoundException, \
+    SubmissionStatusException, SubmissionNotFoundException, SubmissionUploadException, NoVcfsFoundException
 from eva_sub_cli.call_home import CallHomeClient
 from eva_sub_cli.file_utils import is_submission_dir_writable, DirLockError, DirLock
 from eva_sub_cli.orchestrator import VALIDATE, SUBMIT, DOCKER, NATIVE
@@ -130,8 +126,8 @@ def main():
             # Pass on all the arguments to the orchestrator
             orchestrator.orchestrate_process(call_home=call_home, **args.__dict__)
     except DirLockError as dle:
-        logger.exception(f'Could not acquire the lock file for {args.submission_dir} because another process is using this '
-                         f'directory or a previous process did not terminate correctly. '
+        logger.exception(f'Could not acquire the lock file for {args.submission_dir} because another process is using '
+                         f'this directory or a previous process did not terminate correctly. '
                          f'If the problem persists, remove the lock file manually.')
         caught_exception = dle
         exit_status = 65
@@ -139,36 +135,41 @@ def main():
         logger.exception(fne)
         caught_exception = fne
         exit_status = 66
+    except NoVcfsFoundException as nvfe:
+        logger.exception(f'{nvfe}. Please ensure that you have listed VCF files in the metadata (.vcf or .vcf.gz file '
+                         f'extension), and that you have not modified the metadata template in any way.')
+        caught_exception = nvfe
+        exit_status = 67
     except SubmissionNotFoundException as snfe:
         logger.exception(f'{snfe}. Please contact EVA Helpdesk')
         caught_exception = snfe
-        exit_status = 67
+        exit_status = 68
     except SubmissionStatusException as sse:
         logger.exception(f'{sse}. Please try again later. If the problem persists, please contact EVA Helpdesk')
         caught_exception = sse
-        exit_status = 68
+        exit_status = 69
     except MetadataTemplateVersionException as mte:
         logger.exception(mte)
         caught_exception = mte
-        exit_status = 69
+        exit_status = 70
     except MetadataTemplateVersionNotFoundException as mte:
         logger.exception(mte)
         caught_exception = mte
-        exit_status = 70
+        exit_status = 71
     except SubmissionUploadException as sue:
         logger.exception(sue)
         caught_exception = sue
-        exit_status = 71
+        exit_status = 72
     except HTTPError as http_err:
         logger.exception(http_err)
         if http_err.response is not None and http_err.response.text:
             print(http_err.response.text)
         caught_exception = http_err
-        exit_status = 72
+        exit_status = 73
     except Exception as ex:
         logger.exception(ex)
         caught_exception = ex
-        exit_status = 73
+        exit_status = 74
 
     if call_home is not None:
         if exit_status == 0:

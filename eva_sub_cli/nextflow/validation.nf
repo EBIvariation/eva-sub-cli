@@ -67,7 +67,6 @@ schema_dir = file(projectDir).parent + '/etc'
 conversion_configuration = "${schema_dir}/$params.conversion_configuration_name"
 
 
-
 def joinBasePath(path) {
     if (path) {
         return params.base_dir + '/' + path

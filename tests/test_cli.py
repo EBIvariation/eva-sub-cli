@@ -1,19 +1,13 @@
-import copy
-import logging
 import os
 import shutil
-import sys
 from unittest import TestCase
 from unittest.mock import patch, Mock
 
 from requests import HTTPError
 
 from eva_sub_cli import orchestrator
-from eva_sub_cli.exceptions.metadata_template_version_exception import MetadataTemplateVersionException, \
-    MetadataTemplateVersionNotFoundException
-from eva_sub_cli.exceptions.submission_not_found_exception import SubmissionNotFoundException
-from eva_sub_cli.exceptions.submission_status_exception import SubmissionStatusException
-from eva_sub_cli.exceptions.submission_upload_exception import SubmissionUploadException
+from eva_sub_cli.exceptions import MetadataTemplateVersionException, MetadataTemplateVersionNotFoundException, \
+     SubmissionNotFoundException, SubmissionStatusException, SubmissionUploadException
 from eva_sub_cli.executables import cli
 from eva_sub_cli.file_utils import DirLockError
 from tests.test_utils import touch
@@ -108,7 +102,7 @@ class TestCli(TestCase):
                     )
                     self.assertIn(str(exception), printed_texts)
 
-                    if (isinstance(exception, HTTPError)):
+                    if isinstance(exception, HTTPError):
                         self.assertIn(exception.response.text, printed_texts)
 
     def test_main_sends_start_and_end_on_success(self):

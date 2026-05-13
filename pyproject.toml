@@ -40,7 +40,7 @@ classifiers = [
 'format_metadata.py'='eva_sub_cli.executables.format_metadata:main'
 
 [tool.setuptools]
-packages = ['eva_sub_cli', 'eva_sub_cli.exceptions', 'eva_sub_cli.executables', 'eva_sub_cli.validators']
+packages = ['eva_sub_cli', 'eva_sub_cli.executables', 'eva_sub_cli.validators']
 
 [tool.setuptools.package-data]
 'eva_sub_cli'=['nextflow/*', 'etc/*', 'jinja_templates/*']
