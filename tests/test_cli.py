@@ -71,13 +71,13 @@ class TestCli(TestCase):
                           f'using this directory or a previous process did not terminate correctly. '
                           f'If the problem persists, remove the lock file manually.'), 65),
             (FileNotFoundError("The test_file does not exist"), 66),
-            (SubmissionNotFoundException("submission not found"), 67),
-            (SubmissionStatusException("can't get submission status"), 68),
-            (MetadataTemplateVersionException("Metadata template version lower than expected"), 69),
-            (MetadataTemplateVersionNotFoundException("Metadata template version not found"), 70),
-            (SubmissionUploadException("Error while uploading submission: File size in metadata json does not match with the size of the file uploaded"), 71),
-            (http_error, 72),
-            (Exception("Exception occurred while processing"), 73),
+            (SubmissionNotFoundException("submission not found"), 68),
+            (SubmissionStatusException("can't get submission status"), 69),
+            (MetadataTemplateVersionException("Metadata template version lower than expected"), 70),
+            (MetadataTemplateVersionNotFoundException("Metadata template version not found"), 71),
+            (SubmissionUploadException("Error while uploading submission: File size in metadata json does not match with the size of the file uploaded"), 72),
+            (http_error, 73),
+            (Exception("Exception occurred while processing"), 74),
         ]
 
         for exception, expected_exit in test_cases:
