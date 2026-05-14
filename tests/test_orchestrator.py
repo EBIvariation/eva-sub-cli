@@ -11,12 +11,13 @@ from requests import HTTPError
 
 from eva_sub_cli import SUB_CLI_CONFIG_FILE
 from eva_sub_cli.exceptions import InvalidFileTypeError, MetadataTemplateVersionException, \
-    MetadataTemplateVersionNotFoundException, SubmissionNotFoundException, SubmissionStatusException
+    MetadataTemplateVersionNotFoundException, SubmissionNotFoundException, SubmissionStatusException, \
+    NoVcfsFoundException
 from eva_sub_cli.file_utils import is_vcf_file
 from eva_sub_cli.metadata import EvaMetadataJson
 from eva_sub_cli.orchestrator import orchestrate_process, VALIDATE, SUBMIT, DOCKER, check_validation_required, \
     verify_and_get_metadata_xlsx_version, get_metadata_xlsx_template_link, get_sub_cli_github_tags, \
-    remove_non_vcf_files_from_metadata
+    remove_non_vcf_files_from_metadata, get_project_title_and_create_vcf_files_mapping
 from eva_sub_cli.submit import SUB_CLI_CONFIG_KEY_SUBMISSION_ID, SUB_CLI_CONFIG_KEY_SUBMISSION_UPLOAD_URL
 from eva_sub_cli.validators.validator import READY_FOR_SUBMISSION_TO_EVA, ALL_VALIDATION_TASKS
 from tests.test_utils import touch
@@ -91,6 +92,24 @@ class TestOrchestrator(unittest.TestCase):
         files_sheet = workbook['Files']
         files_headers = {cell.value: cell.column - 1 for cell in files_sheet[1]}
         assert all(is_vcf_file(row[files_headers['File Name']]) for row in files_sheet.iter_rows(min_row=2, values_only=True) if row[files_headers['File Name']] is not None)
+
+    def test_get_project_title_and_create_vcf_files_mapping(self):
+        project_title, mapping_file = get_project_title_and_create_vcf_files_mapping(
+            self.test_sub_dir, self.metadata_json_with_non_vcf_files, None, None)
+        assert project_title == 'Example Project'
+        with open(mapping_file, 'r') as f:
+            reader = csv.reader(f)
+            next(reader)
+            assert [os.path.basename(row[0]) for row in reader] == ['example1.vcf.gz', 'example2.vcf', 'example3.vcf']
+
+    def test_get_project_title_and_create_vcf_files_mapping_no_vcf_files(self):
+        metadata_for_test_path = os.path.join(self.test_sub_dir, 'test_metadata.json')
+        metadata = EvaMetadataJson(self.metadata_json_with_non_vcf_files)
+        non_vcf_files = [f for f in metadata.files if not is_vcf_file(f['fileName'])]
+        metadata.set_files(non_vcf_files)
+        metadata.write(metadata_for_test_path)
+        with self.assertRaises(NoVcfsFoundException):
+            get_project_title_and_create_vcf_files_mapping(self.test_sub_dir, metadata_for_test_path, None, None)
 
     def test_check_validation_required(self):
         tasks = ['submit']
