@@ -15,11 +15,9 @@ from retry import retry
 import eva_sub_cli
 from eva_sub_cli import MINIMUM_METADATA_XLSX_TEMPLATE_VERSION
 from eva_sub_cli import SUB_CLI_CONFIG_FILE, __version__
-from eva_sub_cli.exceptions.invalid_file_type_exception import InvalidFileTypeError
-from eva_sub_cli.exceptions.metadata_template_version_exception import MetadataTemplateVersionException, \
-    MetadataTemplateVersionNotFoundException
-from eva_sub_cli.exceptions.submission_not_found_exception import SubmissionNotFoundException
-from eva_sub_cli.exceptions.submission_status_exception import SubmissionStatusException
+from eva_sub_cli.exceptions import InvalidFileTypeError, MetadataTemplateVersionException, \
+    MetadataTemplateVersionNotFoundException, SubmissionNotFoundException, SubmissionStatusException, \
+    NoVcfsFoundException
 from eva_sub_cli.file_utils import is_vcf_file
 from eva_sub_cli.metadata import EvaMetadataJson
 from eva_sub_cli.submission_ws import SubmissionWSClient
@@ -115,6 +113,8 @@ def validate_vcf_mapping(vcf_mapping):
     :param vcf_mapping: iterable of triples (VCF file path, reference FASTA path, optional assembly report path)
     :return:
     """
+    if len(vcf_mapping) == 0:
+        raise NoVcfsFoundException('No VCF files detected in metadata')
     for vcf_file, fasta_file, report_file in vcf_mapping:
         if not (vcf_file and os.path.isfile(vcf_file)):
             raise FileNotFoundError(f'The variant file {vcf_file} does not exist, please check the file path.')
