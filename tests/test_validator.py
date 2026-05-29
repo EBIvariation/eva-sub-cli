@@ -537,7 +537,9 @@ class TestValidator(TestCase):
                 {'property': '/sample/analysisAlias',
                  'description': 'alias_1,alias_2 present in Samples not in Analysis'},
                 {'property': '/sample/0/bioSampleAccession',
-                 'description': "Existing sample SAMEA6675477 must have required property 'collection date'"}
+                 'description': "Existing sample SAMEA6675477 must have required property 'collection date'"},
+                {'property': '/sample/3/bioSampleObject/characteristics/taxId',
+                 'description': "must have required property 'taxId'"}
             ]
         }
         self.validator._convert_biovalidator_validation_to_spreadsheet()
@@ -569,7 +571,9 @@ class TestValidator(TestCase):
              'description': 'alias_1,alias_2 present in Samples not in Analysis'},
             {'column': 'Sample Accession', 'row': 3, 'sheet': 'Sample',
              'description': 'Existing sample SAMEA6675477 must have required property '
-                            "'collection date'"}
+                            "'collection date'"},
+            {'sheet': 'Sample', 'row': 6, 'column': 'Taxonomy ID',
+             'description': 'Column "Taxonomy ID" is not populated'}
         ]
 
     def test_collect_conversion_errors(self):

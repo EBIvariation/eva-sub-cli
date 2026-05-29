@@ -130,6 +130,12 @@ class TestSemanticMetadata(TestCase):
                             "taxId": [{"text": "1234"}]
                         }
                     }
+                },
+                {
+                    "bioSampleObject": {
+                        "characteristics": {
+                        }
+                    }
                 }
             ]
         }
@@ -142,6 +148,10 @@ class TestSemanticMetadata(TestCase):
                 {
                     'property': '/sample/2/bioSampleObject/characteristics/taxId',
                     'description': '1234 is not a valid taxonomy code'
+                },
+                {
+                    'property': '/sample/3/bioSampleObject/characteristics/taxId',
+                    'description': "must have required property 'taxId'"
                 }
             ])
 

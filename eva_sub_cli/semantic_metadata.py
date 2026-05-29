@@ -93,9 +93,13 @@ class SemanticMetadataChecker(AppLogger):
             self.check_taxonomy_code(project[TAX_ID_KEY], f'/{PROJECT_KEY}/{TAX_ID_KEY}')
         # Check sample taxonomies for novel samples
         for idx, sample in enumerate(self.metadata[SAMPLE_KEY]):
-            if BIOSAMPLE_OBJECT_KEY in sample and TAX_ID_KEY in sample[BIOSAMPLE_OBJECT_KEY][CHARACTERISTICS_KEY]:
-                self.check_taxonomy_code(sample[BIOSAMPLE_OBJECT_KEY][CHARACTERISTICS_KEY][TAX_ID_KEY][0]['text'],
-                                         f'/{SAMPLE_KEY}/{idx}/{BIOSAMPLE_OBJECT_KEY}/{CHARACTERISTICS_KEY}/{TAX_ID_KEY}')
+            if BIOSAMPLE_OBJECT_KEY in sample:
+                if TAX_ID_KEY in sample[BIOSAMPLE_OBJECT_KEY][CHARACTERISTICS_KEY]:
+                    self.check_taxonomy_code(sample[BIOSAMPLE_OBJECT_KEY][CHARACTERISTICS_KEY][TAX_ID_KEY][0]['text'],
+                                             f'/{SAMPLE_KEY}/{idx}/{BIOSAMPLE_OBJECT_KEY}/{CHARACTERISTICS_KEY}/{TAX_ID_KEY}')
+                else:
+                    self.add_error(f'/{SAMPLE_KEY}/{idx}/{BIOSAMPLE_OBJECT_KEY}/{CHARACTERISTICS_KEY}/{TAX_ID_KEY}',
+                                   f"must have required property '{TAX_ID_KEY}'")
 
     def check_uniqueness_analysis_alias(self):
         analyses = self.metadata[ANALYSIS_KEY]
