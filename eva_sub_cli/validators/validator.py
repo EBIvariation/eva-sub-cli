@@ -605,9 +605,8 @@ class Validator(AppLogger):
     def _add_schema_to_metadata(self):
         if self.metadata_json_post_validation:
             metadata = EvaMetadataJson(self.metadata_json_post_validation)
-            if '$schema' not in metadata.content:
-                metadata.content['$schema'] = get_json_schema_link()
-                metadata.write(self.metadata_json_post_validation)
+            metadata.content['$schema'] = get_json_schema_link()
+            metadata.write(self.metadata_json_post_validation)
 
     def _update_metadata_with_evidence_type(self):
         if self.metadata_json_post_validation:
