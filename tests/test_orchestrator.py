@@ -16,7 +16,8 @@ from eva_sub_cli.exceptions import InvalidFileTypeError, MetadataTemplateVersion
 from eva_sub_cli.file_utils import is_vcf_file
 from eva_sub_cli.metadata import EvaMetadataJson
 from eva_sub_cli.orchestrator import orchestrate_process, VALIDATE, SUBMIT, DOCKER, check_validation_required, \
-    verify_and_get_metadata_xlsx_version, remove_non_vcf_files_from_metadata
+    verify_and_get_metadata_xlsx_version, remove_non_vcf_files_from_metadata, \
+    get_project_title_and_create_vcf_files_mapping
 from eva_sub_cli.utils import get_metadata_xlsx_template_link, get_sub_cli_github_tags
 from eva_sub_cli.submit import SUB_CLI_CONFIG_KEY_SUBMISSION_ID, SUB_CLI_CONFIG_KEY_SUBMISSION_UPLOAD_URL
 from eva_sub_cli.validators.validator import READY_FOR_SUBMISSION_TO_EVA, ALL_VALIDATION_TASKS
