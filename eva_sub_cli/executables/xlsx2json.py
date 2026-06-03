@@ -9,8 +9,6 @@ from ebi_eva_common_pyutils.logger import logging_config
 from openpyxl.reader.excel import load_workbook
 from openpyxl.workbook import Workbook
 
-from eva_sub_cli.utils import get_json_schema_link as _get_json_schema_link
-
 WORKSHEETS_KEY_NAME = 'worksheets'
 REQUIRED_HEADERS_KEY_NAME = 'required'
 OPTIONAL_HEADERS_KEY_NAME = 'optional'
@@ -259,8 +257,7 @@ class XlsxParser:
         # If the file could not be loaded at all, return without generating JSON.
         if not self.file_loaded:
             return
-        # Include which version of the EVA schema we are using
-        json_data = {'$schema': self.get_json_schema_link()}
+        json_data = {}
         for title in self.xlsx_conf[WORKSHEETS_KEY_NAME]:
             self.active_worksheet = title
             if title == PROJECT:
@@ -281,8 +278,6 @@ class XlsxParser:
         with open(output_json_file, 'w') as open_file:
             json.dump(json_data, open_file, cls=DateTimeEncoder)
 
-    def get_json_schema_link(self):
-        return _get_json_schema_link()
 
     def translate_header(self, title, header):
         if header in self.xlsx_conf[title].get(REQUIRED_HEADERS_KEY_NAME, {}):
