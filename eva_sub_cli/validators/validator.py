@@ -14,6 +14,7 @@ from packaging import version
 
 import eva_sub_cli
 from eva_sub_cli import ETC_DIR, SUB_CLI_CONFIG_FILE, __version__
+from eva_sub_cli.utils import get_json_schema_link
 from eva_sub_cli.file_utils import resolve_single_file_path
 from eva_sub_cli.metadata import EvaMetadataJson
 from eva_sub_cli.report import generate_html_report, generate_text_report
@@ -448,6 +449,7 @@ class Validator(AppLogger):
             self._convert_biovalidator_validation_to_spreadsheet()
             self._write_spreadsheet_validation_results()
         self._collect_file_info_to_metadata()
+        self._add_schema_to_metadata()
 
     def _load_spreadsheet_conversion_errors(self):
         errors_file = resolve_single_file_path(os.path.join(self.output_dir, 'other_validations',
@@ -599,6 +601,13 @@ class Validator(AppLogger):
                 self.results[METADATA_CHECK]['json_errors'].extend(errors)
             else:
                 self.results[METADATA_CHECK]['json_errors'] = errors
+
+    def _add_schema_to_metadata(self):
+        if self.metadata_json_post_validation:
+            metadata = EvaMetadataJson(self.metadata_json_post_validation)
+            if '$schema' not in metadata.content:
+                metadata.content['$schema'] = get_json_schema_link()
+                metadata.write(self.metadata_json_post_validation)
 
     def _update_metadata_with_evidence_type(self):
         if self.metadata_json_post_validation:

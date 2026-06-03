@@ -9,7 +9,7 @@ from ebi_eva_common_pyutils.logger import logging_config
 from openpyxl.reader.excel import load_workbook
 from openpyxl.workbook import Workbook
 
-from eva_sub_cli.orchestrator import get_sub_cli_version, get_sub_cli_github_tags
+from eva_sub_cli.utils import get_json_schema_link as _get_json_schema_link
 
 WORKSHEETS_KEY_NAME = 'worksheets'
 REQUIRED_HEADERS_KEY_NAME = 'required'
@@ -282,12 +282,7 @@ class XlsxParser:
             json.dump(json_data, open_file, cls=DateTimeEncoder)
 
     def get_json_schema_link(self):
-        sub_cli_version = get_sub_cli_version()
-        sub_cli_tags = get_sub_cli_github_tags()
-        if sub_cli_version in sub_cli_tags:
-            return f'https://raw.githubusercontent.com/EBIvariation/eva-sub-cli/refs/tags/v{sub_cli_version}/eva_sub_cli/etc/eva_schema.json'
-        else:
-            return 'https://raw.githubusercontent.com/EBIvariation/eva-sub-cli/main/eva_sub_cli/etc/eva_schema.json'
+        return _get_json_schema_link()
 
     def translate_header(self, title, header):
         if header in self.xlsx_conf[title].get(REQUIRED_HEADERS_KEY_NAME, {}):

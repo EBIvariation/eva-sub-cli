@@ -16,8 +16,8 @@ from eva_sub_cli.exceptions import InvalidFileTypeError, MetadataTemplateVersion
 from eva_sub_cli.file_utils import is_vcf_file
 from eva_sub_cli.metadata import EvaMetadataJson
 from eva_sub_cli.orchestrator import orchestrate_process, VALIDATE, SUBMIT, DOCKER, check_validation_required, \
-    verify_and_get_metadata_xlsx_version, get_metadata_xlsx_template_link, get_sub_cli_github_tags, \
-    remove_non_vcf_files_from_metadata, get_project_title_and_create_vcf_files_mapping
+    verify_and_get_metadata_xlsx_version, remove_non_vcf_files_from_metadata
+from eva_sub_cli.utils import get_metadata_xlsx_template_link, get_sub_cli_github_tags
 from eva_sub_cli.submit import SUB_CLI_CONFIG_KEY_SUBMISSION_ID, SUB_CLI_CONFIG_KEY_SUBMISSION_UPLOAD_URL
 from eva_sub_cli.validators.validator import READY_FOR_SUBMISSION_TO_EVA, ALL_VALIDATION_TASKS
 from tests.test_utils import touch
@@ -401,8 +401,8 @@ class TestOrchestrator(unittest.TestCase):
             assert get_sub_cli_github_tags() == []
 
     def test_get_metadata_xlsx_template_link(self):
-        with patch('eva_sub_cli.orchestrator.get_sub_cli_version') as sub_cli_version, \
-                patch('eva_sub_cli.orchestrator.get_sub_cli_github_tags') as sub_cli_tags:
+        with patch('eva_sub_cli.utils.get_sub_cli_version') as sub_cli_version, \
+                patch('eva_sub_cli.utils.get_sub_cli_github_tags') as sub_cli_tags:
             sub_cli_version.return_value = '1.1.6'
             sub_cli_tags.return_value = ['1.1.6']
             assert get_metadata_xlsx_template_link() == 'https://raw.githubusercontent.com/EBIvariation/eva-sub-cli/refs/tags/v1.1.6/eva_sub_cli/etc/EVA_Submission_template.xlsx'
