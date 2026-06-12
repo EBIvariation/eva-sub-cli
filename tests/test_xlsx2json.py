@@ -59,8 +59,7 @@ class TestXlsReader(TestCase):
         with open(output_json) as open_file:
             json_data = json.load(open_file)
             # assert json file is created with expected data
-            assert sorted(json_data.keys()) == ['$schema', 'analysis', 'files', 'project', 'sample', 'submitterDetails']
-            json_data.pop('$schema', None)
+            assert sorted(json_data.keys()) == ['analysis', 'files', 'project', 'sample', 'submitterDetails']
             self.assertEqual(self.get_expected_json(), json_data)
 
         # assert json schema
@@ -87,8 +86,7 @@ class TestXlsReader(TestCase):
         with open(output_json) as open_file:
             json_data = json.load(open_file)
             # assert json file is created with expected data
-            assert sorted(json_data.keys()) == ['$schema', 'analysis', 'files', 'project', 'sample', 'submitterDetails']
-            json_data.pop('$schema', None)
+            assert sorted(json_data.keys()) == ['analysis', 'files', 'project', 'sample', 'submitterDetails']
             self.assertEqual(self.get_expected_json(), json_data)
 
         # assert json schema
@@ -113,8 +111,7 @@ class TestXlsReader(TestCase):
         with open(output_json) as open_file:
             json_data = json.load(open_file)
             # assert json file is created with expected data
-            assert sorted(json_data.keys()) == ['$schema', 'analysis', 'files', 'project', 'sample', 'submitterDetails']
-            json_data.pop('$schema', None)
+            assert sorted(json_data.keys()) == ['analysis', 'files', 'project', 'sample', 'submitterDetails']
             # get expected json and remove other fields apart from project accession for comparison
             expected_json = self.get_expected_json()
             expected_json['project'] = {'projectAccession': 'PRJEB12345'}
@@ -142,8 +139,7 @@ class TestXlsReader(TestCase):
         with open(output_json) as open_file:
             json_data = json.load(open_file)
             # assert json file is created with expected data
-            assert sorted(json_data.keys()) == ['$schema', 'analysis', 'files', 'project', 'sample', 'submitterDetails']
-            json_data.pop('$schema', None)
+            assert sorted(json_data.keys()) == ['analysis', 'files', 'project', 'sample', 'submitterDetails']
             expected_json = self.get_expected_json()
             expected_json['analysis'][0]['links'] = ['BioProject:PRJNA1435562']
             self.assertEqual(expected_json, json_data)
@@ -177,7 +173,7 @@ class TestXlsReader(TestCase):
         assert os.path.exists(output_json)
         with open(output_json) as open_file:
             json_data = json.load(open_file)
-            assert sorted(json_data.keys()) == ['$schema', 'analysis', 'files', 'project', 'sample', 'submitterDetails']
+            assert sorted(json_data.keys()) == ['analysis', 'files', 'project', 'sample', 'submitterDetails']
             # required field taxId is missing
             assert 'taxId' not in json_data['project']
             # novel sample is missing scientific name in characteristics and sample name

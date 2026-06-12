@@ -9,10 +9,7 @@ from ebi_eva_common_pyutils.config import WritableConfig
 from ebi_eva_common_pyutils.logger import logging_config
 from openpyxl.reader.excel import load_workbook
 from packaging import version
-from requests import HTTPError
-from retry import retry
 
-import eva_sub_cli
 from eva_sub_cli import MINIMUM_METADATA_XLSX_TEMPLATE_VERSION
 from eva_sub_cli import SUB_CLI_CONFIG_FILE, __version__
 from eva_sub_cli.exceptions import InvalidFileTypeError, MetadataTemplateVersionException, \
@@ -23,7 +20,7 @@ from eva_sub_cli.metadata import EvaMetadataJson
 from eva_sub_cli.submission_ws import SubmissionWSClient
 from eva_sub_cli.submit import StudySubmitter, SUB_CLI_CONFIG_KEY_SUBMISSION_ID, \
     SUB_CLI_CONFIG_KEY_SUBMISSION_UPLOAD_URL
-from eva_sub_cli.utils import get_project_title_from_ena
+from eva_sub_cli.utils import get_project_title_from_ena, get_metadata_xlsx_template_link
 from eva_sub_cli.validators.docker_validator import DockerValidator
 from eva_sub_cli.validators.native_validator import NativeValidator
 from eva_sub_cli.validators.validator import READY_FOR_SUBMISSION_TO_EVA, ALL_VALIDATION_TASKS
@@ -152,46 +149,6 @@ def get_project_and_vcf_fasta_mapping_from_metadata_json(metadata_json):
                                          os.path.abspath(assembly_report) if assembly_report else ''])
 
     return project_title, vcf_fasta_report_mapping
-
-
-def get_sub_cli_version():
-    if version.parse(eva_sub_cli.__version__).is_devrelease:
-        version_values = [int(v) for v in version.parse(eva_sub_cli.__version__).base_version.split('.')]
-        major = version_values[0]
-        minor = version_values[1] if len(version_values) > 1 else 0
-        patch = version_values[2] if len(version_values) > 2 else 0
-        if patch > 0:
-            patch -= 1
-        elif minor > 0:
-            minor -= 1
-            patch = 0
-        elif major > 0:
-            major -= 1
-            minor = 0
-            patch = 0
-        return f"{major}.{minor}.{patch}"
-    else:
-        return version.parse(eva_sub_cli.__version__).base_version
-
-
-@retry(exceptions=(HTTPError,), tries=3, delay=2, backoff=1.2, jitter=(1, 3))
-def get_sub_cli_github_tags():
-    url = f"https://api.github.com/repos/EBIvariation/eva-sub-cli/tags"
-    response = requests.get(url)
-    if response.status_code == 200:
-        tags = [tag["name"][1:] for tag in response.json()]
-        return tags
-    else:
-        return []
-
-
-def get_metadata_xlsx_template_link():
-    sub_cli_version = get_sub_cli_version()
-    sub_cli_tags = get_sub_cli_github_tags()
-    if sub_cli_version in sub_cli_tags:
-        return f'https://raw.githubusercontent.com/EBIvariation/eva-sub-cli/refs/tags/v{sub_cli_version}/eva_sub_cli/etc/EVA_Submission_template.xlsx'
-    else:
-        return 'https://raw.githubusercontent.com/EBIvariation/eva-sub-cli/main/eva_sub_cli/etc/EVA_Submission_template.xlsx'
 
 
 def verify_and_get_metadata_xlsx_version(metadata_xlsx, min_req_version):
