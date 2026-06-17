@@ -3,7 +3,7 @@ import os
 import unittest
 from unittest.mock import MagicMock, patch
 
-from eva_sub_cli import LSRI_CLIENT_ID
+from eva_sub_cli import LSRI_CLIENT_ID, ENA_WEBIN_ACCOUNT_VAR, ENA_WEBIN_PASSWORD_VAR
 from eva_sub_cli.auth import WebinAuth, LSRIAuth
 
 
@@ -31,15 +31,15 @@ class TestWebinAuth(unittest.TestCase):
 
     def test_get_webin_username_password_cmd_line(self):
         auth = WebinAuth(username='username', password='password')
-        os.environ['ENA_WEBIN_ACCOUNT'] = 'notusername'
-        os.environ['ENA_WEBIN_PASSWORD'] = 'notpassword'
+        os.environ[ENA_WEBIN_ACCOUNT_VAR] = 'notusername'
+        os.environ[ENA_WEBIN_PASSWORD_VAR] = 'notpassword'
         username, password = auth._get_webin_username_password()
         assert username == 'username'
         assert password == 'password'
 
     def test_get_webin_username_password_environ(self):
-        os.environ['ENA_WEBIN_ACCOUNT'] = 'username'
-        os.environ['ENA_WEBIN_PASSWORD'] = 'password'
+        os.environ[ENA_WEBIN_ACCOUNT_VAR] = 'username'
+        os.environ[ENA_WEBIN_PASSWORD_VAR] = 'password'
         auth = WebinAuth()
         username, password = auth._get_webin_username_password()
         assert username == 'username'
