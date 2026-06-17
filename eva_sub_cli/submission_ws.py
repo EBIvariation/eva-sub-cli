@@ -5,7 +5,7 @@ from ebi_eva_common_pyutils.logger import AppLogger
 from requests import HTTPError
 from retry import retry
 
-from eva_sub_cli import SUBMISSION_WS_VAR
+from eva_sub_cli import SUBMISSION_WS_URL_VAR
 from eva_sub_cli.auth import get_auth
 from eva_sub_cli.exceptions import SubmissionUploadException
 
@@ -15,8 +15,8 @@ DEFAULT_SUBMISSION_WS_URL = 'https://www.ebi.ac.uk/eva/webservices/submission-ws
 def _submission_ws_base_url():
     """Retrieve the base URL for the submission web services.
     In order of preference from the environment variable or the hardcoded value."""
-    if os.environ.get(SUBMISSION_WS_VAR):
-        return os.environ.get(SUBMISSION_WS_VAR)
+    if os.environ.get(SUBMISSION_WS_URL_VAR):
+        return os.environ.get(SUBMISSION_WS_URL_VAR)
     else:
         return DEFAULT_SUBMISSION_WS_URL
 
