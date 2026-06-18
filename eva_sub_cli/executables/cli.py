@@ -12,6 +12,7 @@ from argparse import ArgumentParser
 from ebi_eva_common_pyutils.logger import logging_config
 
 import eva_sub_cli
+from eva_sub_cli import ENA_WEBIN_ACCOUNT_VAR, ENA_WEBIN_PASSWORD_VAR
 from eva_sub_cli import orchestrator
 from eva_sub_cli.exceptions import MetadataTemplateVersionException, MetadataTemplateVersionNotFoundException, \
     SubmissionStatusException, SubmissionNotFoundException, SubmissionUploadException, NoVcfsFoundException
@@ -36,8 +37,8 @@ def validate_command_line_arguments(args, argparser):
             fail = True
 
     if SUBMIT in args.tasks and (
-            not (args.username or os.environ.get('ENAWEBINACCOUNT')) or
-            not (args.password or os.environ.get('ENAWEBINPASSWORD'))):
+            not (args.username or os.environ.get(ENA_WEBIN_ACCOUNT_VAR)) or
+            not (args.password or os.environ.get(ENA_WEBIN_PASSWORD_VAR))):
         print("To submit your data, you need to provide a Webin username and password")
         fail = True
 
