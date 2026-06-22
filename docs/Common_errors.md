@@ -379,7 +379,7 @@ This error indicates that the number of sample columns in the VCF data does not 
 
 **Resolution**
 
-Ensure that the number of sample columns in all records matches the number of samples defined in the header before submission
+Ensure that the number of sample columns in all records matches the number of samples defined in the header before submission.
 
 Example command to detect records with inconsistent sample column counts
 
@@ -441,7 +441,7 @@ These warnings indicate that one or more INFO or FORMAT fields are present in th
 
 **Resolution**
 
-All INFO and FORMAT fields used in the VCF must be explicitly defined in the header using \#\#INFO and \#\#FORMAT lines 
+All INFO and FORMAT fields used in the VCF must be explicitly defined in the header using \#\#INFO and \#\#FORMAT lines.
 
 Example command to inspect INFO field definitions
 
