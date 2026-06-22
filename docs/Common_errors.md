@@ -22,7 +22,7 @@ This error indicates that the same variant appears more than once in the VCF fil
 
 **Additional context**
 
-When you receive a validation error like Duplicated variant found, it means two lines in your vcf file are describing the exact same genetic change. Let's explore this further with a real-world vcf example. 
+When you receive a validation error like Duplicated variant found, it means two lines in your VCF file are describing the exact same genetic change. Let's explore this further with a real-world VCF example. 
 
 ```text
 #CHROM  POS       ID    REF        ALT    QUAL    FILTER   ...
