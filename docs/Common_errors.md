@@ -231,7 +231,7 @@ This error indicates that the genotype (GT) field for a sample is not in a valid
 
 **Resolution**
 
-Ensure that all genotype values are correctly formatted according to VCF specifications before submission.Example command to inspect genotype fields
+Ensure that all genotype values are correctly formatted according to VCF specifications before submission. Example command to inspect genotype fields
 
 ```bash
 bcftools query -f '%CHROM\t%POS[\t%GT]\n' input.vcf
