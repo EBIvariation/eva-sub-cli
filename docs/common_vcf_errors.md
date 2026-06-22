@@ -2,7 +2,7 @@
 
 This section provides a curated overview of some of the common VCF validation errors. Each error is illustrated with a real validation output example, followed by a brief description about the error and the expected resolution for EVA submissions.
 
-1. ## **Duplicated Variants**
+## 1. Duplicated Variants
 
 **Example Validation Error**
 
@@ -53,7 +53,7 @@ bcftools norm -multiallelics -both --rm-dup all input.vcf > output.vcf
 ```
 
 
-2. ## **Variants not sorted by Genomic Position**
+## 2. Variants not sorted by Genomic Position
 
 **Example Validation Error**
 
@@ -83,8 +83,7 @@ awk '/^#/ {print; next} {print | "sort -k1,1 -k2,2n"}' input.vcf > output.vcf
 
 
 
-
-3. ## **Values Outside Allowed Range**
+## 3. Values Outside Allowed Range
 
 **Example Validation Error**
 
@@ -131,7 +130,7 @@ Corrected record:
 
 
 
-4. ## **Invalid Reference Allele**
+## 4. Invalid Reference Allele
 
 **Example Validation Error**
 
@@ -155,7 +154,7 @@ Please check the following before submission:
 plink2 --vcf input.vcf --ref-from-fa reference.fa --export vcf --out output
 ```
 
-5. ## **Invalid Fileformat Declaration**
+## 5. Invalid Fileformat Declaration
 
 **Example Validation Error**
 
@@ -185,7 +184,7 @@ Example of a supported header:
 ```
 
 
-6. ## **Missing Contig Definition (warning)** 
+## 6. Missing Contig Definition (warning) 
 
 **Example Validation Error**
 
@@ -217,7 +216,7 @@ Header with contig definition added:
 13      32936732 . G   A    .    PASS    .
 ```
 
-7. ## **Invalid Genotype Format**
+## 7. Invalid Genotype Format
 
 **Example Validation Error**
 
@@ -237,7 +236,7 @@ Ensure that all genotype values are correctly formatted according to VCF specifi
 bcftools query -f '%CHROM\t%POS[\t%GT]\n' input.vcf
 ```
 
-8. ## **Invalid INFO Field Format and Cardinality**
+## 8. Invalid INFO Field Format and Cardinality
 
 **Example Validation Errors**
 
@@ -272,7 +271,7 @@ bcftools query -f '%CHROM\t%POS\t%INFO\n' input.vcf
 ```
 
 
-9. ## **Identical Reference and Alternate Alleles**
+## 9. Identical Reference and Alternate Alleles
 
 **Example Validation Error**
 
@@ -295,7 +294,7 @@ awk '!/^#/ && $4 == $5' input.vcf
 ```
 
 
-10. ## **Invalid Quality Value**
+## 10. Invalid Quality Value
 
 **Example Validation Error**
 
@@ -318,7 +317,7 @@ bcftools query -f '%CHROM\t%POS\t%QUAL\n' input.vcf
 ```
 
 
-11. ## **Incorrect SVLEN Value** 
+## 11. Incorrect SVLEN Value
 
 **Example Validation Error**
 
@@ -340,7 +339,7 @@ bcftools query -f '%CHROM\t%POS\t%INFO/SVTYPE\t%INFO/SVLEN\n' input.vcf
 ```
 
 
-12. ## **Major allele used as REF allele (Data consistency issue)** 
+## 12 Major allele used as REF allele (Data consistency issue)
 
 
 **Example** 
@@ -365,7 +364,7 @@ Example command when exporting VCFs with PLINK 2.0
 plink2 --vcf input.vcf --ref-from-fa reference.fa --export vcf --out output
 ```
 
-13. ## **Sample Count Mismatch**  
+## 13. Sample Count Mismatch  
 
 **Example Validation Error** 
 
@@ -391,7 +390,7 @@ awk '!/^#/ {print NF}' input.vcf | sort -u
 This command reports the total number of columns present across variant records in the VCF file. In a correctly formatted VCF, all variant records should contain the same number of columns.
 
 
-14. ## **Missing Newline at End of File**
+## 14. Missing Newline at End of File
 
 **Example Validation Error** 
 
@@ -413,7 +412,7 @@ Example command to add a newline character to the end of the file
 sed -i -e '$a\' input.vcf
 ```
 
-15. ## **INFO and FORMAT Fields not defined in header (warnings)**
+## 15. INFO and FORMAT Fields not defined in header (warnings)
 
 **Example Validation Errors**
 
