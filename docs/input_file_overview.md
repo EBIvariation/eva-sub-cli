@@ -42,6 +42,8 @@ And here is how allele frequencies would look:
 
 When using the eva-sub-cli tool, VCF files can be either uncompressed or compressed using bgzip or gzip.
 
+For guidance on frequently encountered VCF validation issues and their resolutions, please see [Common vcf errors](common_vcf_errors.md‎)
+
 ## FASTA File
 
 This is the reference genome that your variants were called against, in uncompressed FASTA format. The EVA uses this to
