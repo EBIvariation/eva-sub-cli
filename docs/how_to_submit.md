@@ -28,7 +28,7 @@ The basic command to run validation and submission is as follows:
 eva-sub-cli.py --metadata_xlsx <metadata file> --submission_dir <submission directory> --username <webin username> --password <webin password>
 ```
 This will run validation and generate a report with the results. The report can be viewed as HTML or plain text. More 
-description of the validation checks being performed can be found in the [validation overview](validation_overview.md). For guidance on frequently encountered VCF validation issues and their resolutions, please see [Common vcf errors](common_vcf_errors.md‎)
+description of the validation checks being performed can be found in the [validation overview](validation_overview.md). For guidance on frequently encountered VCF validation issues and their resolutions, please see [Common VCF errors](docs/common_vcf_errors.md)
 
 **NOTE:** If the validation is successful, this command will automatically submit your data and metadata to EVA. If you 
 don't want this, see [below](#running-only-validation-or-only-submission).
