@@ -42,7 +42,7 @@ And here is how allele frequencies would look:
 
 When using the eva-sub-cli tool, VCF files can be either uncompressed or compressed using bgzip or gzip.
 
-For guidance on frequently encountered VCF validation issues and their resolutions, please see [Common vcf errors](common_vcf_errors.md‎)
+For guidance on frequently encountered VCF validation issues and their resolutions, please see [Common VCF errors](common_vcf_errors.md)
 
 ## FASTA File
 
