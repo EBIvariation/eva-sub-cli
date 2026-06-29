@@ -33,7 +33,7 @@ class TestOrchestrator(unittest.TestCase):
     mapping_file = os.path.join(test_sub_dir, 'vcf_mapping_file.csv')
     metadata_json = os.path.join(test_sub_dir, 'sub_metadata.json')
     metadata_xlsx = os.path.join(test_sub_dir, 'sub_metadata.xlsx')
-    metadata_xlsx_version = '3.0.0'
+    metadata_xlsx_version = '3.0.1'
     metadata_xlsx_with_project_accession = os.path.join(test_sub_dir, 'EVA_Submission_test_with_project_accession.xlsx')
     metadata_xlsx_version_v2 = '2.0.1'
     metadata_xlsx_v2 = os.path.join(test_sub_dir, 'EVA_Submission_test_V2.xlsx')
