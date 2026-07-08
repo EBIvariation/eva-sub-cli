@@ -39,7 +39,7 @@ class DockerValidator(Validator):
 
     def get_docker_validation_cmd(self):
         docker_cmd = ''.join([
-            f"{self.docker_path} exec {self.container_name} nextflow run eva_sub_cli/nextflow/validation.nf ",
+            f"{self.docker_path} exec -e NXF_SYNTAX_PARSER=v1 {self.container_name} nextflow run eva_sub_cli/nextflow/validation.nf ",
             f"--base_dir {container_validation_dir} ",
             f"--tasks {','.join(self.tasks)} "
             f"--vcf_files_mapping {self.mapping_file} ",
