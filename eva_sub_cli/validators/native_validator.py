@@ -29,6 +29,7 @@ class NativeValidator(Validator):
         self.verify_executables_installed()
         curr_wd = os.getcwd()
         try:
+            os.environ['NXF_SYNTAX_PARSER'] = 'v1'
             command = self.get_validation_cmd()
             os.chdir(self.submission_dir)
             self._run_quiet_command("Run Validation using Nextflow", command)
