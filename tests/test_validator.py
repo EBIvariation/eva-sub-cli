@@ -576,6 +576,29 @@ class TestValidator(TestCase):
              'description': 'Column "Taxonomy ID" is not populated'}
         ]
 
+    def test_collect_biovalidator_validation_results_when_file_missing(self):
+        with TemporaryDirectory() as submission_dir:
+            validator = self.create_validator(submission_dir)
+            os.makedirs(os.path.join(validator.output_dir, 'other_validations'))
+            validator.results['metadata_check'] = {}
+            validator.collect_biovalidator_validation_results()
+            assert validator.results['metadata_check']['json_errors'] == [
+                {'property': '/',
+                 'description': 'Metadata JSON validation process failed to run or produce output'}
+            ]
+            assert validator.results['metadata_check']['json_report_path'] is None
+
+    def test_collect_semantic_metadata_results_when_file_missing(self):
+        with TemporaryDirectory() as submission_dir:
+            validator = self.create_validator(submission_dir)
+            os.makedirs(os.path.join(validator.output_dir, 'other_validations'))
+            validator.results['metadata_check'] = {'json_errors': []}
+            validator._collect_semantic_metadata_results()
+            assert validator.results['metadata_check']['json_errors'] == [
+                {'property': '/',
+                 'description': 'Metadata semantic check process failed to run or produce output'}
+            ]
+
     def test_collect_conversion_errors(self):
         self.validator.results['metadata_check'] = {}
         self.validator._load_spreadsheet_conversion_errors()

@@ -2,7 +2,7 @@ import os.path
 from unittest import TestCase
 
 from eva_sub_cli.validators.validation_results_parsers import vcf_check_errors_is_critical, parse_assembly_check_log, \
-    parse_assembly_check_report
+    parse_assembly_check_report, parse_biovalidator_validation_results
 
 
 class TestValidationParsers(TestCase):
@@ -42,3 +42,7 @@ class TestValidationParsers(TestCase):
         assert nb_mismatch == 12
         assert error_list == ['Chromosome scaffold_chr1 is not present in FASTA file']
         assert nb_error == 1
+
+    def test_parse_biovalidator_validation_results_no_file(self):
+        assert parse_biovalidator_validation_results(None) == []
+        assert parse_biovalidator_validation_results('random_file_name') == []

@@ -465,7 +465,11 @@ class Validator(AppLogger):
         """
         metadata_check_file = resolve_single_file_path(os.path.join(self.output_dir, 'other_validations',
                                                                     'metadata_validation.txt'))
-        errors = parse_biovalidator_validation_results(metadata_check_file)
+        if metadata_check_file:
+            errors = parse_biovalidator_validation_results(metadata_check_file)
+        else:
+            errors = [{'property': '/',
+                       'description': 'Metadata JSON validation process failed to run or produce output'}]
         self.results[METADATA_CHECK].update({
             'json_report_path': metadata_check_file,
             'json_errors': errors
@@ -475,12 +479,13 @@ class Validator(AppLogger):
         errors_file = resolve_single_file_path(os.path.join(self.output_dir, 'other_validations',
                                                             'metadata_semantic_check.yml'))
         if not errors_file:
-            return
-        with open(errors_file) as open_yaml:
-            # errors is a list of dicts matching format of biovalidator errors
-            errors = yaml.safe_load(open_yaml)
-            # biovalidator error parsing always places a list here, even if no errors
-            self.results[METADATA_CHECK]['json_errors'] += errors
+            errors = [{'property': '/',
+                       'description': 'Metadata semantic check process failed to run or produce output'}]
+        else:
+            with open(errors_file) as open_yaml:
+                # errors is a list of dicts matching format of biovalidator errors
+                errors = yaml.safe_load(open_yaml) or []
+        self.results[METADATA_CHECK]['json_errors'] += errors
 
     def _convert_biovalidator_validation_to_spreadsheet(self):
         config_file = os.path.join(ETC_DIR, "spreadsheet2json_conf.yaml")
@@ -489,7 +494,7 @@ class Validator(AppLogger):
 
         if 'spreadsheet_errors' not in self.results[METADATA_CHECK]:
             self.results[METADATA_CHECK]['spreadsheet_errors'] = []
-        for error in self.results[METADATA_CHECK].get('json_errors', {}):
+        for error in self.results[METADATA_CHECK].get('json_errors') or {}:
             sheet_json, row_json, attribute_json = parse_metadata_property(error['property'])
             # There should only be one Project but adding the row back means it's easier for users to find
             if sheet_json == 'project' and row_json is None:

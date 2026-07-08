@@ -1,3 +1,4 @@
+import os
 import re
 
 from ebi_eva_common_pyutils.logger import logging_config
@@ -124,8 +125,8 @@ def parse_biovalidator_validation_results(metadata_check_file):
         if l:
             return ansi_escape.sub('', l).strip()
 
-    if not metadata_check_file:
-        return
+    if not metadata_check_file or not os.path.isfile(metadata_check_file) is False:
+        return []
 
     errors = []
 
