@@ -1,4 +1,5 @@
 import os
+import threading
 import traceback
 import uuid
 from datetime import datetime, timezone
@@ -67,6 +68,7 @@ class CallHomeClient:
         self.run_id = _get_or_create_run_id(submission_dir)
         self.executor = executor
         self.tasks = tasks
+        self._threads = []
 
     def _build_payload(self, event_type, **kwargs):
         now = datetime.now(timezone.utc)
@@ -90,11 +92,21 @@ class CallHomeClient:
         return payload
 
     def _send_event(self, event_type, **kwargs):
+        payload = self._build_payload(event_type, **kwargs)
+        thread = threading.Thread(target=self._post_event, args=(event_type, payload))
+        thread.start()
+        self._threads.append(thread)
+
+    def _post_event(self, event_type, payload):
         try:
-            payload = self._build_payload(event_type, **kwargs)
-            requests.post(_get_call_home_url(), json=payload, timeout=5)
+            requests.post(_get_call_home_url(), json=payload, timeout=60)
         except Exception:
             logger.debug('Failed to send %s call-home event', event_type)
+
+    def wait_for_pending_events(self, timeout=None):
+        for thread in self._threads:
+            thread.join(timeout)
+        self._threads = []
 
     def send_start(self):
         self._send_event(EVENT_START)

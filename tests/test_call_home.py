@@ -1,6 +1,7 @@
 import json
 import os
 import shutil
+import threading
 import time
 import uuid
 from unittest import TestCase
@@ -154,16 +155,19 @@ class TestCallHomeClient(TestCase):
         client = self._create_client()
         # Should not raise
         client.send_start()
+        client.wait_for_pending_events()
 
     @patch('eva_sub_cli.call_home.requests.post', side_effect=Timeout('timed out'))
     def test_timeout_swallowed(self, mock_post):
         client = self._create_client()
         client.send_end()
+        client.wait_for_pending_events()
 
     @patch('eva_sub_cli.call_home.requests.post', side_effect=Exception('unexpected error'))
     def test_generic_exception_swallowed(self, mock_post):
         client = self._create_client()
         client.send_failure()
+        client.wait_for_pending_events()
 
     @patch('eva_sub_cli.call_home.requests.post')
     def test_send_all_event_types(self, mock_post):
@@ -176,6 +180,7 @@ class TestCallHomeClient(TestCase):
         client.send_start()
         client.send_validation_completed(common_validation_results)
         client.send_end()
+        client.wait_for_pending_events()
         self.assertEqual(mock_post.call_count, 3)
 
         for call in mock_post.call_args_list:
@@ -187,6 +192,7 @@ class TestCallHomeClient(TestCase):
     def test_send_failure_event(self, mock_post):
         client = self._create_client()
         client.send_failure()
+        client.wait_for_pending_events()
         payload = mock_post.call_args.kwargs['json']
         self.assertEqual(payload['eventType'], EVENT_FAILURE)
         self.assertNotIn('exceptionMessage', payload)
@@ -199,6 +205,7 @@ class TestCallHomeClient(TestCase):
             raise ValueError('something went wrong')
         except ValueError as e:
             client.send_failure(exception=e)
+        client.wait_for_pending_events()
         payload = mock_post.call_args.kwargs['json']
         self.assertEqual(payload['eventType'], EVENT_FAILURE)
         self.assertEqual(payload['exceptionMessage'], 'something went wrong')
