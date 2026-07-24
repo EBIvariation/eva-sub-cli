@@ -418,6 +418,11 @@ class Validator(AppLogger):
             fasta_check = resolve_single_file_path(os.path.join(self.output_dir, 'other_validations',
                                                                 f'{fasta_file_name}_check.yml'))
             if not fasta_check:
+                error_txt = f'Cannot locate sequence check results for {fasta_file_name}. The process might have failed.'
+                self.error(error_txt)
+                self.results[FASTA_CHECK][fasta_file_name] = {
+                    'all_insdc': False, 'sequences': [], 'connection_error': error_txt
+                }
                 continue
             with open(fasta_check) as open_yaml:
                 self.results[FASTA_CHECK][fasta_file_name] = yaml.safe_load(open_yaml)
@@ -428,8 +433,10 @@ class Validator(AppLogger):
             with open(self._sample_check_yaml) as open_yaml:
                 self.results[SAMPLE_CHECK] = yaml.safe_load(open_yaml)
             self.results[SAMPLE_CHECK]['report_path'] = self._sample_check_yaml
-
-        self.results[SAMPLE_CHECK].update({RUN_STATUS_KEY: True})
+            self.results[SAMPLE_CHECK].update({RUN_STATUS_KEY: True})
+        else:
+            self.error(f'Cannot locate sample check results. The process might have failed.')
+            self.results[SAMPLE_CHECK].update({RUN_STATUS_KEY: False})
 
     def _load_evidence_check_results(self):
         self.results[EVIDENCE_TYPE_CHECK] = {}
@@ -437,7 +444,10 @@ class Validator(AppLogger):
             with open(self._evidence_type_check_yaml) as open_yaml:
                 self.results[EVIDENCE_TYPE_CHECK] = yaml.safe_load(open_yaml)
             self.results[EVIDENCE_TYPE_CHECK]['report_path'] = self._evidence_type_check_yaml
-        self.results[EVIDENCE_TYPE_CHECK].update({RUN_STATUS_KEY: True})
+            self.results[EVIDENCE_TYPE_CHECK].update({RUN_STATUS_KEY: True})
+        else:
+            self.error(f'Cannot locate evidence type check results. The process might have failed.')
+            self.results[EVIDENCE_TYPE_CHECK].update({RUN_STATUS_KEY: False})
         self._update_metadata_with_evidence_type()
 
     def _collect_metadata_results(self):
@@ -465,7 +475,12 @@ class Validator(AppLogger):
         """
         metadata_check_file = resolve_single_file_path(os.path.join(self.output_dir, 'other_validations',
                                                                     'metadata_validation.txt'))
-        errors = parse_biovalidator_validation_results(metadata_check_file)
+        if metadata_check_file:
+            errors = parse_biovalidator_validation_results(metadata_check_file)
+        else:
+            error_txt = (f"Cannot locate metadata check file. The process might have failed.")
+            self.error(error_txt)
+            errors = [{'property': '/', 'description': error_txt}]
         self.results[METADATA_CHECK].update({
             'json_report_path': metadata_check_file,
             'json_errors': errors
@@ -554,9 +569,8 @@ class Validator(AppLogger):
                     file_path_2_file_size[vcf_file] = file_size
                     file_name_2_file_size[os.path.basename(vcf_file)] = file_size
         else:
-            error_txt = f"Cannot locate file_info.txt at {os.path.join(self.output_dir, 'other_validations', 'file_info.txt')}"
+            error_txt = f"Cannot locate file_info.txt. The process might have failed."
             self.error(error_txt)
-            raise FileNotFoundError(error_txt)
 
         if self.metadata_json_post_validation:
             metadata = EvaMetadataJson(self.metadata_json_post_validation)
@@ -593,9 +607,9 @@ class Validator(AppLogger):
                 errors.append({'property': '/', 'description': error_txt})
             metadata.write(self.metadata_json_post_validation)
         else:
-            error_txt = f'Cannot locate the metadata in JSON format in {os.path.join(self.output_dir, "metadata.json")}'
+            error_txt = f'Cannot locate the metadata in JSON format. The process might have failed.'
             self.error(error_txt)
-            raise FileNotFoundError(error_txt)
+            errors.append({'property': '/', 'description': error_txt})
         if errors:
             if 'json_errors' in self.results[METADATA_CHECK]:
                 self.results[METADATA_CHECK]['json_errors'].extend(errors)
@@ -640,6 +654,9 @@ class Validator(AppLogger):
             vcf_name, _ = os.path.splitext(basename)
             trimmed_down_metrics = resolve_single_file_path(os.path.join(self.output_dir, 'other_validations',
                                                                          f'{vcf_name}_trim_down.yml'))
+            if not trimmed_down_metrics:
+                self.error(f'Cannot locate trim down metrics for {vcf_name}. The process might have failed.')
+                continue
             with open(trimmed_down_metrics) as open_file:
                 metrics = yaml.safe_load(open_file)
                 shallow_validation_required = shallow_validation_required or metrics['trim_down_required']

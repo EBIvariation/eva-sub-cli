@@ -9,7 +9,8 @@ import yaml
 import eva_sub_cli
 from eva_sub_cli.metadata import EvaMetadataJson
 from eva_sub_cli.validators.validator import (Validator, VALIDATION_OUTPUT_DIR, VCF_CHECK, READY_FOR_SUBMISSION_TO_EVA,
-                                              RUN_STATUS_KEY, METADATA_CHECK, PASS, TRIM_DOWN, SHALLOW_VALIDATION)
+                                              RUN_STATUS_KEY, METADATA_CHECK, PASS, TRIM_DOWN, SHALLOW_VALIDATION,
+                                              FASTA_CHECK, SAMPLE_CHECK, EVIDENCE_TYPE_CHECK)
 from tests.test_utils import create_mapping_file
 
 expected_validation_results = {
@@ -183,6 +184,25 @@ class TestValidator(TestCase):
                             [os.path.join(self.fasta_files, 'input_passed.fa')]
                             )
         return Validator(mapping_file, submission_dir, metadata_json=self.metadata_json_file)
+
+    def create_validator_with_copied_output(self, submission_dir, metadata_json=None, metadata_xlsx=None,
+                                            shallow_validation=False, validation_tasks=None):
+        """
+        Copy the shared validation_output fixture tree into a fresh submission_dir so a test can delete
+        individual output files to simulate an incomplete Nextflow run without affecting other tests.
+        """
+        shutil.copytree(os.path.join(self.output_dir, VALIDATION_OUTPUT_DIR),
+                        os.path.join(submission_dir, VALIDATION_OUTPUT_DIR))
+        mapping_file = os.path.join(submission_dir, 'vcf_files_mapping.csv')
+        create_mapping_file(mapping_file,
+                            [os.path.join(self.vcf_files, 'input_passed.vcf')],
+                            [os.path.join(self.fasta_files, 'input_passed.fa')],
+                            [os.path.join(self.assembly_reports, 'input_passed.txt')])
+        kwargs = {}
+        if validation_tasks is not None:
+            kwargs['validation_tasks'] = validation_tasks
+        return Validator(mapping_file, submission_dir, metadata_json=metadata_json, metadata_xlsx=metadata_xlsx,
+                         shallow_validation=shallow_validation, **kwargs)
 
     def test_clean_up_output_dir_moves_intermediate_files_and_removes_nextflow_work_dir(self):
         with TemporaryDirectory() as submission_dir:
@@ -666,6 +686,77 @@ class TestValidator(TestCase):
         }
         assert self.validator_json._check_consent_statement_is_needed_for_submission() is True
 
+    def test__collect_file_info_to_metadata_missing_file_info_txt(self):
+        # Test for a nextflow run that did not complete and never produced file_info.txt
+        with TemporaryDirectory() as submission_dir:
+            validator = self.create_validator_with_copied_output(submission_dir, metadata_json=self.metadata_json_file)
+            os.remove(os.path.join(validator.output_dir, 'other_validations', 'file_info.txt'))
+            self.run_collect_results(validator)
+            assert validator.results == self.format_data_structure(expected_validation_results)
 
+    def test__collect_file_info_to_metadata_missing_metadata_json(self):
+        # Test for a nextflow run that did not complete and never produced metadata.json
+        with TemporaryDirectory() as submission_dir:
+            validator = self.create_validator_with_copied_output(submission_dir)
+            os.remove(os.path.join(validator.output_dir, 'metadata.json'))
+            validator._collect_validation_workflow_results()
+            expected_error = {
+                'property': '/',
+                'description': f'Cannot locate the metadata in JSON format. The process might have failed.'
+            }
+            assert expected_error in validator.results[METADATA_CHECK]['json_errors']
+            validator._assess_validation_results()
+            assert validator.results[METADATA_CHECK][PASS] is False
 
+    def test_collect_biovalidator_validation_results_missing_report(self):
+        # Test for a nextflow run that did not complete and never produced metadata_validation.txt
+        with TemporaryDirectory() as submission_dir:
+            validator = self.create_validator_with_copied_output(submission_dir, metadata_json=self.metadata_json_file,
+                                                                  validation_tasks=[METADATA_CHECK])
+            os.remove(os.path.join(validator.output_dir, 'other_validations', 'metadata_validation.txt'))
+            validator._collect_validation_workflow_results()
+            expected_error = {
+                'property': '/',
+                'description': f'Cannot locate metadata check file. The process might have failed.'
+            }
+            assert expected_error in validator.results[METADATA_CHECK]['json_errors']
+            validator._assess_validation_results()
+            assert validator.results[METADATA_CHECK][PASS] is False
 
+    def test__collect_trim_down_metrics_missing_yml(self):
+        # Test for a nextflow run that did not complete and never produced input_passed_trim_down.yml
+        with TemporaryDirectory() as submission_dir:
+            validator = self.create_validator_with_copied_output(submission_dir, metadata_json=self.metadata_json_file,
+                                                                  shallow_validation=True)
+            os.remove(os.path.join(validator.output_dir, 'other_validations', 'input_passed_trim_down.yml'))
+            validator._collect_validation_workflow_results()
+            assert validator.results[SHALLOW_VALIDATION][TRIM_DOWN] is False
+            assert validator.vcf_files[0] not in validator.results[SHALLOW_VALIDATION]['metrics']
+
+    def test__load_sample_check_results_missing_yaml(self):
+        # Test for a nextflow run that did not complete and never produced sample_checker.yml
+        with TemporaryDirectory() as submission_dir:
+            validator = self.create_validator_with_copied_output(submission_dir, metadata_json=self.metadata_json_file)
+            os.remove(os.path.join(validator.output_dir, 'other_validations', 'sample_checker.yml'))
+            validator._load_sample_check_results()
+            assert validator.results[SAMPLE_CHECK][RUN_STATUS_KEY] is False
+
+    def test__load_evidence_check_results_missing_yaml(self):
+        # Test for a nextflow run that did not complete and never produced evidence_type_checker.yml
+        with TemporaryDirectory() as submission_dir:
+            validator = self.create_validator_with_copied_output(submission_dir, metadata_json=self.metadata_json_file)
+            os.remove(os.path.join(validator.output_dir, 'other_validations', 'evidence_type_checker.yml'))
+            validator._load_evidence_check_results()
+            assert validator.results[EVIDENCE_TYPE_CHECK][RUN_STATUS_KEY] is False
+
+    def test__load_fasta_check_results_missing_yaml(self):
+        # Test for a nextflow run that did not complete and never produced input_passed.fa_check.yml
+        with TemporaryDirectory() as submission_dir:
+            validator = self.create_validator_with_copied_output(submission_dir, metadata_json=self.metadata_json_file)
+            os.remove(os.path.join(validator.output_dir, 'other_validations', 'input_passed.fa_check.yml'))
+            validator._collect_validation_workflow_results()
+            fasta_result = validator.results[FASTA_CHECK]['input_passed.fa']
+            assert fasta_result['all_insdc'] is False
+            assert 'connection_error' in fasta_result
+            validator._assess_validation_results()
+            assert validator.results[FASTA_CHECK][PASS] is False
