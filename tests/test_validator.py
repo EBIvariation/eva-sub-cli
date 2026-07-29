@@ -9,23 +9,24 @@ import yaml
 import eva_sub_cli
 from eva_sub_cli.metadata import EvaMetadataJson
 from eva_sub_cli.validators.validator import (Validator, VALIDATION_OUTPUT_DIR, VCF_CHECK, READY_FOR_SUBMISSION_TO_EVA,
-                                              RUN_STATUS_KEY, METADATA_CHECK, PASS, TRIM_DOWN, SHALLOW_VALIDATION,
-                                              FASTA_CHECK, SAMPLE_CHECK, EVIDENCE_TYPE_CHECK)
+                                              RUN_STATUS_KEY, RUN_STATUS_SUCCESS, RUN_STATUS_CRASHED,
+                                              RUN_STATUS_DID_NOT_RUN, METADATA_CHECK, PASS, TRIM_DOWN,
+                                              SHALLOW_VALIDATION, FASTA_CHECK, SAMPLE_CHECK, EVIDENCE_TYPE_CHECK)
 from tests.test_utils import create_mapping_file
 
 expected_validation_results = {
     'vcf_check': {
-        'run_status': True,
+        'run_status': RUN_STATUS_SUCCESS,
         'input_passed.vcf': {'valid': True, 'error_list': [], 'error_count': 0, 'warning_count': 0,
                              'critical_count': 0, 'critical_list': []}
     },
     'assembly_check': {
-        'run_status': True,
+        'run_status': RUN_STATUS_SUCCESS,
         'input_passed.vcf': {'error_list': [], 'mismatch_list': [], 'nb_mismatch': 0, 'nb_error': 0,
                              'match': 247, 'total': 247}
     },
     'sample_check': {
-        'run_status': True,
+        'run_status': RUN_STATUS_SUCCESS,
         'overall_differences': False,
         'results_per_analysis': {
             'AA': {
@@ -37,7 +38,7 @@ expected_validation_results = {
         }
     },
     'evidence_type_check': {
-        'run_status': True,
+        'run_status': RUN_STATUS_SUCCESS,
         'AA': {
             'errors': None,
             'evidence_type': 'allele_frequency'
@@ -45,14 +46,14 @@ expected_validation_results = {
     },
 
     'fasta_check': {
-        'run_status': True,
+        'run_status': RUN_STATUS_SUCCESS,
         'input_passed.fa': {'all_insdc': False, 'sequences': [
             {'sequence_name': 1, 'insdc': True, 'sequence_md5': '6681ac2f62509cfc220d78751b8dc524'},
             {'sequence_name': 2, 'insdc': False, 'sequence_md5': 'd2b3f22704d944f92a6bc45b6603ea2d'}
         ]},
     },
     'metadata_check': {
-        'run_status': True,
+        'run_status': RUN_STATUS_SUCCESS,
         'json_errors': [
             {'property': '/files', 'description': "should have required property 'files'"},
             {'property': '/project/title', 'description': "should have required property 'title'"},
@@ -253,13 +254,13 @@ class TestValidator(TestCase):
         self.validator_json._assess_validation_results()
         # assert assessed results
         assert self.validator_json.results['vcf_check']['pass'] == True
-        assert self.validator_json.results['vcf_check'][RUN_STATUS_KEY] == True
+        assert self.validator_json.results['vcf_check'][RUN_STATUS_KEY] == RUN_STATUS_SUCCESS
         assert self.validator_json.results['evidence_type_check']['pass'] == True
-        assert self.validator_json.results['evidence_type_check'][RUN_STATUS_KEY] == True
-        assert self.validator_json.results['assembly_check'][RUN_STATUS_KEY] == False
-        assert self.validator_json.results['fasta_check'][RUN_STATUS_KEY] == False
-        assert self.validator_json.results['sample_check'][RUN_STATUS_KEY] == False
-        assert self.validator_json.results['metadata_check'][RUN_STATUS_KEY] == False
+        assert self.validator_json.results['evidence_type_check'][RUN_STATUS_KEY] == RUN_STATUS_SUCCESS
+        assert self.validator_json.results['assembly_check'][RUN_STATUS_KEY] == RUN_STATUS_DID_NOT_RUN
+        assert self.validator_json.results['fasta_check'][RUN_STATUS_KEY] == RUN_STATUS_DID_NOT_RUN
+        assert self.validator_json.results['sample_check'][RUN_STATUS_KEY] == RUN_STATUS_DID_NOT_RUN
+        assert self.validator_json.results['metadata_check'][RUN_STATUS_KEY] == RUN_STATUS_DID_NOT_RUN
         assert self.validator_json.sub_config.get(READY_FOR_SUBMISSION_TO_EVA) == False
         assert self.validator_json.results[READY_FOR_SUBMISSION_TO_EVA] == False
 
@@ -272,10 +273,10 @@ class TestValidator(TestCase):
         expected_evidence_type_check['pass'] = True
         assert saved_results['vcf_check'] == expected_vcf_check
         assert saved_results['evidence_type_check'] == expected_evidence_type_check
-        assert saved_results['assembly_check'][RUN_STATUS_KEY] == False
-        assert saved_results['fasta_check'][RUN_STATUS_KEY] == False
-        assert saved_results['sample_check'][RUN_STATUS_KEY] == False
-        assert saved_results['metadata_check'][RUN_STATUS_KEY] == False
+        assert saved_results['assembly_check'][RUN_STATUS_KEY] == RUN_STATUS_DID_NOT_RUN
+        assert saved_results['fasta_check'][RUN_STATUS_KEY] == RUN_STATUS_DID_NOT_RUN
+        assert saved_results['sample_check'][RUN_STATUS_KEY] == RUN_STATUS_DID_NOT_RUN
+        assert saved_results['metadata_check'][RUN_STATUS_KEY] == RUN_STATUS_DID_NOT_RUN
         assert saved_results[READY_FOR_SUBMISSION_TO_EVA] == False
 
     def test__collect_validation_workflow_results_for_validation_task_and_add_to_previous_results(self):
@@ -730,7 +731,8 @@ class TestValidator(TestCase):
                                                                   shallow_validation=True)
             os.remove(os.path.join(validator.output_dir, 'other_validations', 'input_passed_trim_down.yml'))
             validator._collect_validation_workflow_results()
-            assert validator.results[SHALLOW_VALIDATION][TRIM_DOWN] is False
+            # Missing metrics are conservatively assumed to require shallow validation
+            assert validator.results[SHALLOW_VALIDATION][TRIM_DOWN] is True
             assert validator.vcf_files[0] not in validator.results[SHALLOW_VALIDATION]['metrics']
 
     def test__load_sample_check_results_missing_yaml(self):
@@ -739,7 +741,7 @@ class TestValidator(TestCase):
             validator = self.create_validator_with_copied_output(submission_dir, metadata_json=self.metadata_json_file)
             os.remove(os.path.join(validator.output_dir, 'other_validations', 'sample_checker.yml'))
             validator._load_sample_check_results()
-            assert validator.results[SAMPLE_CHECK][RUN_STATUS_KEY] is False
+            assert validator.results[SAMPLE_CHECK][RUN_STATUS_KEY] == RUN_STATUS_CRASHED
 
     def test__load_evidence_check_results_missing_yaml(self):
         # Test for a nextflow run that did not complete and never produced evidence_type_checker.yml
@@ -747,7 +749,7 @@ class TestValidator(TestCase):
             validator = self.create_validator_with_copied_output(submission_dir, metadata_json=self.metadata_json_file)
             os.remove(os.path.join(validator.output_dir, 'other_validations', 'evidence_type_checker.yml'))
             validator._load_evidence_check_results()
-            assert validator.results[EVIDENCE_TYPE_CHECK][RUN_STATUS_KEY] is False
+            assert validator.results[EVIDENCE_TYPE_CHECK][RUN_STATUS_KEY] == RUN_STATUS_CRASHED
 
     def test__load_fasta_check_results_missing_yaml(self):
         # Test for a nextflow run that did not complete and never produced input_passed.fa_check.yml

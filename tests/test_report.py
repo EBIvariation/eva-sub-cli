@@ -6,14 +6,14 @@ from unittest import TestCase
 
 import eva_sub_cli
 from eva_sub_cli.report import generate_html_report, generate_text_report
-from eva_sub_cli.validators.validator import RUN_STATUS_KEY, TRIM_DOWN
+from eva_sub_cli.validators.validator import RUN_STATUS_KEY, RUN_STATUS_SUCCESS, RUN_STATUS_DID_NOT_RUN, TRIM_DOWN
 
 common_validation_results = {
     "ready_for_submission_to_eva": False,
     "version": "0.5.1",
     "trim_down": False,
     "assembly_check": {
-        'run_status': True,
+        'run_status': RUN_STATUS_SUCCESS,
         'pass': False,
         "input_passed.vcf": {
             "report_path": "/path/to/assembly_passed/report",
@@ -45,7 +45,7 @@ common_validation_results = {
         },
     },
     "vcf_check": {
-        'run_status': True,
+        'run_status': RUN_STATUS_SUCCESS,
         'pass': False,
         "input_passed.vcf": {
             'report_path': '/path/to/vcf_passed/report',
@@ -66,7 +66,7 @@ common_validation_results = {
         },
     },
     "sample_check": {
-        'run_status': True,
+        'run_status': RUN_STATUS_SUCCESS,
         'pass': False,
         'report_path': '/path/to/sample/report',
         'overall_differences': True,
@@ -96,7 +96,7 @@ common_validation_results = {
     # NB. obviously this doesn't make sense for the number of analyses in this report, but demonstrates the possible
     # outputs for this check.
     "fasta_check": {
-        'run_status': True,
+        'run_status': RUN_STATUS_SUCCESS,
         'pass': False,
         'not_all_insdc.fa': {
             'report_path': '/path/to/not_all_insdc_check.yml',
@@ -175,7 +175,7 @@ common_validation_results = {
         }
     },
     'evidence_type_check': {
-        'run_status': True,
+        'run_status': RUN_STATUS_SUCCESS,
         'pass': False,
         'report_path': '/path/to/evidence_type.yml',
         'Analysis A': {
@@ -191,7 +191,7 @@ common_validation_results = {
 
 validation_results_xlsx = deepcopy(common_validation_results)
 validation_results_xlsx['metadata_check'] = {
-        'run_status': True,
+        'run_status': RUN_STATUS_SUCCESS,
         'pass': False,
         'spreadsheet_errors': [
             {'sheet': 'Files', 'row': '', 'column': '', 'description': 'Sheet "Files" is missing'},
@@ -217,7 +217,7 @@ validation_results_xlsx['metadata_check'] = {
 
 validation_results_json = deepcopy(common_validation_results)
 validation_results_json['metadata_check'] = {
-        'run_status': True,
+        'run_status': RUN_STATUS_SUCCESS,
         'pass': False,
         'json_errors': [
             {'property': '.files', 'description': "should have required property 'files'"},
@@ -304,12 +304,12 @@ class TestReport(TestCase):
 
     def test_generate_html_report_metadata_json_metadata_report_not_run_yet(self):
         validation_result = {
-            'vcf_check': {RUN_STATUS_KEY: False},
-            'evidence_type_check': {RUN_STATUS_KEY: False},
-            'assembly_check': {RUN_STATUS_KEY: False},
-            'fasta_check': {RUN_STATUS_KEY: False},
-            'metadata_check': {RUN_STATUS_KEY: False},
-            'sample_check': {RUN_STATUS_KEY: False}
+            'vcf_check': {RUN_STATUS_KEY: RUN_STATUS_DID_NOT_RUN},
+            'evidence_type_check': {RUN_STATUS_KEY: RUN_STATUS_DID_NOT_RUN},
+            'assembly_check': {RUN_STATUS_KEY: RUN_STATUS_DID_NOT_RUN},
+            'fasta_check': {RUN_STATUS_KEY: RUN_STATUS_DID_NOT_RUN},
+            'metadata_check': {RUN_STATUS_KEY: RUN_STATUS_DID_NOT_RUN},
+            'sample_check': {RUN_STATUS_KEY: RUN_STATUS_DID_NOT_RUN}
         }
 
         self.check_report_vs_expected(
@@ -352,12 +352,12 @@ class TestReport(TestCase):
 
     def test_generate_text_report_metadata_json_report_not_run(self):
         validation_result = {
-            'vcf_check': {RUN_STATUS_KEY: False},
-            'evidence_type_check': {RUN_STATUS_KEY: False},
-            'assembly_check': {RUN_STATUS_KEY: False},
-            'fasta_check': {RUN_STATUS_KEY: False},
-            'metadata_check': {RUN_STATUS_KEY: False},
-            'sample_check': {RUN_STATUS_KEY: False}
+            'vcf_check': {RUN_STATUS_KEY: RUN_STATUS_DID_NOT_RUN},
+            'evidence_type_check': {RUN_STATUS_KEY: RUN_STATUS_DID_NOT_RUN},
+            'assembly_check': {RUN_STATUS_KEY: RUN_STATUS_DID_NOT_RUN},
+            'fasta_check': {RUN_STATUS_KEY: RUN_STATUS_DID_NOT_RUN},
+            'metadata_check': {RUN_STATUS_KEY: RUN_STATUS_DID_NOT_RUN},
+            'sample_check': {RUN_STATUS_KEY: RUN_STATUS_DID_NOT_RUN}
         }
 
         self.check_report_vs_expected(

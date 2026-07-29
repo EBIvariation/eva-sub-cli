@@ -13,6 +13,13 @@
     <div class='{{ row_class }}'><span class="expand_icon">{{ expand_icon }}</span> {{ icon }} {{ text }}</div>
 {% endmacro %}
 
+{% macro report_crashed_task(task_name) %}
+    {% set icon = "&#10071;" %}   {# exclamation point ❗#}
+    {% set row_class = "report-section info" %}
+    {% set expand_icon = "" %}
+    <div class='{{ row_class }}'><span class="expand_icon">{{ expand_icon }}</span> {{ icon }} {{ task_name }} did not complete successfully. Check the logs for more information.</div>
+{% endmacro %}
+
 <html lang="EN">
 <head>
     <meta charset="UTF-8">
@@ -73,8 +80,10 @@
         For requirements, please refer to the <a href="https://www.ebi.ac.uk/eva/?Submit-Data" target=”_blank”>EVA website</a>.
     </div>
     {% set run_status = validation_results.get('metadata_check', {}).get('run_status', '') %}
-    {% if run_status %}
+    {% if run_status == 'success' %}
         {{ metadata_validation_report(validation_results) }}
+    {% elif run_status == 'crashed' %}
+        {{ report_crashed_task('Metadata check') }}
     {% else %}
         {{ validation_not_run_yet_message() }}
     {% endif %}
@@ -87,13 +96,15 @@
         Also checks whether the variants' reference alleles match against the reference assembly.
     </div>
     {% set run_status = validation_results.get('vcf_check', {}).get('run_status', '') %}
-    {% if run_status %}
+    {% if run_status == 'success' %}
         {% for file_name in vcf_files %}
             {% if file_name != "pass"%}
             <h3>{{ file_name }}</h3>
             {{ file_validation_report(validation_results, file_name) }}
             {% endif %}
         {% endfor %}
+    {% elif run_status == 'crashed' %}
+        {{ report_crashed_task('Vcf check') }}
     {% else %}
         {{ validation_not_run_yet_message() }}
     {% endif %}
@@ -105,8 +116,10 @@
         Checks whether information in the metadata is concordant with that contained in the VCF files, in particular sample names.
     </div>
     {% set run_status = validation_results.get('sample_check', {}).get('run_status', '') %}
-    {% if run_status %}
+    {% if run_status == 'success' %}
         {{ sample_name_check_report(validation_results)}}
+    {% elif run_status == 'crashed' %}
+        {{ report_crashed_task('Sample name concordance') }}
     {% else %}
         {{ validation_not_run_yet_message() }}
 
@@ -120,13 +133,15 @@
         Also checks if the reference assembly accession in the metadata matches the one determined from the FASTA file.
     </div>
     {% set run_status = validation_results.get('fasta_check', {}).get('run_status', '') %}
-    {% if run_status %}
+    {% if run_status == 'success' %}
        {% for file_name in fasta_files %}
             {% if file_name != "pass"%}
             <h3>{{ file_name }}</h3>
             {{ fasta_check_report(validation_results, file_name) }}
             {% endif %}
         {% endfor %}
+    {% elif run_status == 'crashed' %}
+        {{ report_crashed_task('INSDC check') }}
     {% else %}
         {{ validation_not_run_yet_message() }}
     {% endif %}
