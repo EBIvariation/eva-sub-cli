@@ -1,8 +1,6 @@
 import os
 import subprocess
 
-from ebi_eva_common_pyutils.logger import logging_config
-
 from eva_sub_cli.validators.validator import Validator, ALL_VALIDATION_TASKS
 
 
