@@ -6,7 +6,8 @@ from unittest import TestCase
 
 import eva_sub_cli
 from eva_sub_cli.report import generate_html_report, generate_text_report
-from eva_sub_cli.validators.validator import RUN_STATUS_KEY, RUN_STATUS_SUCCESS, RUN_STATUS_DID_NOT_RUN, TRIM_DOWN
+from eva_sub_cli.validators.validator import (RUN_STATUS_KEY, RUN_STATUS_SUCCESS, RUN_STATUS_CRASHED,
+                                              RUN_STATUS_DID_NOT_RUN, TRIM_DOWN)
 
 common_validation_results = {
     "ready_for_submission_to_eva": False,
@@ -247,6 +248,8 @@ class TestReport(TestCase):
                                                  'expected_metadata_json_report.html')
     expected_report_metadata_json_process_not_run = os.path.join(resource_dir, 'validation_reports',
                                                                  'expected_report_metadata_json_process_not_run.html')
+    expected_report_metadata_json_crashed = os.path.join(resource_dir, 'validation_reports',
+                                                         'expected_report_metadata_json_crashed.html')
     expected_report_metadata_xlsx_shallow = os.path.join(resource_dir, 'validation_reports',
                                                          'expected_shallow_metadata_xlsx_report.html')
     expected_text_report_metadata_xlsx = os.path.join(resource_dir, 'validation_reports',
@@ -255,6 +258,8 @@ class TestReport(TestCase):
                                                       'expected_metadata_json_report.txt')
     expected_text_report_metadata_json_process_not_run = os.path.join(resource_dir, 'validation_reports',
                                                                       'expected_report_metadata_json_process_not_run.txt')
+    expected_text_report_metadata_json_crashed = os.path.join(resource_dir, 'validation_reports',
+                                                              'expected_report_metadata_json_crashed.txt')
     expected_text_report_metadata_xlsx_shallow = os.path.join(resource_dir, 'validation_reports',
                                                               'expected_shallow_metadata_xlsx_report.txt')
     test_project_name = "My cool project"
@@ -318,6 +323,22 @@ class TestReport(TestCase):
             self.expected_report_metadata_json_process_not_run
         )
 
+    def test_generate_html_report_metadata_json_crashed(self):
+        validation_result = {
+            'vcf_check': {RUN_STATUS_KEY: RUN_STATUS_CRASHED},
+            'evidence_type_check': {RUN_STATUS_KEY: RUN_STATUS_CRASHED},
+            'assembly_check': {RUN_STATUS_KEY: RUN_STATUS_CRASHED},
+            'fasta_check': {RUN_STATUS_KEY: RUN_STATUS_CRASHED},
+            'metadata_check': {RUN_STATUS_KEY: RUN_STATUS_CRASHED},
+            'sample_check': {RUN_STATUS_KEY: RUN_STATUS_CRASHED}
+        }
+
+        self.check_report_vs_expected(
+            validation_result,
+            'metadata_json_report.html',
+            self.expected_report_metadata_json_crashed
+        )
+
     def test_generate_html_report_metadata_xlsx_shallow(self):
         shallow_validation_results_xlsx = copy.deepcopy(validation_results_xlsx)
         shallow_validation_results_xlsx[TRIM_DOWN] = True
@@ -364,6 +385,23 @@ class TestReport(TestCase):
             validation_result,
             'metadata_json_report.txt',
             self.expected_text_report_metadata_json_process_not_run,
+            html=False
+        )
+
+    def test_generate_text_report_metadata_json_crashed(self):
+        validation_result = {
+            'vcf_check': {RUN_STATUS_KEY: RUN_STATUS_CRASHED},
+            'evidence_type_check': {RUN_STATUS_KEY: RUN_STATUS_CRASHED},
+            'assembly_check': {RUN_STATUS_KEY: RUN_STATUS_CRASHED},
+            'fasta_check': {RUN_STATUS_KEY: RUN_STATUS_CRASHED},
+            'metadata_check': {RUN_STATUS_KEY: RUN_STATUS_CRASHED},
+            'sample_check': {RUN_STATUS_KEY: RUN_STATUS_CRASHED}
+        }
+
+        self.check_report_vs_expected(
+            validation_result,
+            'metadata_json_report.txt',
+            self.expected_text_report_metadata_json_crashed,
             html=False
         )
 

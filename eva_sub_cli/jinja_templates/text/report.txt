@@ -51,8 +51,9 @@ Also checks whether the variants' reference alleles match against the reference 
 {% if run_status == 'success' %}
     {% for file_name in vcf_files %}
         {% if file_name != "pass"%}
-            {{ file_name }}
-            {{ file_validation_report(validation_results, file_name) }}
+    {# Indentation is important as it impact the report's look#}
+    {{ file_name }}
+    {{ file_validation_report(validation_results, file_name) }}
         {% endif %}
     {% endfor %}
 {% elif run_status == 'crashed' %}
@@ -85,8 +86,9 @@ Also checks if the reference assembly accession in the metadata matches the one 
 {% if run_status == 'success' %}
     {% for file_name in fasta_files %}
         {% if file_name != "pass"%}
-            {{ file_name }}
-            {{ fasta_check_report(validation_results, file_name) }}
+    {# Indentation is important as it impact the report's look#}
+    {{ file_name }}
+    {{ fasta_check_report(validation_results, file_name) }}
         {% endif %}
     {% endfor %}
 {% elif run_status == 'crashed' %}
