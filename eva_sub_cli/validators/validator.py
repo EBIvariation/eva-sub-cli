@@ -134,6 +134,11 @@ class Validator(AppLogger):
     def set_up_output_dir(self):
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir, exist_ok=True)
+        # Clean up VCF check and assembly check output from previous runs
+        if VCF_CHECK in self.tasks:
+            shutil.rmtree(os.path.join(self.output_dir, 'vcf_format'), ignore_errors=True)
+        if ASSEMBLY_CHECK in self.tasks:
+            shutil.rmtree(os.path.join(self.output_dir, 'assembly_check'), ignore_errors=True)
 
     def clean_up_output_dir(self):
         # Move intermediate validation outputs into a subdir except metadata.json
