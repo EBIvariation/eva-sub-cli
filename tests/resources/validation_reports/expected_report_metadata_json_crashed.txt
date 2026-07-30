@@ -32,7 +32,7 @@ For requirements, please refer to the EVA website (https://www.ebi.ac.uk/eva/?Su
 VCF VALIDATION RESULTS
 Checks whether each file is compliant with the VCF specification (http://samtools.github.io/hts-specs/VCFv4.4.pdf).
 Also checks whether the variants' reference alleles match against the reference assembly.
-❗ Vcf check did not complete successfully. Check the logs for more information.
+❗ VCF check did not complete successfully. Check the logs for more information.
 -
 SAMPLE NAME CONCORDANCE CHECK
 Checks whether information in the metadata is concordant with that contained in the VCF files, in particular sample names.

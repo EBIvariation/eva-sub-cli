@@ -8,7 +8,8 @@ import yaml
 
 import eva_sub_cli
 from eva_sub_cli.metadata import EvaMetadataJson
-from eva_sub_cli.validators.validator import (Validator, VALIDATION_OUTPUT_DIR, VCF_CHECK, READY_FOR_SUBMISSION_TO_EVA,
+from eva_sub_cli.validators.validator import (Validator, VALIDATION_OUTPUT_DIR, VCF_CHECK, ASSEMBLY_CHECK,
+                                              READY_FOR_SUBMISSION_TO_EVA,
                                               RUN_STATUS_KEY, RUN_STATUS_SUCCESS, RUN_STATUS_CRASHED,
                                               RUN_STATUS_DID_NOT_RUN, METADATA_CHECK, PASS, TRIM_DOWN,
                                               SHALLOW_VALIDATION, FASTA_CHECK, SAMPLE_CHECK, EVIDENCE_TYPE_CHECK)
@@ -693,7 +694,13 @@ class TestValidator(TestCase):
             validator = self.create_validator_with_copied_output(submission_dir, metadata_json=self.metadata_json_file)
             os.remove(os.path.join(validator.output_dir, 'other_validations', 'file_info.txt'))
             self.run_collect_results(validator)
-            assert validator.results == self.format_data_structure(expected_validation_results)
+            assert validator.results[METADATA_CHECK][RUN_STATUS_KEY] == RUN_STATUS_CRASHED
+            # The per-file size/md5 unavailable messages are only added when file_info.txt was found but
+            # incomplete; when the whole file is missing the high-level crash status covers it instead.
+            assert not any('is not available for' in error['description']
+                          for error in validator.results[METADATA_CHECK]['json_errors'])
+            validator._assess_validation_results()
+            assert validator.results[METADATA_CHECK][PASS] is False
 
     def test__collect_file_info_to_metadata_missing_metadata_json(self):
         # Test for a nextflow run that did not complete and never produced metadata.json
@@ -701,11 +708,7 @@ class TestValidator(TestCase):
             validator = self.create_validator_with_copied_output(submission_dir)
             os.remove(os.path.join(validator.output_dir, 'metadata.json'))
             validator._collect_validation_workflow_results()
-            expected_error = {
-                'property': '/',
-                'description': f'Cannot locate the metadata in JSON format. The process might have failed.'
-            }
-            assert expected_error in validator.results[METADATA_CHECK]['json_errors']
+            assert validator.results[METADATA_CHECK][RUN_STATUS_KEY] == RUN_STATUS_CRASHED
             validator._assess_validation_results()
             assert validator.results[METADATA_CHECK][PASS] is False
 
@@ -716,11 +719,7 @@ class TestValidator(TestCase):
                                                                   validation_tasks=[METADATA_CHECK])
             os.remove(os.path.join(validator.output_dir, 'other_validations', 'metadata_validation.txt'))
             validator._collect_validation_workflow_results()
-            expected_error = {
-                'property': '/',
-                'description': f'Cannot locate metadata check file. The process might have failed.'
-            }
-            assert expected_error in validator.results[METADATA_CHECK]['json_errors']
+            assert validator.results[METADATA_CHECK][RUN_STATUS_KEY] == RUN_STATUS_CRASHED
             validator._assess_validation_results()
             assert validator.results[METADATA_CHECK][PASS] is False
 
@@ -757,8 +756,29 @@ class TestValidator(TestCase):
             validator = self.create_validator_with_copied_output(submission_dir, metadata_json=self.metadata_json_file)
             os.remove(os.path.join(validator.output_dir, 'other_validations', 'input_passed.fa_check.yml'))
             validator._collect_validation_workflow_results()
-            fasta_result = validator.results[FASTA_CHECK]['input_passed.fa']
-            assert fasta_result['all_insdc'] is False
-            assert 'connection_error' in fasta_result
+            assert validator.results[FASTA_CHECK][RUN_STATUS_KEY] == RUN_STATUS_CRASHED
+            assert 'input_passed.fa' not in validator.results[FASTA_CHECK]
             validator._assess_validation_results()
             assert validator.results[FASTA_CHECK][PASS] is False
+
+    def test__collect_vcf_check_results_missing_output(self):
+        # Test for a nextflow run that did not complete and never produced the vcf_format check output
+        with TemporaryDirectory() as submission_dir:
+            validator = self.create_validator_with_copied_output(submission_dir, metadata_json=self.metadata_json_file)
+            shutil.rmtree(os.path.join(validator.output_dir, 'vcf_format'))
+            validator._collect_validation_workflow_results()
+            assert validator.results[VCF_CHECK][RUN_STATUS_KEY] == RUN_STATUS_CRASHED
+            assert 'input_passed.vcf' not in validator.results[VCF_CHECK]
+            validator._assess_validation_results()
+            assert validator.results[VCF_CHECK][PASS] is False
+
+    def test__collect_assembly_check_results_missing_output(self):
+        # Test for a nextflow run that did not complete and never produced the assembly_check output
+        with TemporaryDirectory() as submission_dir:
+            validator = self.create_validator_with_copied_output(submission_dir, metadata_json=self.metadata_json_file)
+            shutil.rmtree(os.path.join(validator.output_dir, 'assembly_check'))
+            validator._collect_validation_workflow_results()
+            assert validator.results[ASSEMBLY_CHECK][RUN_STATUS_KEY] == RUN_STATUS_CRASHED
+            assert 'input_passed.vcf' not in validator.results[ASSEMBLY_CHECK]
+            validator._assess_validation_results()
+            assert validator.results[ASSEMBLY_CHECK][PASS] is False
