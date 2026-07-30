@@ -104,7 +104,7 @@
             {% endif %}
         {% endfor %}
     {% elif run_status == 'crashed' %}
-        {{ report_crashed_task('Vcf check') }}
+        {{ report_crashed_task('VCF check') }}
     {% else %}
         {{ validation_not_run_yet_message() }}
     {% endif %}
