@@ -1,5 +1,5 @@
 {% from 'project_details.txt' import project_details_report %}
-{% from 'file_validation.txt' import file_validation_report %}
+{% from 'file_validation.txt' import assembly_check_report, vcf_check_report %}
 {% from 'sample_name_check.txt' import sample_name_check_report %}
 {% from 'fasta_check.txt' import fasta_check_report %}
 {% from 'metadata_validation.txt' import metadata_validation_report %}
@@ -41,21 +41,23 @@ For requirements, please refer to the EVA website (https://www.ebi.ac.uk/eva/?Su
 {% else %}
     {{ validation_not_run_yet_message() }}
 {% endif %}
+
 -
 
-VCF VALIDATION RESULTS
-Checks whether each file is compliant with the VCF specification (http://samtools.github.io/hts-specs/VCFv4.4.pdf).
-Also checks whether the variants' reference alleles match against the reference assembly.
+ASSEMBLY CHECK RESULTS
+{% set run_status = validation_results.get('assembly_check', {}).get('run_status', '') %}
+{% if run_status == 'success' %}
+    {{ assembly_check_report(validation_results.get('assembly_check', {}), vcf_files) }}
+{% elif run_status == 'crashed' %}
+    {{ report_crashed_task('Assembly check') }}
+{% else %}
+    {{ validation_not_run_yet_message() }}
+{% endif %}
 
+VCF VALIDATION RESULTS
 {% set run_status = validation_results.get('vcf_check', {}).get('run_status', '') %}
 {% if run_status == 'success' %}
-    {% for file_name in vcf_files %}
-        {% if file_name != "pass"%}
-    {# Indentation is important as it impact the report's look#}
-    {{ file_name }}
-    {{ file_validation_report(validation_results, file_name) }}
-        {% endif %}
-    {% endfor %}
+    {{ vcf_check_report(validation_results.get('vcf_check', {}), vcf_files)  }}
 {% elif run_status == 'crashed' %}
     {{ report_crashed_task('VCF check') }}
 {% else %}

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 {% from 'project_details.html' import project_details_report %}
-{% from 'file_validation.html' import file_validation_report %}
+{% from 'file_validation.html' import assembly_check_report, vcf_check_report %}
 {% from 'sample_name_check.html' import sample_name_check_report %}
 {% from 'fasta_check.html' import fasta_check_report %}
 {% from 'metadata_validation.html' import metadata_validation_report %}
@@ -95,14 +95,19 @@
         Checks whether each file is compliant with the <a href="http://samtools.github.io/hts-specs/VCFv4.4.pdf" target=”_blank”>VCF specification</a>.
         Also checks whether the variants' reference alleles match against the reference assembly.
     </div>
+    <h3>Assembly check</h3>
+    {% set run_status = validation_results.get('assembly_check', {}).get('run_status', '') %}
+    {% if run_status == 'success' %}
+        {{ assembly_check_report(validation_results.get('assembly_check', {}), vcf_files) }}
+    {% elif run_status == 'crashed' %}
+        {{ report_crashed_task('Assembly check') }}
+    {% else %}
+        {{ validation_not_run_yet_message() }}
+    {% endif %}
+    <h3>VCF check</h3>
     {% set run_status = validation_results.get('vcf_check', {}).get('run_status', '') %}
     {% if run_status == 'success' %}
-        {% for file_name in vcf_files %}
-            {% if file_name != "pass"%}
-            <h3>{{ file_name }}</h3>
-            {{ file_validation_report(validation_results, file_name) }}
-            {% endif %}
-        {% endfor %}
+        {{ vcf_check_report(validation_results.get('vcf_check', {}), vcf_files) }}
     {% elif run_status == 'crashed' %}
         {{ report_crashed_task('VCF check') }}
     {% else %}

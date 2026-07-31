@@ -188,18 +188,28 @@ class TestValidator(TestCase):
         return Validator(mapping_file, submission_dir, metadata_json=self.metadata_json_file)
 
     def create_validator_with_copied_output(self, submission_dir, metadata_json=None, metadata_xlsx=None,
-                                            shallow_validation=False, validation_tasks=None):
+                                            shallow_validation=False, validation_tasks=None,
+                                            include_second_vcf_with_no_output=False):
         """
         Copy the shared validation_output fixture tree into a fresh submission_dir so a test can delete
         individual output files to simulate an incomplete Nextflow run without affecting other tests.
+
+        If include_second_vcf_with_no_output is True, a second VCF/FASTA entry ("missing_output.*")
+        is added to the mapping file with no corresponding check output on disk, so a test can exercise
+        the "some files present, some missing" partial scenario. The extra input files don't need to
+        exist on disk since these tests call the collection methods directly, not verify_files_present().
         """
         shutil.copytree(os.path.join(self.output_dir, VALIDATION_OUTPUT_DIR),
                         os.path.join(submission_dir, VALIDATION_OUTPUT_DIR))
         mapping_file = os.path.join(submission_dir, 'vcf_files_mapping.csv')
-        create_mapping_file(mapping_file,
-                            [os.path.join(self.vcf_files, 'input_passed.vcf')],
-                            [os.path.join(self.fasta_files, 'input_passed.fa')],
-                            [os.path.join(self.assembly_reports, 'input_passed.txt')])
+        vcf_files = [os.path.join(self.vcf_files, 'input_passed.vcf')]
+        fasta_files = [os.path.join(self.fasta_files, 'input_passed.fa')]
+        assembly_reports = [os.path.join(self.assembly_reports, 'input_passed.txt')]
+        if include_second_vcf_with_no_output:
+            vcf_files.append(os.path.join(self.vcf_files, 'missing_output.vcf'))
+            fasta_files.append(os.path.join(self.fasta_files, 'missing_output.fa'))
+            assembly_reports.append('')
+        create_mapping_file(mapping_file, vcf_files, fasta_files, assembly_reports)
         kwargs = {}
         if validation_tasks is not None:
             kwargs['validation_tasks'] = validation_tasks
@@ -689,37 +699,80 @@ class TestValidator(TestCase):
         assert self.validator_json._check_consent_statement_is_needed_for_submission() is True
 
     def test__collect_file_info_to_metadata_missing_file_info_txt(self):
-        # Test for a nextflow run that did not complete and never produced file_info.txt
+        # Test for a nextflow run that did not complete and never produced file_info.txt, but other
+        # metadata check outputs are present -> task should not crash, only the per-file md5/size
+        # entries should be reported as missing (same as when file_info.txt exists but is empty).
         with TemporaryDirectory() as submission_dir:
             validator = self.create_validator_with_copied_output(submission_dir, metadata_json=self.metadata_json_file)
             os.remove(os.path.join(validator.output_dir, 'other_validations', 'file_info.txt'))
             self.run_collect_results(validator)
-            assert validator.results[METADATA_CHECK][RUN_STATUS_KEY] == RUN_STATUS_CRASHED
-            # The per-file size/md5 unavailable messages are only added when file_info.txt was found but
-            # incomplete; when the whole file is missing the high-level crash status covers it instead.
-            assert not any('is not available for' in error['description']
-                          for error in validator.results[METADATA_CHECK]['json_errors'])
+            assert validator.results == self.format_data_structure(expected_validation_results)
+
+    def test__collect_file_info_to_metadata_missing_metadata_json(self):
+        # Test for a nextflow run that did not complete and never produced metadata.json, but other
+        # metadata check outputs are present -> task should not crash, only a dummy error for the
+        # missing metadata.json should be added.
+        with TemporaryDirectory() as submission_dir:
+            validator = self.create_validator_with_copied_output(submission_dir)
+            os.remove(os.path.join(validator.output_dir, 'metadata.json'))
+            validator._collect_validation_workflow_results()
+            assert validator.results[METADATA_CHECK][RUN_STATUS_KEY] == RUN_STATUS_SUCCESS
+            expected_error = {
+                'property': '/',
+                'description': 'Cannot locate the metadata in JSON format. The process might have failed.'
+            }
+            assert expected_error in validator.results[METADATA_CHECK]['json_errors']
             validator._assess_validation_results()
             assert validator.results[METADATA_CHECK][PASS] is False
 
-    def test__collect_file_info_to_metadata_missing_metadata_json(self):
-        # Test for a nextflow run that did not complete and never produced metadata.json
+    def test_collect_biovalidator_validation_results_missing_report(self):
+        # Test for a nextflow run that did not complete and never produced metadata_validation.txt,
+        # but other metadata check outputs are present -> task should not crash, only a dummy error
+        # for the missing biovalidator report should be added.
         with TemporaryDirectory() as submission_dir:
-            validator = self.create_validator_with_copied_output(submission_dir)
+            validator = self.create_validator_with_copied_output(submission_dir, metadata_json=self.metadata_json_file,
+                                                                  validation_tasks=[METADATA_CHECK])
+            os.remove(os.path.join(validator.output_dir, 'other_validations', 'metadata_validation.txt'))
+            validator._collect_validation_workflow_results()
+            assert validator.results[METADATA_CHECK][RUN_STATUS_KEY] == RUN_STATUS_SUCCESS
+            expected_error = {
+                'property': '/',
+                'description': 'Cannot locate metadata_validation.txt. The process might have failed.'
+            }
+            assert expected_error in validator.results[METADATA_CHECK]['json_errors']
+            validator._assess_validation_results()
+            assert validator.results[METADATA_CHECK][PASS] is False
+
+    def test__collect_metadata_results_all_files_missing(self):
+        # Test for a nextflow run that never completed any part of the metadata check -> the whole
+        # task should be reported as crashed, even though each sub-collector still records its own
+        # diagnostic dummy error for whichever specific file it was looking for.
+        with TemporaryDirectory() as submission_dir:
+            validator = self.create_validator_with_copied_output(submission_dir, validation_tasks=[METADATA_CHECK])
+            os.remove(os.path.join(validator.output_dir, 'other_validations', 'file_info.txt'))
+            os.remove(os.path.join(validator.output_dir, 'other_validations', 'metadata_validation.txt'))
+            os.remove(os.path.join(validator.output_dir, 'other_validations', 'metadata_semantic_check.yml'))
             os.remove(os.path.join(validator.output_dir, 'metadata.json'))
             validator._collect_validation_workflow_results()
             assert validator.results[METADATA_CHECK][RUN_STATUS_KEY] == RUN_STATUS_CRASHED
             validator._assess_validation_results()
             assert validator.results[METADATA_CHECK][PASS] is False
 
-    def test_collect_biovalidator_validation_results_missing_report(self):
-        # Test for a nextflow run that did not complete and never produced metadata_validation.txt
+    def test__collect_semantic_metadata_results_missing_yaml(self):
+        # Test for a nextflow run that did not complete and never produced metadata_semantic_check.yml,
+        # but other metadata check outputs are present -> task should not crash, only a dummy error
+        # for the missing semantic check should be added.
         with TemporaryDirectory() as submission_dir:
             validator = self.create_validator_with_copied_output(submission_dir, metadata_json=self.metadata_json_file,
                                                                   validation_tasks=[METADATA_CHECK])
-            os.remove(os.path.join(validator.output_dir, 'other_validations', 'metadata_validation.txt'))
+            os.remove(os.path.join(validator.output_dir, 'other_validations', 'metadata_semantic_check.yml'))
             validator._collect_validation_workflow_results()
-            assert validator.results[METADATA_CHECK][RUN_STATUS_KEY] == RUN_STATUS_CRASHED
+            assert validator.results[METADATA_CHECK][RUN_STATUS_KEY] == RUN_STATUS_SUCCESS
+            expected_error = {
+                'property': '/',
+                'description': 'Cannot locate metadata_semantic_check.yml. The process might have failed.'
+            }
+            assert expected_error in validator.results[METADATA_CHECK]['json_errors']
             validator._assess_validation_results()
             assert validator.results[METADATA_CHECK][PASS] is False
 
@@ -782,3 +835,43 @@ class TestValidator(TestCase):
             assert 'input_passed.vcf' not in validator.results[ASSEMBLY_CHECK]
             validator._assess_validation_results()
             assert validator.results[ASSEMBLY_CHECK][PASS] is False
+
+    def test__collect_vcf_check_results_partial_output(self):
+        # One of two VCF files has no vcf_format output while the other succeeds -> the task should
+        # not crash; only the missing file gets a synthetic failing entry.
+        with TemporaryDirectory() as submission_dir:
+            validator = self.create_validator_with_copied_output(
+                submission_dir, metadata_json=self.metadata_json_file, include_second_vcf_with_no_output=True)
+            validator._collect_validation_workflow_results()
+            assert validator.results[VCF_CHECK][RUN_STATUS_KEY] == RUN_STATUS_SUCCESS
+            assert validator.results[VCF_CHECK]['input_passed.vcf']['valid'] is True
+            assert validator.results[VCF_CHECK]['missing_output.vcf']['critical_list'] == ['Process failed']
+            validator._assess_validation_results()
+            assert validator.results[VCF_CHECK][PASS] is False
+
+    def test__collect_assembly_check_results_partial_output(self):
+        # One of two VCF files has no assembly_check output while the other succeeds -> the task
+        # should not crash; only the missing file gets a synthetic failing entry.
+        with TemporaryDirectory() as submission_dir:
+            validator = self.create_validator_with_copied_output(
+                submission_dir, metadata_json=self.metadata_json_file, include_second_vcf_with_no_output=True)
+            validator._collect_validation_workflow_results()
+            assert validator.results[ASSEMBLY_CHECK][RUN_STATUS_KEY] == RUN_STATUS_SUCCESS
+            assert validator.results[ASSEMBLY_CHECK]['input_passed.vcf']['nb_error'] == 0
+            assert validator.results[ASSEMBLY_CHECK]['missing_output.vcf']['error_list'] == ['Process failed']
+            validator._assess_validation_results()
+            assert validator.results[ASSEMBLY_CHECK][PASS] is False
+
+    def test__load_fasta_check_results_partial_output(self):
+        # One of two FASTA files has no fasta check output while the other succeeds -> the task
+        # should not crash; only the missing file gets a synthetic failing entry.
+        with TemporaryDirectory() as submission_dir:
+            validator = self.create_validator_with_copied_output(
+                submission_dir, metadata_json=self.metadata_json_file, include_second_vcf_with_no_output=True)
+            validator._collect_validation_workflow_results()
+            assert validator.results[FASTA_CHECK][RUN_STATUS_KEY] == RUN_STATUS_SUCCESS
+            assert 'input_passed.fa' in validator.results[FASTA_CHECK]
+            assert validator.results[FASTA_CHECK]['missing_output.fa']['all_insdc'] is False
+            assert 'connection_error' in validator.results[FASTA_CHECK]['missing_output.fa']
+            validator._assess_validation_results()
+            assert validator.results[FASTA_CHECK][PASS] is False

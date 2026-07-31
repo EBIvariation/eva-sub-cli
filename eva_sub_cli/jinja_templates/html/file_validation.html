@@ -1,93 +1,89 @@
 
-{% macro file_validation_report(validation_results, file_name) -%}
-    {% for check_type, check_per_file in validation_results.items() if check_type not in ["trim_down", "version"] %}
-        {% set result = check_per_file.get(file_name, {}) %}
-        {% if check_type == "assembly_check" %}
-            {{ assembly_check(result) }}
-        {% elif check_type == "vcf_check" %}
-            {{ vcf_check(result) }}
+
+{% macro vcf_check_report(vcf_check_result_per_file, vcf_file_names) -%}
+    {% for file_name in vcf_file_names %}
+        {% set vcf_check_result = vcf_check_result_per_file.get(file_name, {}) %}
+        {% set critical_count = vcf_check_result.get("critical_count", 0) %}
+        {% set error_count = vcf_check_result.get("error_count", 0) %}
+        {% set expand_icon = "" %}
+        {% if critical_count > 0 %}
+            {% set expand_icon = "&#9654;" %}
+            {% set icon = "&#10060;" %}
+            {% set row_class = "report-section fail collapsible" %}
+        {% elif error_count > 0 %}
+            {% set expand_icon = "&#9654;" %}
+            {% set icon = "&#10071;" %}
+            {% set row_class = "report-section warn collapsible" %}
+        {% else %}
+            {% set icon = "&#10004;" %}
+            {% set row_class = "report-section pass" %}
+        {% endif %}
+        <div class='{{ row_class }}'><span class="expand_icon">{{ expand_icon }}</span> {{ icon }} {{ file_name }}: {{ critical_count }} critical errors, {{ error_count }} non-critical errors </div>
+        {% set critical_list = vcf_check_result.get("critical_list") %}
+        {% set error_list = vcf_check_result.get("error_list") %}
+
+        {% if critical_list or error_list%}
+            <div class="error-list">
+                <div class="error-description">First 10 errors per category are below. <strong>Full report:</strong> {{ vcf_check_result.get('report_path', '') }}</div>
+                <table>
+                    <tr>
+                        <th>Category</th><th>Error</th>
+                    </tr>
+                    {% for error in critical_list[:10] %}
+                        <tr>
+                            <td><strong>critical error</strong></td><td> {{ error }}</td>
+                        </tr>
+                    {% endfor %}
+                    {% for error in error_list[:10] %}
+                        <tr>
+                            <td><strong>non-critical error</strong></td><td> {{ error }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
         {% endif %}
     {% endfor %}
 {%- endmacro %}
 
-{% macro vcf_check(vcf_check_result) %}
-    {% set critical_count = vcf_check_result.get("critical_count", 0) %}
-    {% set error_count = vcf_check_result.get("error_count", 0) %}
-    {% set expand_icon = "" %}
-    {% if critical_count > 0 %}
-        {% set expand_icon = "&#9654;" %}
-        {% set icon = "&#10060;" %}
-        {% set row_class = "report-section fail collapsible" %}
-    {% elif error_count > 0 %}
-        {% set expand_icon = "&#9654;" %}
-        {% set icon = "&#10071;" %}
-        {% set row_class = "report-section warn collapsible" %}
-    {% else %}
-        {% set icon = "&#10004;" %}
-        {% set row_class = "report-section pass" %}
-    {% endif %}
-    <div class='{{ row_class }}'><span class="expand_icon">{{ expand_icon }}</span> {{ icon }} VCF check: {{ critical_count }} critical errors, {{ error_count }} non-critical errors </div>
-    {% set critical_list = vcf_check_result.get("critical_list") %}
-    {% set error_list = vcf_check_result.get("error_list") %}
-
-    {% if critical_list or error_list%}
-        <div class="error-list">
-            <div class="error-description">First 10 errors per category are below. <strong>Full report:</strong> {{ vcf_check_result.get('report_path', '') }}</div>
+{% macro assembly_check_report(assembly_check_result_per_file, vcf_file_names) -%}
+    {% for file_name in vcf_file_names %}
+        {% set assembly_check_result = assembly_check_result_per_file.get(file_name, {}) %}
+        {% set nb_match = assembly_check_result.get("match", 0) %}
+        {% set nb_total = assembly_check_result.get("total", 0) %}
+        {% set match_percentage = nb_match / nb_total * 100 if nb_total else 0 %}
+        {% set expand_icon = "" %}
+        {% if assembly_check_result.get("nb_mismatch", 0) > 0 or nb_total == 0 %}
+            {% set expand_icon = "&#9654;" %}
+            {% set icon = "&#10060;" %}
+            {% set row_class = "report-section fail collapsible" %}
+        {% else %}
+            {% set icon = "&#10004;" %}
+            {% set row_class = "report-section pass" %}
+        {% endif %}
+        <div class='{{ row_class }}'><span class="expand_icon">{{ expand_icon }}</span> {{ icon }} {{ file_name }}: {{ nb_match }}/{{ nb_total }} ({{ match_percentage|round(2) }}%)</div>
+        {% set mismatch_list = assembly_check_result.get("mismatch_list") %}
+        {% set error_list = assembly_check_result.get("error_list") %}
+        {% if mismatch_list or error_list %}
+            <div class="error-list">
+            <div class="error-description">First 10 errors per category are below. <strong>Full report:</strong> {{ assembly_check_result.get('report_path', '') }}</div>
             <table>
                 <tr>
                     <th>Category</th><th>Error</th>
                 </tr>
-                {% for error in critical_list[:10] %}
-                    <tr>
-                        <td><strong>critical error</strong></td><td> {{ error }}</td>
-                    </tr>
-                {% endfor %}
                 {% for error in error_list[:10] %}
                     <tr>
-                        <td><strong>non-critical error</strong></td><td> {{ error }}</td>
+                        <td><strong>Parsing Error</strong></td><td> {{ error }}</td>
+                    </tr>
+                {% endfor %}
+                {% for error in mismatch_list[:10] %}
+                    <tr>
+                        <td><strong>mismatch error</strong></td><td> {{ error }}</td>
                     </tr>
                 {% endfor %}
             </table>
-        </div>
-    {% endif %}
-{%- endmacro %}
-
-{% macro assembly_check(assembly_check_result) %}
-    {% set nb_match = assembly_check_result.get("match", 0) %}
-    {% set nb_total = assembly_check_result.get("total", 0) %}
-    {% set match_percentage = nb_match / nb_total * 100 if nb_total else 0 %}
-    {% set expand_icon = "" %}
-    {% if assembly_check_result.get("nb_mismatch", 0) > 0 or nb_total == 0 %}
-        {% set expand_icon = "&#9654;" %}
-        {% set icon = "&#10060;" %}
-        {% set row_class = "report-section fail collapsible" %}
-    {% else %}
-        {% set icon = "&#10004;" %}
-        {% set row_class = "report-section pass" %}
-    {% endif %}
-    <div class='{{ row_class }}'><span class="expand_icon">{{ expand_icon }}</span> {{ icon }} Assembly check: {{ nb_match }}/{{ nb_total }} ({{ match_percentage|round(2) }}%)</div>
-    {% set mismatch_list = assembly_check_result.get("mismatch_list") %}
-    {% set error_list = assembly_check_result.get("error_list") %}
-    {% if mismatch_list or error_list %}
-        <div class="error-list">
-        <div class="error-description">First 10 errors per category are below. <strong>Full report:</strong> {{ assembly_check_result.get('report_path', '') }}</div>
-        <table>
-            <tr>
-                <th>Category</th><th>Error</th>
-            </tr>
-            {% for error in error_list[:10] %}
-                <tr>
-                    <td><strong>Parsing Error</strong></td><td> {{ error }}</td>
-                </tr>
-            {% endfor %}
-            {% for error in mismatch_list[:10] %}
-                <tr>
-                    <td><strong>mismatch error</strong></td><td> {{ error }}</td>
-                </tr>
-            {% endfor %}
-        </table>
-        </div>
-    {% endif %}
+            </div>
+        {% endif %}
+    {% endfor %}
 {%- endmacro %}
 
 
