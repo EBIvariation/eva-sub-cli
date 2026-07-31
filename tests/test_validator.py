@@ -196,8 +196,7 @@ class TestValidator(TestCase):
 
         If include_second_vcf_with_no_output is True, a second VCF/FASTA entry ("missing_output.*")
         is added to the mapping file with no corresponding check output on disk, so a test can exercise
-        the "some files present, some missing" partial scenario. The extra input files don't need to
-        exist on disk since these tests call the collection methods directly, not verify_files_present().
+        the "some files present, some missing" partial scenario.
         """
         shutil.copytree(os.path.join(self.output_dir, VALIDATION_OUTPUT_DIR),
                         os.path.join(submission_dir, VALIDATION_OUTPUT_DIR))

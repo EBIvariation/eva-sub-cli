@@ -69,6 +69,9 @@ For requirements, please refer to the EVA website (https://www.ebi.ac.uk/eva/?Su
 		Error: should match exactly one schema in oneOf
 		---
 -
+VCF VALIDATION RESULTS
+Checks whether each file is compliant with the VCF specification (http://samtools.github.io/hts-specs/VCFv4.4.pdf).
+Also checks whether the variants' reference alleles match against the reference assembly.
 ASSEMBLY CHECK RESULTS
             ❌ input_fail.vcf: 26/36 (72.22%)
             First 10 errors per category are below. Full report: /path/to/assembly_failed/report
