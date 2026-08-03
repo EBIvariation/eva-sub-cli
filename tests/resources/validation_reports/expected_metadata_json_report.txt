@@ -72,26 +72,26 @@ For requirements, please refer to the EVA website (https://www.ebi.ac.uk/eva/?Su
 VCF VALIDATION RESULTS
 Checks whether each file is compliant with the VCF specification (http://samtools.github.io/hts-specs/VCFv4.4.pdf).
 Also checks whether the variants' reference alleles match against the reference assembly.
-    input_fail.vcf
-		❌ Assembly check: 26/36 (72.22%)
-		First 10 errors per category are below. Full report: /path/to/assembly_failed/report
-			Parsing error: The assembly checking could not be completed: Contig 'chr23' not found in assembly report
-			Mismatch error: Chromosome 1, position 35549, reference allele 'G' does not match the reference sequence, expected 'c'
-			Mismatch error: Chromosome 1, position 35595, reference allele 'G' does not match the reference sequence, expected 'a'
-			Mismatch error: Chromosome 1, position 35618, reference allele 'G' does not match the reference sequence, expected 'c'
-			Mismatch error: Chromosome 1, position 35626, reference allele 'A' does not match the reference sequence, expected 'g'
-			Mismatch error: Chromosome 1, position 35639, reference allele 'T' does not match the reference sequence, expected 'c'
-			Mismatch error: Chromosome 1, position 35643, reference allele 'T' does not match the reference sequence, expected 'g'
-			Mismatch error: Chromosome 1, position 35717, reference allele 'T' does not match the reference sequence, expected 'g'
-			Mismatch error: Chromosome 1, position 35819, reference allele 'T' does not match the reference sequence, expected 'a'
-			Mismatch error: Chromosome 1, position 35822, reference allele 'T' does not match the reference sequence, expected 'c'
-		❌ VCF check: 1 critical errors, 1 non-critical errors
-		First 10 errors per category are below. Full report: /path/to/vcf_failed/report
-			Critical error: Line 4: Error in meta-data section.
-			Non-critical error: Sample #11, field AD does not match the meta specification Number=R (expected 2 value(s)). AD=..
-    input_passed.vcf
-		✔ Assembly check: 247/247 (100.0%)
-		✔ VCF check: 0 critical errors, 0 non-critical errors
+ASSEMBLY CHECK RESULTS
+            ❌ input_fail.vcf: 26/36 (72.22%)
+            First 10 errors per category are below. Full report: /path/to/assembly_failed/report
+                Parsing error: The assembly checking could not be completed: Contig 'chr23' not found in assembly report
+                Mismatch error: Chromosome 1, position 35549, reference allele 'G' does not match the reference sequence, expected 'c'
+                Mismatch error: Chromosome 1, position 35595, reference allele 'G' does not match the reference sequence, expected 'a'
+                Mismatch error: Chromosome 1, position 35618, reference allele 'G' does not match the reference sequence, expected 'c'
+                Mismatch error: Chromosome 1, position 35626, reference allele 'A' does not match the reference sequence, expected 'g'
+                Mismatch error: Chromosome 1, position 35639, reference allele 'T' does not match the reference sequence, expected 'c'
+                Mismatch error: Chromosome 1, position 35643, reference allele 'T' does not match the reference sequence, expected 'g'
+                Mismatch error: Chromosome 1, position 35717, reference allele 'T' does not match the reference sequence, expected 'g'
+                Mismatch error: Chromosome 1, position 35819, reference allele 'T' does not match the reference sequence, expected 'a'
+                Mismatch error: Chromosome 1, position 35822, reference allele 'T' does not match the reference sequence, expected 'c'
+            ✔ input_passed.vcf: 247/247 (100.0%)
+VCF VALIDATION RESULTS
+		❌ input_fail.vcf: 1 critical errors, 1 non-critical errors
+            First 10 errors per category are below. Full report: /path/to/vcf_failed/report
+                Critical error: Line 4: Error in meta-data section.
+                Non-critical error: Sample #11, field AD does not match the meta specification Number=R (expected 2 value(s)). AD=..
+		✔ input_passed.vcf: 0 critical errors, 0 non-critical errors
 -
 SAMPLE NAME CONCORDANCE CHECK
 Checks whether information in the metadata is concordant with that contained in the VCF files, in particular sample names.

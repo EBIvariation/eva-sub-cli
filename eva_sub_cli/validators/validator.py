@@ -41,7 +41,11 @@ ALL_VALIDATION_TASKS_GRANULAR = [VCF_CHECK, EVIDENCE_TYPE_CHECK, ASSEMBLY_CHECK,
                                  METADATA_CHECK]
 SHALLOW_VALIDATION = 'shallow_validation'
 TRIM_DOWN = 'trim_down'
+# Status of the validation for a specific task. It should be a string containing the value "success", "crashed" or "did not run".
 RUN_STATUS_KEY = 'run_status'
+RUN_STATUS_SUCCESS = 'success'
+RUN_STATUS_CRASHED = 'crashed'
+RUN_STATUS_DID_NOT_RUN = 'did not run'
 PASS = 'pass'
 
 
@@ -202,11 +206,14 @@ class Validator(AppLogger):
         # update previous shallow validation format to new one, if applicable
         if 'version' in self.results:
             if version.parse(self.results['version']) < version.parse('v0.4.15'):
-                self.update_previous_version_results()
+                self.update_pre_0_4_15_version_results()
+            if version.parse(self.results['version']) < version.parse('v0.6.5'):
+                self.update_pre_0_6_5_version_results()
         else:
-            self.update_previous_version_results()
+            self.update_pre_0_4_15_version_results()
+            self.update_pre_0_6_5_version_results()
 
-    def update_previous_version_results(self):
+    def update_pre_0_4_15_version_results(self):
         if 'requested' in self.results.get(SHALLOW_VALIDATION, {}):
             if 'required' in self.results.get(SHALLOW_VALIDATION, {}):
                 if self.results.get(SHALLOW_VALIDATION, {}).get('required', False):
@@ -218,6 +225,15 @@ class Validator(AppLogger):
 
                 del self.results[SHALLOW_VALIDATION]['required']
             del self.results[SHALLOW_VALIDATION]['requested']
+
+    def update_pre_0_6_5_version_results(self):
+        for task in ALL_VALIDATION_TASKS_GRANULAR:
+            if task in self.results:
+                run_status = self.results[task].get(RUN_STATUS_KEY)
+                if run_status:
+                    self.results[task][RUN_STATUS_KEY] = RUN_STATUS_SUCCESS
+                else:
+                    self.results[task][RUN_STATUS_KEY] = RUN_STATUS_DID_NOT_RUN
 
     def _collect_validation_workflow_results(self):
         # Collect information from the output and summarise in the config
@@ -244,13 +260,15 @@ class Validator(AppLogger):
             It assumes all validation have been parsed already.
         """
 
-        if VCF_CHECK in self.tasks:
+        if VCF_CHECK in self.tasks and self.results[VCF_CHECK].get(RUN_STATUS_KEY) == RUN_STATUS_SUCCESS:
             # vcf_check result
-            vcf_check_result = all((vcf_check.get('critical_count', 1) == 0
-                                    for vcf_name, vcf_check in self.results.get(VCF_CHECK, {}).items()
-                                    if isinstance(vcf_check, dict)))
-            self.results[VCF_CHECK][PASS] = vcf_check_result
+            self.results[VCF_CHECK][PASS] = all((vcf_check.get('critical_count', 1) == 0
+                                        for vcf_name, vcf_check in self.results.get(VCF_CHECK, {}).items()
+                                        if isinstance(vcf_check, dict)))
+        elif VCF_CHECK in self.tasks:
+            self.results[VCF_CHECK][PASS] = False
 
+        if VCF_CHECK in self.tasks and self.results[EVIDENCE_TYPE_CHECK].get(RUN_STATUS_KEY) == RUN_STATUS_SUCCESS:
             # evidence type check result
             self.results[EVIDENCE_TYPE_CHECK][PASS] = (
                     any(isinstance(v, dict) for v in self.results.get(EVIDENCE_TYPE_CHECK, {}).values())
@@ -258,11 +276,14 @@ class Validator(AppLogger):
                     all('evidence_type' in v and v['evidence_type'] is not None
                         for v in self.results.get(EVIDENCE_TYPE_CHECK, {}).values()
                         if isinstance(v, dict)))
-        elif VCF_CHECK not in self.results:
-            self.results[VCF_CHECK] = {RUN_STATUS_KEY: False}
-            self.results[EVIDENCE_TYPE_CHECK] = {RUN_STATUS_KEY: False}
+        elif VCF_CHECK in self.tasks:
+            self.results[EVIDENCE_TYPE_CHECK][PASS] = False
 
-        if ASSEMBLY_CHECK in self.tasks:
+        if VCF_CHECK not in self.results:
+            self.results[VCF_CHECK] = {RUN_STATUS_KEY: RUN_STATUS_DID_NOT_RUN}
+            self.results[EVIDENCE_TYPE_CHECK] = {RUN_STATUS_KEY: RUN_STATUS_DID_NOT_RUN}
+
+        if ASSEMBLY_CHECK in self.tasks and self.results[ASSEMBLY_CHECK].get(RUN_STATUS_KEY) == RUN_STATUS_SUCCESS:
             # assembly_check result
             asm_nb_mismatch_result = all((asm_check.get('nb_mismatch', 1) == 0
                                           for vcf_name, asm_check in self.results.get(ASSEMBLY_CHECK, {}).items()
@@ -271,7 +292,10 @@ class Validator(AppLogger):
                                        for vcf_name, asm_check in self.results.get(ASSEMBLY_CHECK, {}).items()
                                        if isinstance(asm_check, dict)))
             self.results[ASSEMBLY_CHECK][PASS] = asm_nb_mismatch_result and asm_nb_error_result
+        elif ASSEMBLY_CHECK in self.tasks:
+            self.results[ASSEMBLY_CHECK][PASS] = False
 
+        if ASSEMBLY_CHECK in self.tasks and self.results[FASTA_CHECK].get(RUN_STATUS_KEY) == RUN_STATUS_SUCCESS:
             # fasta_check result
             # Note this fails only if the FASTA file is not INSDC or the reference in the metadata is not a GCA.
             # It does not fail if the metadata assembly is not compatible with the FASTA, even though this is reported
@@ -283,24 +307,31 @@ class Validator(AppLogger):
                                    for fa_file, fa_file_check in self.results.get(FASTA_CHECK, {}).items()
                                    if isinstance(fa_file_check, dict))
             self.results[FASTA_CHECK][PASS] = fasta_check_result and gca_check_result
-        elif ASSEMBLY_CHECK not in self.results:
-            self.results[ASSEMBLY_CHECK] = {RUN_STATUS_KEY: False}
-            self.results[FASTA_CHECK] = {RUN_STATUS_KEY: False}
+        elif ASSEMBLY_CHECK in self.tasks:
+            self.results[FASTA_CHECK][PASS] = False
 
-        if SAMPLE_CHECK in self.tasks:
+        if ASSEMBLY_CHECK not in self.results:
+            self.results[ASSEMBLY_CHECK] = {RUN_STATUS_KEY: RUN_STATUS_DID_NOT_RUN}
+            self.results[FASTA_CHECK] = {RUN_STATUS_KEY: RUN_STATUS_DID_NOT_RUN}
+
+        if SAMPLE_CHECK in self.tasks and self.results[SAMPLE_CHECK].get(RUN_STATUS_KEY) == RUN_STATUS_SUCCESS:
             # sample check result
             self.results[SAMPLE_CHECK][PASS] = self.results.get(SAMPLE_CHECK, {}).get('overall_differences',
                                                                                       True) is False
+        elif SAMPLE_CHECK in self.tasks:
+            self.results[SAMPLE_CHECK][PASS] = False
         elif SAMPLE_CHECK not in self.results:
-            self.results[SAMPLE_CHECK] = {RUN_STATUS_KEY: False}
+            self.results[SAMPLE_CHECK] = {RUN_STATUS_KEY: RUN_STATUS_DID_NOT_RUN}
 
-        if METADATA_CHECK in self.tasks:
+        if METADATA_CHECK in self.tasks and self.results[METADATA_CHECK].get(RUN_STATUS_KEY) == RUN_STATUS_SUCCESS:
             # metadata check result
             metadata_xlsx_result = len(self.results.get(METADATA_CHECK, {}).get('spreadsheet_errors', []) or []) == 0
             metadata_json_result = len(self.results.get(METADATA_CHECK, {}).get('json_errors', []) or []) == 0
             self.results[METADATA_CHECK][PASS] = metadata_xlsx_result and metadata_json_result
+        elif METADATA_CHECK in self.tasks:
+            self.results[METADATA_CHECK][PASS] = False
         elif METADATA_CHECK not in self.results:
-            self.results[METADATA_CHECK] = {RUN_STATUS_KEY: False}
+            self.results[METADATA_CHECK] = {RUN_STATUS_KEY: RUN_STATUS_DID_NOT_RUN}
 
         # update config based on the validation results
         self.sub_config.set(READY_FOR_SUBMISSION_TO_EVA, value=self.verify_ready_for_submission_to_eva())
@@ -356,20 +387,25 @@ class Validator(AppLogger):
 
     def _collect_vcf_check_results(self):
         # detect output files for vcf check
-        self.results[VCF_CHECK] = {RUN_STATUS_KEY: True}
+        self.results[VCF_CHECK] = {RUN_STATUS_KEY: RUN_STATUS_SUCCESS}
         if self.shallow_validation and self.results[SHALLOW_VALIDATION][TRIM_DOWN] is True:
             self.results[VCF_CHECK].update({TRIM_DOWN: True})
 
-        for vcf_file in self.vcf_files:
-            vcf_name = os.path.basename(vcf_file)
+        vcf_names = [os.path.basename(vcf_file) for vcf_file in self.vcf_files]
+        per_vcf_paths = {vcf_name: (self._vcf_check_log(vcf_name), self._vcf_check_text_report(vcf_name))
+                         for vcf_name in vcf_names}
+        if not any(log and report for log, report in per_vcf_paths.values()):
+            self.error('Cannot locate any vcf check results. The process might have failed.')
+            self.results[VCF_CHECK][RUN_STATUS_KEY] = RUN_STATUS_CRASHED
+            return
 
-            vcf_check_log = self._vcf_check_log(vcf_name)
-            vcf_check_text_report = self._vcf_check_text_report(vcf_name)
-
+        for vcf_name, (vcf_check_log, vcf_check_text_report) in per_vcf_paths.items():
             if vcf_check_log and vcf_check_text_report:
                 valid, warning_count, error_count, critical_count, error_list, critical_list = parse_vcf_check_report(
                     vcf_check_text_report)
             else:
+                error_txt = f'Cannot locate vcf check results for {vcf_name}. The process might have failed.'
+                self.error(error_txt)
                 valid, warning_count, error_count, critical_count, error_list, critical_list = (False, 0, 0, 1, [],
                                                                                                 ['Process failed'])
             self.results[VCF_CHECK][vcf_name] = {
@@ -384,16 +420,19 @@ class Validator(AppLogger):
 
     def _collect_assembly_check_results(self):
         # detect output files for assembly check
-        self.results[ASSEMBLY_CHECK] = {RUN_STATUS_KEY: True}
+        self.results[ASSEMBLY_CHECK] = {RUN_STATUS_KEY: RUN_STATUS_SUCCESS}
         if self.shallow_validation and self.results[SHALLOW_VALIDATION][TRIM_DOWN] is True:
             self.results[ASSEMBLY_CHECK].update({TRIM_DOWN: True})
 
-        for vcf_file in self.vcf_files:
-            vcf_name = os.path.basename(vcf_file)
+        vcf_names = [os.path.basename(vcf_file) for vcf_file in self.vcf_files]
+        per_vcf_paths = {vcf_name: (self._assembly_check_log(vcf_name), self._assembly_check_text_report(vcf_name))
+                         for vcf_name in vcf_names}
+        if not any(log and report for log, report in per_vcf_paths.values()):
+            self.error('Cannot locate any assembly check results. The process might have failed.')
+            self.results[ASSEMBLY_CHECK][RUN_STATUS_KEY] = RUN_STATUS_CRASHED
+            return
 
-            assembly_check_log = self._assembly_check_log(vcf_name)
-            assembly_check_text_report = self._assembly_check_text_report(vcf_name)
-
+        for vcf_name, (assembly_check_log, assembly_check_text_report) in per_vcf_paths.items():
             if assembly_check_log and assembly_check_text_report:
                 error_list_from_log, nb_error_from_log, match, total = \
                     parse_assembly_check_log(assembly_check_log)
@@ -402,6 +441,7 @@ class Validator(AppLogger):
                 nb_error = nb_error_from_log + nb_error_from_report
                 error_list = error_list_from_log + error_list_from_report
             else:
+                self.error(f'Cannot locate assembly check results for {vcf_name}. The process might have failed.')
                 error_list, mismatch_list, nb_mismatch, nb_error, match, total = (['Process failed'], [], 0, 1, 0, 0)
             self.results[ASSEMBLY_CHECK][vcf_name] = {
                 'report_path': assembly_check_text_report,
@@ -414,15 +454,25 @@ class Validator(AppLogger):
             }
 
     def _load_fasta_check_results(self):
-        self.results[FASTA_CHECK] = {RUN_STATUS_KEY: True}
+        self.results[FASTA_CHECK] = {RUN_STATUS_KEY: RUN_STATUS_SUCCESS}
         if self.shallow_validation and self.results[SHALLOW_VALIDATION][TRIM_DOWN] is True:
             self.results[FASTA_CHECK].update({TRIM_DOWN: True})
 
-        for fasta_file in self.fasta_files:
-            fasta_file_name = os.path.basename(fasta_file)
-            fasta_check = resolve_single_file_path(os.path.join(self.output_dir, 'other_validations',
-                                                                f'{fasta_file_name}_check.yml'))
+        fasta_check_paths = {os.path.basename(fasta_file): resolve_single_file_path(
+            os.path.join(self.output_dir, 'other_validations', f'{os.path.basename(fasta_file)}_check.yml'))
+            for fasta_file in self.fasta_files}
+        if not any(fasta_check_paths.values()):
+            self.error('Cannot locate any fasta check results. The process might have failed.')
+            self.results[FASTA_CHECK][RUN_STATUS_KEY] = RUN_STATUS_CRASHED
+            return
+
+        for fasta_file_name, fasta_check in fasta_check_paths.items():
             if not fasta_check:
+                error_txt = f'Cannot locate fasta check results for {fasta_file_name}. The process might have failed.'
+                self.error(error_txt)
+                self.results[FASTA_CHECK][fasta_file_name] = {
+                    'all_insdc': False, 'sequences': [], 'connection_error': error_txt
+                }
                 continue
             with open(fasta_check) as open_yaml:
                 self.results[FASTA_CHECK][fasta_file_name] = yaml.safe_load(open_yaml)
@@ -433,8 +483,10 @@ class Validator(AppLogger):
             with open(self._sample_check_yaml) as open_yaml:
                 self.results[SAMPLE_CHECK] = yaml.safe_load(open_yaml)
             self.results[SAMPLE_CHECK]['report_path'] = self._sample_check_yaml
-
-        self.results[SAMPLE_CHECK].update({RUN_STATUS_KEY: True})
+            self.results[SAMPLE_CHECK].update({RUN_STATUS_KEY: RUN_STATUS_SUCCESS})
+        else:
+            self.error(f'Cannot locate sample check results. The process might have failed.')
+            self.results[SAMPLE_CHECK].update({RUN_STATUS_KEY: RUN_STATUS_CRASHED})
 
     def _load_evidence_check_results(self):
         self.results[EVIDENCE_TYPE_CHECK] = {}
@@ -442,19 +494,28 @@ class Validator(AppLogger):
             with open(self._evidence_type_check_yaml) as open_yaml:
                 self.results[EVIDENCE_TYPE_CHECK] = yaml.safe_load(open_yaml)
             self.results[EVIDENCE_TYPE_CHECK]['report_path'] = self._evidence_type_check_yaml
-        self.results[EVIDENCE_TYPE_CHECK].update({RUN_STATUS_KEY: True})
+            self.results[EVIDENCE_TYPE_CHECK].update({RUN_STATUS_KEY: RUN_STATUS_SUCCESS})
+        else:
+            self.error(f'Cannot locate evidence type check results. The process might have failed.')
+            self.results[EVIDENCE_TYPE_CHECK].update({RUN_STATUS_KEY: RUN_STATUS_CRASHED})
         self._update_metadata_with_evidence_type()
 
     def _collect_metadata_results(self):
-        self.results[METADATA_CHECK] = {RUN_STATUS_KEY: True}
+        self.results[METADATA_CHECK] = {RUN_STATUS_KEY: RUN_STATUS_SUCCESS}
+
         self._load_spreadsheet_conversion_errors()
-        self.collect_biovalidator_validation_results()
-        self._collect_semantic_metadata_results()
+        metadata_validation_file = self.collect_biovalidator_validation_results()
+        metadata_semantic_file = self._collect_semantic_metadata_results()
         if self.metadata_xlsx:
             self._convert_biovalidator_validation_to_spreadsheet()
             self._write_spreadsheet_validation_results()
-        self._collect_file_info_to_metadata()
+        file_info_file = self._collect_file_info_to_metadata()
         self._add_schema_to_metadata()
+
+        if not any([metadata_validation_file, metadata_semantic_file, file_info_file,
+                   self.metadata_json_post_validation]):
+            self.error('Cannot locate any metadata check output. The process might have failed.')
+            self.results[METADATA_CHECK][RUN_STATUS_KEY] = RUN_STATUS_CRASHED
 
     def _load_spreadsheet_conversion_errors(self):
         errors_file = resolve_single_file_path(os.path.join(self.output_dir, 'other_validations',
@@ -466,26 +527,41 @@ class Validator(AppLogger):
 
     def collect_biovalidator_validation_results(self):
         """
-        Read the biovalidator's report and extract the list of validation errors
+        Read the biovalidator's report and extract the list of validation errors.
+        Returns the resolved report path, or None if it could not be located.
         """
         metadata_check_file = resolve_single_file_path(os.path.join(self.output_dir, 'other_validations',
                                                                     'metadata_validation.txt'))
-        errors = parse_biovalidator_validation_results(metadata_check_file)
+        if metadata_check_file:
+            errors = parse_biovalidator_validation_results(metadata_check_file)
+        else:
+            error_txt = f"Cannot locate metadata_validation.txt. The process might have failed."
+            self.error(error_txt)
+            errors = [{'property': '/', 'description': error_txt}]
         self.results[METADATA_CHECK].update({
             'json_report_path': metadata_check_file,
             'json_errors': errors
         })
+        return metadata_check_file
 
     def _collect_semantic_metadata_results(self):
+        """
+        Read the semantic check's report and merge its errors into the biovalidator's.
+        Returns the resolved report path, or None if it could not be located.
+        """
         errors_file = resolve_single_file_path(os.path.join(self.output_dir, 'other_validations',
                                                             'metadata_semantic_check.yml'))
         if not errors_file:
-            return
+            error_txt = 'Cannot locate metadata_semantic_check.yml. The process might have failed.'
+            self.error(error_txt)
+            self.results[METADATA_CHECK]['json_errors'].append({'property': '/', 'description': error_txt})
+            return None
         with open(errors_file) as open_yaml:
             # errors is a list of dicts matching format of biovalidator errors
             errors = yaml.safe_load(open_yaml)
             # biovalidator error parsing always places a list here, even if no errors
             self.results[METADATA_CHECK]['json_errors'] += errors
+        return errors_file
 
     def _convert_biovalidator_validation_to_spreadsheet(self):
         config_file = os.path.join(ETC_DIR, "spreadsheet2json_conf.yaml")
@@ -541,6 +617,10 @@ class Validator(AppLogger):
             self.results[METADATA_CHECK]['spreadsheet_report_path'] = spreadsheet_report_file
 
     def _collect_file_info_to_metadata(self):
+        """
+        Attach md5/file size info to each file in the metadata. Returns the resolved file_info.txt
+        path, or None if it could not be located.
+        """
         errors = []
         md5sum_file = resolve_single_file_path(os.path.join(self.output_dir, 'other_validations', 'file_info.txt'))
         file_path_2_md5 = {}
@@ -559,9 +639,8 @@ class Validator(AppLogger):
                     file_path_2_file_size[vcf_file] = file_size
                     file_name_2_file_size[os.path.basename(vcf_file)] = file_size
         else:
-            error_txt = f"Cannot locate file_info.txt at {os.path.join(self.output_dir, 'other_validations', 'file_info.txt')}"
+            error_txt = f"Cannot locate file_info.txt. The process might have failed."
             self.error(error_txt)
-            raise FileNotFoundError(error_txt)
 
         if self.metadata_json_post_validation:
             metadata = EvaMetadataJson(self.metadata_json_post_validation)
@@ -598,14 +677,15 @@ class Validator(AppLogger):
                 errors.append({'property': '/', 'description': error_txt})
             metadata.write(self.metadata_json_post_validation)
         else:
-            error_txt = f'Cannot locate the metadata in JSON format in {os.path.join(self.output_dir, "metadata.json")}'
+            error_txt = f'Cannot locate the metadata in JSON format. The process might have failed.'
             self.error(error_txt)
-            raise FileNotFoundError(error_txt)
+            errors.append({'property': '/', 'description': error_txt})
         if errors:
             if 'json_errors' in self.results[METADATA_CHECK]:
                 self.results[METADATA_CHECK]['json_errors'].extend(errors)
             else:
                 self.results[METADATA_CHECK]['json_errors'] = errors
+        return md5sum_file
 
     def _add_schema_to_metadata(self):
         if self.metadata_json_post_validation:
@@ -639,12 +719,16 @@ class Validator(AppLogger):
 
     def _collect_trim_down_metrics(self):
         self.results[SHALLOW_VALIDATION] = {'metrics': {}}
-        shallow_validation_required = False
+        shallow_validation_required = False  # Flag to indicate if shallow validation actually reduced the number of lines
         for vcf_file in self.vcf_files:
             basename = os.path.basename(vcf_file)
             vcf_name, _ = os.path.splitext(basename)
             trimmed_down_metrics = resolve_single_file_path(os.path.join(self.output_dir, 'other_validations',
                                                                          f'{vcf_name}_trim_down.yml'))
+            if not trimmed_down_metrics:
+                self.error(f'Cannot locate trim down metrics for {vcf_name}. The process might have failed.')
+                shallow_validation_required = True  # Assume that the shallow validation would have been required
+                continue
             with open(trimmed_down_metrics) as open_file:
                 metrics = yaml.safe_load(open_file)
                 shallow_validation_required = shallow_validation_required or metrics['trim_down_required']

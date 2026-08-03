@@ -27,21 +27,21 @@ General details about the project
 METADATA VALIDATION RESULTS
 Ensures that required fields are present and values are formatted correctly.
 For requirements, please refer to the EVA website (https://www.ebi.ac.uk/eva/?Submit-Data).
-⏸ Process not run yet
+❗ Metadata check did not complete successfully. Check the logs for more information.
 -
 VCF VALIDATION RESULTS
 Checks whether each file is compliant with the VCF specification (http://samtools.github.io/hts-specs/VCFv4.4.pdf).
 Also checks whether the variants' reference alleles match against the reference assembly.
 ASSEMBLY CHECK RESULTS
-⏸ Process not run yet
+❗ Assembly check did not complete successfully. Check the logs for more information.
 VCF VALIDATION RESULTS
-⏸ Process not run yet
+❗ VCF check did not complete successfully. Check the logs for more information.
 -
 SAMPLE NAME CONCORDANCE CHECK
 Checks whether information in the metadata is concordant with that contained in the VCF files, in particular sample names.
-⏸ Process not run yet
+❗ Sample name concordance did not complete successfully. Check the logs for more information.
 -
 REFERENCE GENOME INSDC CHECK
 Checks that the reference sequences in the FASTA file used to call the variants are accessioned in INSDC.
 Also checks if the reference assembly accession in the metadata matches the one determined from the FASTA file.
-⏸ Process not run yet
+❗ INSDC check did not complete successfully. Check the logs for more information.

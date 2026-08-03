@@ -1,60 +1,55 @@
 
-{% macro file_validation_report(validation_results, file_name) -%}
-    {% for check_type, check_per_file in validation_results.items() if check_type not in ["trim_down", "version"] %}
-        {% set result = check_per_file.get(file_name, {}) %}
-        {% if check_type == "assembly_check" %}
-            {{ assembly_check(result) }}
-        {% elif check_type == "vcf_check" %}
-            {{ vcf_check(result) }}
+{% macro vcf_check_report(vcf_check_result_per_file, vcf_file_names) -%}
+    {% for file_name in vcf_file_names %}
+        {% set vcf_check_result = vcf_check_result_per_file.get(file_name, {}) %}
+        {% set critical_count = vcf_check_result.get("critical_count", 0) %}
+        {% set error_count = vcf_check_result.get("error_count", 0) %}
+        {% if critical_count > 0 %}
+            {% set icon = "\u274C" %}
+         {% elif error_count > 0 %}
+            {% set icon = "\u26A0" %}
+        {% else %}
+            {% set icon = "\u2714" %}
         {% endif %}
+		{{ icon }} {{ file_name }}: {{ critical_count }} critical errors, {{ error_count }} non-critical errors
+
+        {% set critical_list = vcf_check_result.get("critical_list") %}
+        {% set error_list = vcf_check_result.get("error_list") %}
+        {% if critical_list or error_list%}
+            First 10 errors per category are below. Full report: {{ vcf_check_result.get('report_path', '') }}
+            {% for error in critical_list[:10] %}
+                Critical error: {{ error }}
+            {% endfor %}
+            {% for error in error_list[:10] %}
+                Non-critical error: {{ error }}
+            {% endfor %}
+    	{% endif %}
     {% endfor %}
 {%- endmacro %}
 
-{% macro vcf_check(vcf_check_result) %}
-    {% set critical_count = vcf_check_result.get("critical_count", 0) %}
-    {% set error_count = vcf_check_result.get("error_count", 0) %}
-    {% if critical_count > 0 %}
-        {% set icon = "\u274C" %}
-     {% elif error_count > 0 %}
-        {% set icon = "\u26A0" %}
-    {% else %}
-        {% set icon = "\u2714" %}
-    {% endif %}
-		{{ icon }} VCF check: {{ critical_count }} critical errors, {{ error_count }} non-critical errors
+{% macro assembly_check_report(assembly_check_result_per_file, vcf_file_names) -%}
+    {% for file_name in vcf_file_names %}
+        {% set assembly_check_result = assembly_check_result_per_file.get(file_name, {}) %}
+        {% set nb_match = assembly_check_result.get("match", 0) %}
+        {% set nb_total = assembly_check_result.get("total", 0) %}
+        {% set match_percentage = nb_match / nb_total * 100 if nb_total else 0 %}
+        {% if assembly_check_result.get("nb_mismatch", 0) > 0 or nb_total == 0 %}
+            {% set icon = "\u274C" %}
+        {% else %}
+            {% set icon = "\u2714" %}
+        {% endif %}
+            {{ icon }} {{ file_name }}: {{ nb_match }}/{{ nb_total }} ({{ match_percentage|round(2) }}%)
 
-	{% set critical_list = vcf_check_result.get("critical_list") %}
-	{% set error_list = vcf_check_result.get("error_list") %}
-	{% if critical_list or error_list%}
-		First 10 errors per category are below. Full report: {{ vcf_check_result.get('report_path', '') }}
-		{% for error in critical_list[:10] %}
-			Critical error: {{ error }}
-		{% endfor %}
-		{% for error in error_list[:10] %}
-			Non-critical error: {{ error }}
-		{% endfor %}
-	{% endif %}
-{%- endmacro %}
-
-{% macro assembly_check(assembly_check_result) %}
-    {% set nb_match = assembly_check_result.get("match", 0) %}
-    {% set nb_total = assembly_check_result.get("total", 0) %}
-    {% set match_percentage = nb_match / nb_total * 100 if nb_total else 0 %}
-    {% if assembly_check_result.get("nb_mismatch", 0) > 0 or nb_total == 0 %}
-        {% set icon = "\u274C" %}
-    {% else %}
-        {% set icon = "\u2714" %}
-    {% endif %}
-		{{ icon }} Assembly check: {{ nb_match }}/{{ nb_total }} ({{ match_percentage|round(2) }}%)
-
-	{% set mismatch_list = assembly_check_result.get("mismatch_list") %}
-	{% set error_list = assembly_check_result.get("error_list") %}
-	{% if mismatch_list or error_list %}
-		First 10 errors per category are below. Full report: {{ assembly_check_result.get('report_path', '') }}
-		{% for error in error_list[:10] %}
-			Parsing error: {{ error }}
-		{% endfor %}
-		{% for error in mismatch_list[:10] %}
-			Mismatch error: {{ error }}
-		{% endfor %}
-	{% endif %}
+        {% set mismatch_list = assembly_check_result.get("mismatch_list") %}
+        {% set error_list = assembly_check_result.get("error_list") %}
+        {% if mismatch_list or error_list %}
+            First 10 errors per category are below. Full report: {{ assembly_check_result.get('report_path', '') }}
+            {% for error in error_list[:10] %}
+                Parsing error: {{ error }}
+            {% endfor %}
+            {% for error in mismatch_list[:10] %}
+                Mismatch error: {{ error }}
+            {% endfor %}
+        {% endif %}
+    {% endfor %}
 {%- endmacro %}
