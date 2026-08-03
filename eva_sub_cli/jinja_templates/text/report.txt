@@ -48,7 +48,7 @@ VCF VALIDATION RESULTS
 Checks whether each file is compliant with the VCF specification (http://samtools.github.io/hts-specs/VCFv4.4.pdf).
 Also checks whether the variants' reference alleles match against the reference assembly.
 
-ASSEMBLY CHECK RESULTS
+    ASSEMBLY CHECK
 {% set run_status = validation_results.get('assembly_check', {}).get('run_status', '') %}
 {% if run_status == 'success' %}
     {{ assembly_check_report(validation_results.get('assembly_check', {}), vcf_files) }}
@@ -58,7 +58,7 @@ ASSEMBLY CHECK RESULTS
     {{ validation_not_run_yet_message() }}
 {% endif %}
 
-VCF VALIDATION RESULTS
+    VCF CHECK
 {% set run_status = validation_results.get('vcf_check', {}).get('run_status', '') %}
 {% if run_status == 'success' %}
     {{ vcf_check_report(validation_results.get('vcf_check', {}), vcf_files)  }}
