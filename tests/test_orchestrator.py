@@ -25,7 +25,7 @@ from tests.test_utils import touch
 
 
 class TestOrchestrator(unittest.TestCase):
-    project_title = 'Example Project'
+    project_title = 'Example Project Title'
     resource_dir = os.path.join(os.path.dirname(__file__), 'resources')
     test_sub_dir = os.path.join(resource_dir, 'test_sub_dir')
     config_file = os.path.join(test_sub_dir, SUB_CLI_CONFIG_FILE)
@@ -97,7 +97,7 @@ class TestOrchestrator(unittest.TestCase):
     def test_get_project_title_and_create_vcf_files_mapping(self):
         project_title, mapping_file = get_project_title_and_create_vcf_files_mapping(
             self.test_sub_dir, self.metadata_json_with_non_vcf_files, None, None)
-        assert project_title == 'Example Project'
+        assert project_title == 'Example Project Title'
         with open(mapping_file, 'r') as f:
             reader = csv.reader(f)
             next(reader)

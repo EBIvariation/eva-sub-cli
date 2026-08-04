@@ -32,9 +32,9 @@ For requirements, please refer to the EVA website (https://www.ebi.ac.uk/eva/?Su
 VCF VALIDATION RESULTS
 Checks whether each file is compliant with the VCF specification (http://samtools.github.io/hts-specs/VCFv4.4.pdf).
 Also checks whether the variants' reference alleles match against the reference assembly.
-ASSEMBLY CHECK RESULTS
+    ASSEMBLY CHECK
 ⏸ Process not run yet
-VCF VALIDATION RESULTS
+    VCF CHECK
 ⏸ Process not run yet
 -
 SAMPLE NAME CONCORDANCE CHECK
