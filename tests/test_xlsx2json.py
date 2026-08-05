@@ -225,7 +225,7 @@ class TestXlsReader(TestCase):
                 }
             ],
             "project": {
-                "title": "Example Project",
+                "title": "Example Project Title",
                 "description": "An example project for demonstration purposes",
                 "centre": "University of Example",
                 "taxId": 9606,

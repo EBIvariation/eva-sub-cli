@@ -58,7 +58,7 @@ expected_validation_results = {
         'json_errors': [
             {'property': '/files', 'description': "should have required property 'files'"},
             {'property': '/project/title', 'description': "should have required property 'title'"},
-            {'property': '/project/description', 'description': 'must NOT have more than 5000 characters'},
+            {'property': '/project/description', 'description': 'must NOT have more than 4000 characters'},
             {'property': '/project/taxId', 'description': "must have required property 'taxId'"},
             {'property': '/project/holdDate', 'description': 'must match format "date"'},
             {'property': '/analysis/0/description',
@@ -469,7 +469,7 @@ class TestValidator(TestCase):
             {'sheet': 'Project', 'row': 3, 'column': 'Project Title',
              'description': 'Column "Project Title" is not populated'},
             {'sheet': 'Project', 'row': 3, 'column': 'Description',
-             'description': 'must NOT have more than 5000 characters'},
+             'description': 'must NOT have more than 4000 characters'},
             {'sheet': 'Project', 'row': 3, 'column': 'Taxonomy ID',
              'description': 'Column "Taxonomy ID" is not populated'},
             {'sheet': 'Project', 'row': 3, 'column': 'Hold Date',
@@ -509,7 +509,7 @@ class TestValidator(TestCase):
         assert self.validator.results['metadata_check']['json_errors'] == [
             {'property': '/files', 'description': "should have required property 'files'"},
             {'property': '/project/title', 'description': "should have required property 'title'"},
-            {'property': '/project/description', 'description': 'must NOT have more than 5000 characters'},
+            {'property': '/project/description', 'description': 'must NOT have more than 4000 characters'},
             {'property': '/project/taxId', 'description': "must have required property 'taxId'"},
             {'property': '/project/holdDate', 'description': 'must match format "date"'},
             {'property': '/analysis/0/description', 'description': "should have required property 'description'"},

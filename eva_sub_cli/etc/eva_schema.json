@@ -89,12 +89,14 @@
             "title": {
               "type": "string",
               "description": "Title of the project",
-              "maxLength": 500
+              "minLength": 20,
+              "maxLength": 250
             },
             "description": {
               "type": "string",
               "description": "Description of the project",
-              "maxLength": 5000
+              "minLength": 20,
+              "maxLength": 4000
             },
             "centre": {
               "type": "string",
