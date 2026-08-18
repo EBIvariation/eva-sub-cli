@@ -1,6 +1,6 @@
 # **Frequently encountered metadata errors** 
 
-This section provides a curated overview of some of the common metadata errors. Each error is illustrated with a real validation output example, followed by a brief description about the error and the expected resolution for EVA submissions.
+This section provides a curated overview of some of the common metadata errors. Each error is illustrated with a real validation output example, followed by a brief description of the error and the expected resolution for EVA submissions.
 
 ## 1. Missing mandatory metadata
 
@@ -48,7 +48,7 @@ The email address provided in the Submitter Details sheet does not match the exp
 
 **Resolution**
 
-Enter a valid email address in the Email Address field, for example name@example.org. Check that the address contains the required components, such as the @ symbol and a valid domain name.
+Enter a valid email address in the Email Address field, for example, name@example.org. Check that the address contains the required components, such as the @ symbol and a valid domain name.
 
 For similar metadata validation errors, check the value against the format or allowed values expected by EVA and correct the metadata accordingly.
 
@@ -72,7 +72,7 @@ The submitted project or sample accession cannot be found in ENA or is not publi
 
 EVA cannot access or validate private ENA objects. Make sure the project or sample exists in ENA and has been released publicly before submitting it to EVA for validation.
 
-## 5 Biosamples geo location/collection date issue 
+## 5. Biosamples geo location/collection date issue 
 
 **Example Validation Error** 
 
@@ -89,7 +89,7 @@ This error is due to a difference in reporting geographical location between NCB
 
 Once you have validated the rest of the data, contact eva-helpdesk@ebi.ac.uk to submit the data, as this will require manual intervention. Both NCBI and ENA are aware of this issue.
 
-## 1. Either/Or Fields Completed Incorrectly
+## 6. Either/Or Fields Completed Incorrectly
 
 **Example Validation Error** 
 
@@ -102,7 +102,7 @@ Some metadata fields are highlighted in green to indicate an either/or requireme
 When fields are highlighted in green, check the available options and complete only the section that applies to the submission. Leave the other option blank.
 
 
-## 7 Publication Field Not Completed Correctly 
+## 7. Publication Field Not Completed Correctly 
 
 **Example Validation Error** 
 
@@ -112,4 +112,4 @@ When fields are highlighted in green, check the available options and complete o
 The Publication(s) field is optional, but when provided, the publication must be related to the project and given in the expected DB format. A valid entry would be: PubMed:23128226
 **Resolution** 
 
-f publications related to the project are available, enter them using the required DB format, for example PubMed:23128226. Multiple publications should be separated as specified in the metadata template. If there are no relevant publications, the field can be left blank and can be added later by contacting the EVA hellpdesk team 
+If publications related to the project are available, enter them using the required DB format, for example, PubMed:23128226. Multiple publications should be separated as specified in the metadata template. If there are no relevant publications, the field can be left blank and can be added later by contacting the EVA helpdesk team 
