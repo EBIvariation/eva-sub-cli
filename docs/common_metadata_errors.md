@@ -16,7 +16,9 @@ The Center field is required but has been left empty in the Submitter Details sh
 
 **Resolution** 
 
-Populate all mandatory fields indicated in bold. EVA expects these fields to contain a valid value and not be left blank. For the Center field, provide the name of the submitting centre/institution.
+Populate all mandatory fields indicated in bold. EVA expects these fields to contain a valid value and not be left blank. 
+
+For the Center field, provide the name of the submitting center/institution.
 
 ## 2. Invalid metadata values
 
@@ -28,11 +30,11 @@ Populate all mandatory fields indicated in bold. EVA expects these fields to con
 
 **Description**
 
-The Scientific Name does not match the species associated with the submitted Taxonomy ID. For example, taxonomy ID 9606 corresponds to Homo sapiens, not Homo sapens.
+The Scientific Name does not match the species associated with the submitted Taxonomy ID. In the above example, taxonomy ID 9606 corresponds to Homo sapiens and not Homo sapens.
 
 **Resolution** 
 
-Check that the metadata value is valid and follows the expected format or controlled vocabulary. Correct the value and ensure it is consistent with any related metadata fields.
+Check that the metadata value is valid and follows the expected format or controlled vocabulary. 
 
 ## 3. Invalid metadata format 
 
@@ -48,7 +50,7 @@ The email address provided in the Submitter Details sheet does not match the exp
 
 **Resolution**
 
-Enter a valid email address in the Email Address field, for example, name@example.org. Check that the address contains the required components, such as the @ symbol and a valid domain name.
+Enter a valid email address in the Email Address field, for example, name@example.com.
 
 For similar metadata validation errors, check the value against the format or allowed values expected by EVA and correct the metadata accordingly.
 
@@ -59,18 +61,17 @@ For similar metadata validation errors, check the value against the format or al
 ```text
 Exception: PRJEBXXXXXX does not exist in ENA or is private
 
-SAMNXXXXX does not exist or is private
-
+SAMNXXXXXXXX does not exist or is private
 
 ```
 
 **Description**
 
-The submitted project or sample accession cannot be found in ENA or is not publicly accessible. This may occur when the accession is incorrect, does not exist, or the corresponding ENA record is still private.
+The submitted project or sample accession cannot be found in ENA or is not publicly accessible. This may occur when the accession is incorrect, does not exist, or the corresponding object is still private.
 
 **Resolution**
 
-EVA cannot access or validate private ENA objects. Make sure the project or sample exists in ENA and has been released publicly before submitting it to EVA for validation.
+EVA cannot access or validate private objects. Make sure the project or sample has been released publicly before submitting it to EVA for validation.
 
 ## 5. Biosamples geo location/collection date issue 
 
@@ -83,19 +84,19 @@ EVA cannot access or validate private ENA objects. Make sure the project or samp
 
 **Description**
 
-This error is due to a difference in reporting geographical location between NCBI BioSamples and ENA BioSamples. NCBI BioSamples use geo_loc_name, which contains the country and locality separated by a colon, whereas ENA uses two fields: geographic location (country and/or sea) and geographic location (region and locality). EVA validates BioSamples against ENA's definition, which makes reusing NCBI BioSamples in a submission to EVA difficult to automate.
+This error is due to a difference in reporting geographical location and collection date between NCBI BioSamples and ENA BioSamples. NCBI BioSamples use geo_loc_name, collection_date whereas ENA uses geographic location (country and/or sea), collection date. EVA validates BioSamples against ENA's definition, which makes reusing NCBI BioSamples in a submission to EVA difficult to automate at the moment.
 
 **Resolution** 
 
-Once you have validated the rest of the data, contact eva-helpdesk@ebi.ac.uk to submit the data, as this will require manual intervention. Both NCBI and ENA are aware of this issue.
+Once you have validated the rest of the data, contact eva-helpdesk@ebi.ac.uk to submit the data, as this will require manual intervention. Both NCBI and ENA are aware of this issue and we are working towards fixing this.
 
 ## 6. Either/Or Fields Completed Incorrectly
 
-**Example Validation Error** 
-
 **Description**
 
-Some metadata fields are highlighted in green to indicate an either/or requirement. Only one of the specified options should be completed. For example, in the Project tab, the submitter should complete either the Pre-registered Project section or the New Project section, depending on the type of project being submitted. Both sections should not be completed.
+Some metadata fields are highlighted in green to indicate an either/or requirement. Only one of the specified options should be completed. 
+
+For example, in the Project tab, the submitter should complete either the Pre-registered Project section or the New Project section. Both sections should not be completed.
 
 **Resolution** 
 
@@ -104,12 +105,11 @@ When fields are highlighted in green, check the available options and complete o
 
 ## 7. Publication Field Not Completed Correctly 
 
-**Example Validation Error** 
-
-
 **Description**
 
-The Publication(s) field is optional, but when provided, the publication must be related to the project and given in the expected DB format. A valid entry would be: PubMed:23128226
+The Publication(s) field is optional, but when provided, the publication must be and given in the expected DB format. An example valid entry would be: PubMed:23128226
+
 **Resolution** 
 
-If publications related to the project are available, enter them using the required DB format, for example, PubMed:23128226. Multiple publications should be separated as specified in the metadata template. If there are no relevant publications, the field can be left blank and can be added later by contacting the EVA helpdesk team 
+If publications related to the project are available, enter them using the required DB format, for example, PubMed:23128226. Multiple publications should be separated as specified in the metadata template. 
+If there are no relevant publications, the field can be left blank and can be added later by contacting the EVA helpdesk team
