@@ -84,7 +84,7 @@ EVA cannot access or validate private objects. Make sure the project or sample h
 
 **Description**
 
-This error is due to a difference in reporting geographical location and collection date between NCBI BioSamples and ENA BioSamples. NCBI BioSamples use geo_loc_name, collection_date whereas ENA uses geographic location (country and/or sea), collection date. EVA validates BioSamples against ENA's definition, which makes reusing NCBI BioSamples in a submission to EVA difficult to automate at the moment.
+This error is due to a difference in reporting geographical location and collection date between NCBI BioSamples and ENA BioSamples. NCBI BioSamples uses property names "geo_loc_name" and "collection_date", whereas ENA uses "geographic location (country and/or sea)" and "collection date". EVA validates BioSamples against ENA's definition, which makes reusing NCBI BioSamples in a submission to EVA difficult to automate at the moment.
 
 **Resolution** 
 
