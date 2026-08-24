@@ -111,5 +111,6 @@ The Publication(s) field is optional, but when provided, the publication must be
 
 **Resolution** 
 
-If publications related to the project are available, enter them using the required DB format, for example, PubMed:23128226. Multiple publications should be separated as specified in the metadata template. 
+If publications related to the project are available, enter them using the required DB format, for example, PubMed:23128226. Multiple publications should be separated by commas. For example: PubMed:23128226, PubMed:223445.
+
 If there are no relevant publications, the field can be left blank and can be added later by contacting the EVA helpdesk team.
