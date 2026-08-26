@@ -51,7 +51,7 @@ class XlsxParser:
         with open(conf_filename, 'r') as conf_file:
             self.xlsx_conf = yaml.safe_load(conf_file)
         try:
-            self.workbook = load_workbook(xlsx_filename, read_only=True)
+            self.workbook = load_workbook(xlsx_filename, read_only=True, data_only=True)
         except Exception as e:
             self.add_error(f'Error loading {xlsx_filename}: {repr(e)}')
             self.file_loaded = False
