@@ -59,7 +59,7 @@ class TestXlsReader(TestCase):
         with open(output_json) as open_file:
             json_data = json.load(open_file)
             # assert json file is created with expected data
-            assert sorted(json_data.keys()) == ['analysis', 'dataAcknowledgement', 'files', 'project', 'sample', 'submitterDetails']
+            assert sorted(json_data.keys()) == ['analysis', 'files', 'project', 'sample', 'statements', 'submitterDetails']
             self.assertEqual(self.get_expected_json(), json_data)
 
         # assert json schema
@@ -87,7 +87,7 @@ class TestXlsReader(TestCase):
         with open(output_json) as open_file:
             json_data = json.load(open_file)
             # assert json file is created with expected data
-            assert sorted(json_data.keys()) == ['analysis', 'dataAcknowledgement', 'files', 'project', 'sample', 'submitterDetails']
+            assert sorted(json_data.keys()) == ['analysis', 'files', 'project', 'sample', 'statements', 'submitterDetails']
             self.assertEqual(self.get_expected_json(), json_data)
 
         # assert json schema
@@ -134,14 +134,14 @@ class TestXlsReader(TestCase):
         # confirm the error - expected sheet not found
         with open(errors_yaml) as open_file:
             errors_data = yaml.safe_load(open_file)
-            assert errors_data == [{'column': '', 'description': 'Could not find expected worksheet Data Acknowledgement', 'row': '', 'sheet': 'Data Acknowledgement'}]
+            assert errors_data == [{'column': '', 'description': 'Could not find expected worksheet Statements', 'row': '', 'sheet': 'Statements'}]
 
         with open(output_json) as open_file:
             json_data = json.load(open_file)
             # assert json file is created with expected data
-            assert sorted(json_data.keys()) == ['analysis', 'dataAcknowledgement', 'files', 'project', 'sample', 'submitterDetails']
+            assert sorted(json_data.keys()) == ['analysis', 'files', 'project', 'sample', 'statements', 'submitterDetails']
             expected_json_data = self.get_expected_json()
-            expected_json_data['dataAcknowledgement'] = []
+            expected_json_data['statements'] = []
             self.assertEqual(expected_json_data, json_data)
 
     def test_conversion_2_json_with_project_accession(self) -> None:
@@ -160,7 +160,7 @@ class TestXlsReader(TestCase):
         with open(output_json) as open_file:
             json_data = json.load(open_file)
             # assert json file is created with expected data
-            assert sorted(json_data.keys()) == ['analysis', 'dataAcknowledgement', 'files', 'project', 'sample', 'submitterDetails']
+            assert sorted(json_data.keys()) == ['analysis', 'files', 'project', 'sample', 'statements', 'submitterDetails']
             # get expected json and remove other fields apart from project accession for comparison
             expected_json = self.get_expected_json()
             expected_json['project'] = {'projectAccession': 'PRJEB12345'}
@@ -188,7 +188,7 @@ class TestXlsReader(TestCase):
         with open(output_json) as open_file:
             json_data = json.load(open_file)
             # assert json file is created with expected data
-            assert sorted(json_data.keys()) == ['analysis', 'dataAcknowledgement', 'files', 'project', 'sample', 'submitterDetails']
+            assert sorted(json_data.keys()) == ['analysis', 'files', 'project', 'sample', 'statements', 'submitterDetails']
             expected_json = self.get_expected_json()
             expected_json['analysis'][0]['links'] = ['BioProject:PRJNA1435562']
             self.assertEqual(expected_json, json_data)
@@ -222,7 +222,7 @@ class TestXlsReader(TestCase):
         assert os.path.exists(output_json)
         with open(output_json) as open_file:
             json_data = json.load(open_file)
-            assert sorted(json_data.keys()) == ['analysis', 'dataAcknowledgement', 'files', 'project', 'sample', 'submitterDetails']
+            assert sorted(json_data.keys()) == ['analysis', 'files', 'project', 'sample', 'statements', 'submitterDetails']
             # required field taxId is missing
             assert 'taxId' not in json_data['project']
             # novel sample is missing scientific name in characteristics and sample name
@@ -255,7 +255,7 @@ class TestXlsReader(TestCase):
 
     def get_expected_json(self):
         json_data = self.get_expected_json_v2()
-        json_data["dataAcknowledgement"] = [
+        json_data["statements"] = [
             {
                 "acknowledgement": True,
                 "statement": "To the best of my knowledge, the data being submitted are not subject to any restrictions that prohibit their open sharing and are submitted in compliance with applicable national and international access and benefit-sharing obligations, in accordance with the EMBL-EBI Terms of Use (https://www.ebi.ac.uk/about/terms-of-use/)."

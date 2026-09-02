@@ -1,4 +1,5 @@
 import json
+import re
 from collections import Counter
 from copy import deepcopy
 from datetime import datetime, timedelta
@@ -13,7 +14,7 @@ from retry import retry
 from eva_sub_cli.date_utils import check_date
 
 PROJECT_KEY = 'project'
-DATA_ACKNOWLEDGEMENT_KEY = 'dataAcknowledgement'
+STATEMENTS_KEY = 'statements'
 ANALYSIS_KEY = 'analysis'
 SAMPLE_KEY = 'sample'
 FILES_KEY = 'files'
@@ -69,15 +70,19 @@ class SemanticMetadataChecker(AppLogger):
         self.check_all_analysis_contain_samples()
         self.check_all_samples_have_sample_in_vcf()
         self.check_hold_date()
-        self.check_data_acknowledgements()
+        self.check_statements()
 
-    def check_data_acknowledgements(self):
-        if DATA_ACKNOWLEDGEMENT_KEY in self.metadata:
-            for entry in self.metadata[DATA_ACKNOWLEDGEMENT_KEY]:
-                if entry.get('statement') == DATA_ACCESS_STATEMENT and entry.get('acknowledgement'):
+    def _normalize(self, text):
+        return re.sub(r'\s+', ' ', text).strip().lower()
+
+    def check_statements(self):
+        if STATEMENTS_KEY in self.metadata:
+            for entry in self.metadata[STATEMENTS_KEY]:
+                if (self._normalize(entry.get('statement')) == self._normalize(DATA_ACCESS_STATEMENT)
+                        and entry.get('acknowledgement')):
                     return
 
-        self.add_error(f'/{DATA_ACKNOWLEDGEMENT_KEY}', 'Data Access & Sharing statement not acknowledged')
+        self.add_error(f'/{STATEMENTS_KEY}', 'Data Access & Sharing statement not acknowledged')
 
     def check_hold_date(self):
         """Check that holdDate is no later than 2 years from today."""

@@ -423,29 +423,29 @@ class TestSemanticMetadata(TestCase):
         checker.check_hold_date()
         self.assertEqual(checker.errors, [])
 
-    def test_check_data_acknowledgements(self):
+    def test_check_statementss(self):
         # statement present and acknowledged
-        metadata = {"dataAcknowledgement": [{
+        metadata = {"statements": [{
             "acknowledgement": True,
             "statement": DATA_ACCESS_STATEMENT
         }]}
         checker = SemanticMetadataChecker(metadata, {})
-        checker.check_data_acknowledgements()
+        checker.check_statements()
         self.assertEqual(checker.errors, [])
 
         # statement present but not acknowledged
-        metadata = {"dataAcknowledgement": [{
+        metadata = {"statements": [{
             "acknowledgement": False,
             "statement": DATA_ACCESS_STATEMENT
         }]}
         checker = SemanticMetadataChecker(metadata, {})
-        checker.check_data_acknowledgements()
+        checker.check_statements()
         self.assertEqual(checker.errors, [{'description': 'Data Access & Sharing statement not acknowledged',
-                                           'property': '/dataAcknowledgement'}])
+                                           'property': '/statements'}])
 
         # no data present for acknowledgement
-        metadata = {"dataAcknowledgement": []}
+        metadata = {"statements": []}
         checker = SemanticMetadataChecker(metadata, {})
-        checker.check_data_acknowledgements()
+        checker.check_statements()
         self.assertEqual(checker.errors, [{'description': 'Data Access & Sharing statement not acknowledged',
-                                           'property': '/dataAcknowledgement'}])
+                                           'property': '/statements'}])

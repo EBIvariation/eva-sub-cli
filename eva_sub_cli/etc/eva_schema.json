@@ -63,6 +63,25 @@
         }
       }
     },
+    "statements": {
+      "type": "array",
+      "description": "Submitter acknowledgements of various EVA data statements",
+      "items": {
+        "type": "object",
+        "required": ["acknowledgement", "statement"],
+        "additionalProperties": false,
+        "properties": {
+          "acknowledgement": {
+            "type": "boolean",
+            "description": "Whether the submitter confirmed this statement"
+          },
+          "statement": {
+            "type": "string",
+            "description": "Full text of the statement as presented to the submitter"
+          }
+        }
+      }
+    },
     "project": {
       "oneOf": [
         {
@@ -144,25 +163,6 @@
           }
         }
       ]
-    },
-    "dataAcknowledgement": {
-      "type": "array",
-      "description": "Submitter acknowledgements of various EVA data statements",
-      "items": {
-        "type": "object",
-        "required": ["acknowledgement", "statement"],
-        "additionalProperties": false,
-        "properties": {
-          "acknowledgement": {
-            "type": "boolean",
-            "description": "Whether the submitter confirmed this statement"
-          },
-          "statement": {
-            "type": "string",
-            "description": "Full text of the statement as presented to the submitter"
-          }
-        }
-      }
     },
     "analysis": {
       "type": "array",

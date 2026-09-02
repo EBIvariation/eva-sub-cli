@@ -11,7 +11,7 @@
 # List of worksheets to be parsed.
 worksheets:
   Submitter Details: submitterDetails
-  Data Acknowledgement: dataAcknowledgement
+  Statements: statements
   Project: project
   Analysis: analysis
   Sample: sample
@@ -27,7 +27,7 @@ Submitter Details:
   optional:
     Address: address
 
-Data Acknowledgement:
+Statements:
   header_row: 2
   required:
     Acknowledgement: acknowledgement

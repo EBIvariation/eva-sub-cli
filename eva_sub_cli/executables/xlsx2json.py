@@ -22,8 +22,8 @@ SAMPLE_ACCESSION_KEY = 'Sample Accession'
 SAMPLE_NAME_KEY = 'BioSample Name'
 SCIENTIFIC_NAME_KEY = 'Scientific Name'
 SPECIES = 'species'
-DATA_ACKNOWLEDGEMENT = 'Data Acknowledgement'
-DATA_ACKNOWLEDGEMENT_ACK_HEADER = 'Acknowledgement'
+STATEMENTS = 'Statements'
+STATEMENTS_ACK_HEADER = 'Acknowledgement'
 
 logger = logging_config.get_logger(__name__)
 
@@ -181,13 +181,13 @@ class XlsxParser:
         return rows
 
     def get_data_acknowledgement_json_data(self):
-        json_key = self.xlsx_conf[WORKSHEETS_KEY_NAME][DATA_ACKNOWLEDGEMENT]
-        ack_json_key = self.xlsx_conf[DATA_ACKNOWLEDGEMENT][REQUIRED_HEADERS_KEY_NAME][DATA_ACKNOWLEDGEMENT_ACK_HEADER]
+        json_key = self.xlsx_conf[WORKSHEETS_KEY_NAME][STATEMENTS]
+        ack_json_key = self.xlsx_conf[STATEMENTS][REQUIRED_HEADERS_KEY_NAME][STATEMENTS_ACK_HEADER]
 
         acknowledgements = []
         for row in self.get_rows():
             row.pop('row_num')
-            json_value = {self.translate_header(DATA_ACKNOWLEDGEMENT, k): v
+            json_value = {self.translate_header(STATEMENTS, k): v
                           for k, v in row.items() if v is not None}
             # An unchecked/blank checkbox should record as an explicit False
             json_value.setdefault(ack_json_key, False)
@@ -282,7 +282,7 @@ class XlsxParser:
             elif title == SAMPLE:
                 sample_data = self.get_sample_json_data()
                 json_data.update(sample_data)
-            elif title == DATA_ACKNOWLEDGEMENT:
+            elif title == STATEMENTS:
                 json_data.update(self.get_data_acknowledgement_json_data())
             else:
                 json_data[self.xlsx_conf[WORKSHEETS_KEY_NAME][title]] = []
