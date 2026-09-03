@@ -7,7 +7,8 @@ import jsonschema
 import yaml
 
 from eva_sub_cli import ETC_DIR
-from eva_sub_cli.executables.xlsx2json import XlsxParser, create_xls_template_from_yaml
+from eva_sub_cli.executables.xlsx2json import XlsxParser, create_xls_template_from_yaml, STATEMENTS
+from eva_sub_cli.semantic_metadata import STATEMENTS_KEY, SemanticMetadataChecker, DATA_ACCESS_STATEMENT
 
 
 class TestXlsReader(TestCase):
@@ -24,7 +25,9 @@ class TestXlsReader(TestCase):
             os.path.join(self.resource_dir, 'EVA_Submission_test_errors.yml'),
             os.path.join(self.resource_dir, 'EVA_Submission_test_errors_v2.yml'),
             os.path.join(self.resource_dir, 'EVA_Submission_test_with_project_accession.yml'),
-            os.path.join(self.resource_dir, 'EVA_Submission_test_with_project_accession_output.json')
+            os.path.join(self.resource_dir, 'EVA_Submission_test_with_project_accession_output.json'),
+            os.path.join(self.resource_dir, 'EVA_Submission_test_output_without_data_acknowledgement_sheet.json'),
+            os.path.join(self.resource_dir, 'EVA_Submission_test_errors_without_data_acknowledgement_sheet.yml')
         ]
         for f in files_from_tests:
             if os.path.exists(f):
@@ -143,6 +146,18 @@ class TestXlsReader(TestCase):
             expected_json_data = self.get_expected_json()
             expected_json_data['statements'] = []
             self.assertEqual(expected_json_data, json_data)
+
+    def test_template_statement_matches_data_access_statement_constant(self):
+        template_xlsx = os.path.join(ETC_DIR, 'EVA_Submission_template.xlsx')
+        conf_filename = os.path.join(ETC_DIR, 'spreadsheet2json_conf.yaml')
+        parser = XlsxParser(template_xlsx, conf_filename)
+        parser.active_worksheet = STATEMENTS
+        acknowledgements = parser.get_data_acknowledgement_json_data()[STATEMENTS_KEY]
+        template_statement = acknowledgements[0]['statement']
+        self.assertEqual(
+            SemanticMetadataChecker._normalize(template_statement),
+            SemanticMetadataChecker._normalize(DATA_ACCESS_STATEMENT)
+        )
 
     def test_conversion_2_json_with_project_accession(self) -> None:
         xls_filename = os.path.join(self.resource_dir, 'EVA_Submission_test_with_project_accession.xlsx')

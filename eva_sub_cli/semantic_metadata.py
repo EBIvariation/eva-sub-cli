@@ -35,9 +35,10 @@ HOLD_DATE_KEY = 'holdDate'
 # Samples created before this date are not required to have collection date or geographic location
 threshold_2023 = datetime(2023, 1, 1)
 
-DATA_ACCESS_STATEMENT = """to the best of my knowledge, the data being submitted are not subject to any 
+DATA_ACCESS_STATEMENT = """To the best of my knowledge, the data being submitted are not subject to any 
        restrictions that prohibit their open sharing and are submitted in compliance with applicable national and 
-       international access and benefit-sharing obligations, in accordance with the EMBL-EBI Terms of Use"""
+       international access and benefit-sharing obligations, in accordance with the EMBL-EBI Terms of Use
+       (https://www.ebi.ac.uk/about/terms-of-use/)."""
 
 
 def cast_list(l, type_to_cast=str):
@@ -78,7 +79,7 @@ class SemanticMetadataChecker(AppLogger):
     def check_statements(self):
         if STATEMENTS_KEY in self.metadata:
             for entry in self.metadata[STATEMENTS_KEY]:
-                if (self._normalize(entry.get('statement')) == self._normalize(DATA_ACCESS_STATEMENT)
+                if (self._normalize(entry.get('statement') or '') == self._normalize(DATA_ACCESS_STATEMENT)
                         and entry.get('acknowledgement')):
                     return
 

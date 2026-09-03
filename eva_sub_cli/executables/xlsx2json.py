@@ -74,7 +74,9 @@ class XlsxParser:
         if self.worksheets is None:
             self.valid_worksheets()
         if worksheet not in self.worksheets:
-            self.add_error(f'Could not find expected worksheet {worksheet}', sheet=worksheet)
+            self.add_error(f'Could not find expected worksheet {worksheet}. Download the latest unmodified '
+                           f'template from https://raw.githubusercontent.com/EBIvariation/eva-sub-cli/main/eva_sub_cli/'
+                           f'etc/EVA_Submission_template.xlsx', sheet=worksheet)
             return
 
         self._active_worksheet = worksheet
