@@ -73,7 +73,8 @@ class SemanticMetadataChecker(AppLogger):
         self.check_hold_date()
         self.check_statements()
 
-    def _normalize(self, text):
+    @staticmethod
+    def _normalize(text):
         return re.sub(r'\s+', ' ', text).strip().lower()
 
     def check_statements(self):
