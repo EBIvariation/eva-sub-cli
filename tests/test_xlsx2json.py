@@ -137,7 +137,9 @@ class TestXlsReader(TestCase):
         # confirm the error - expected sheet not found
         with open(errors_yaml) as open_file:
             errors_data = yaml.safe_load(open_file)
-            assert errors_data == [{'column': '', 'description': 'Could not find expected worksheet Statements', 'row': '', 'sheet': 'Statements'}]
+            assert errors_data == [{'column': '', 'description': 'Could not find expected worksheet Statements. Download the latest unmodified '
+                           f'template from https://raw.githubusercontent.com/EBIvariation/eva-sub-cli/main/eva_sub_cli/'
+                           f'etc/EVA_Submission_template.xlsx', 'row': '', 'sheet': 'Statements'}]
 
         with open(output_json) as open_file:
             json_data = json.load(open_file)
