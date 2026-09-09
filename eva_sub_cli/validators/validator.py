@@ -49,6 +49,22 @@ RUN_STATUS_CRASHED = 'crashed'
 RUN_STATUS_DID_NOT_RUN = 'did not run'
 PASS = 'pass'
 
+# Maps (sheet, attribute) to an explanation of the expected format used to replace the regular expression
+# for the fields listed here.
+_PROJECT_ACCESSION_FORMAT = 'a BioProject accession starting with "PRJ", e.g. "PRJEB12345" or "PRJNA12345"'
+PATTERN_ERROR_HINTS = {
+    ('project', 'publications'): 'each publication should be provided as "<database>:<identifier>", '
+                                  'e.g. "DOI:10.1093/nar/gkw1121" or "PMID:24565421"',
+    ('project', 'projectAccession'): f'the project accession should be {_PROJECT_ACCESSION_FORMAT}',
+    ('project', 'parentProject'): f'the parent project accession should be {_PROJECT_ACCESSION_FORMAT}',
+    ('project', 'childProjects'): f'each child project accession should be {_PROJECT_ACCESSION_FORMAT}',
+    ('project', 'peerProjects'): f'each peer project accession should be {_PROJECT_ACCESSION_FORMAT}',
+    ('analysis', 'runAccessions'): 'each run accession should be an ENA/SRA run accession starting with "ERR", '
+                                    '"DRR" or "SRR" followed by at least 6 digits, e.g. "SRR576651"',
+    ('sample', 'bioSampleAccession'): 'the sample accession should be a BioSamples accession starting with '
+                                       '"SAME", "SAMD" or "SAMN", e.g. "SAMEA6675477"',
+}
+
 
 class Validator(AppLogger):
 
@@ -590,10 +606,13 @@ class Validator(AppLogger):
                     new_description = f'Column "{column}" is not populated'
             elif attribute_json and column:
                 missing_property_error = f" have required property '{attribute_json}'"
-                if not error['description'].endswith(missing_property_error):
-                    new_description = error['description']
-                else:
+                pattern_hint = PATTERN_ERROR_HINTS.get((sheet_json, attribute_json))
+                if error['description'].endswith(missing_property_error):
                     new_description = f'Column "{column}" is not populated'
+                elif pattern_hint and 'match pattern' in error['description']:
+                    new_description = f'Column "{column}" is not in the expected format: {pattern_hint}'
+                else:
+                    new_description = error['description']
             else:
                 new_description = error["description"].replace(sheet_json, sheet)
             if column is None:

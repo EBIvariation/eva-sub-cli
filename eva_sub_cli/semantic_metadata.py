@@ -119,7 +119,11 @@ class SemanticMetadataChecker(AppLogger):
             if BIOSAMPLE_OBJECT_KEY in sample and TAX_ID_KEY in sample[BIOSAMPLE_OBJECT_KEY][CHARACTERISTICS_KEY]:
                 characteristics = sample[BIOSAMPLE_OBJECT_KEY][CHARACTERISTICS_KEY]
                 # Get the scientific name from the taxonomy (if valid)
-                tax_code = int(characteristics[TAX_ID_KEY][0]['text'])
+                try:
+                    tax_code = int(characteristics[TAX_ID_KEY][0]['text'])
+                except (TypeError, ValueError):
+                    # Not a number: the JSON schema validator already reports this
+                    continue
                 sci_name_from_tax = self.taxonomy_valid[tax_code]
                 if not sci_name_from_tax:
                     continue
@@ -158,7 +162,11 @@ class SemanticMetadataChecker(AppLogger):
 
     @retry(tries=4, delay=2, backoff=1.2, jitter=(1, 3))
     def check_taxonomy_code(self, taxonomy_code, json_path):
-        taxonomy_code = int(taxonomy_code)
+        try:
+            taxonomy_code = int(taxonomy_code)
+        except (TypeError, ValueError):
+            # Not a number: the JSON schema validator already reports this.
+            return
         if taxonomy_code in self.taxonomy_valid:
             if self.taxonomy_valid[taxonomy_code] is False:
                 self.add_error(json_path, f'{taxonomy_code} is not a valid taxonomy code')

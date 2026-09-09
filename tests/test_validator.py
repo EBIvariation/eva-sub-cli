@@ -607,6 +607,38 @@ class TestValidator(TestCase):
              'description': 'Column "Taxonomy ID" is not populated'}
         ]
 
+    def test_convert_biovalidator_validation_to_spreadsheet_pattern_error(self):
+        # Fields whose format is enforced by a regular expression should be reported with a plain-English
+        # explanation rather than the raw regular expression from the JSON schema.
+        self.validator.results['metadata_check'] = {
+            'json_errors': [
+                {'property': '/project/publications/0', 'description': 'must match pattern "^[^:,]+?:[^:,]+?$"'},
+                {'property': '/project/projectAccession','description': 'must match pattern "^PRJ(E|D|N)[A-Z][0-9]+$"'},
+                {'property': '/analysis/0/runAccessions/0', 'description': 'must match pattern "^(E|D|S)RR[0-9]{6,}$"'},
+                {'property': '/sample/0/bioSampleAccession', 'description': 'must match pattern "^SAM(E|D|N)[A-Z]?[0-9]+$"'},
+            ]
+        }
+        self.validator._convert_biovalidator_validation_to_spreadsheet()
+
+        assert self.validator.results['metadata_check']['spreadsheet_errors'] == [
+            {'sheet': 'Project', 'row': 3, 'column': 'Publication(s)',
+             'description': 'Column "Publication(s)" is not in the expected format: each publication should be '
+                            'provided as "<database>:<identifier>", e.g. "DOI:10.1093/nar/gkw1121" or '
+                            '"PMID:24565421"'},
+            {'sheet': 'Project', 'row': 3, 'column': 'Project Accession',
+             'description': 'Column "Project Accession" is not in the expected format: the project accession '
+                            'should be a BioProject accession starting with "PRJ", e.g. "PRJEB12345" or '
+                            '"PRJNA12345"'},
+            {'sheet': 'Analysis', 'row': 2, 'column': 'Run Accession(s)',
+             'description': 'Column "Run Accession(s)" is not in the expected format: each run accession should '
+                            'be an ENA/SRA run accession starting with "ERR", "DRR" or "SRR" followed by at '
+                            'least 6 digits, e.g. "SRR576651"'},
+            {'sheet': 'Sample', 'row': 3, 'column': 'Sample Accession',
+             'description': 'Column "Sample Accession" is not in the expected format: the sample accession '
+                            'should be a BioSamples accession starting with "SAME", "SAMD" or "SAMN", e.g. '
+                            '"SAMEA6675477"'},
+        ]
+
     def test_collect_conversion_errors(self):
         self.validator.results['metadata_check'] = {}
         self.validator._load_spreadsheet_conversion_errors()

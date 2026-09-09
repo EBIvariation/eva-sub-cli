@@ -64,86 +64,90 @@
       }
     },
     "project": {
-      "oneOf": [
-        {
-          "type": "object",
-          "required": [
-            "projectAccession"
-          ],
-          "properties": {
-            "projectAccession": {
-              "$ref": "#/definitions/projectAccession"
-            }
-          }
-        },
-        {
-          "type": "object",
-          "description": "General information about the Project",
-          "required": [
-            "title",
-            "description",
-            "taxId",
-            "centre"
-          ],
-          "properties": {
-            "title": {
-              "type": "string",
-              "description": "Title of the project",
-              "minLength": 20,
-              "maxLength": 250
-            },
-            "description": {
-              "type": "string",
-              "description": "Description of the project",
-              "minLength": 20,
-              "maxLength": 4000
-            },
-            "centre": {
-              "type": "string",
-              "description": "Centre, institute or company submitting the project"
-            },
-            "taxId": {
-              "type": "number",
-              "description": "Taxonomy ID of the species associated with the project (found here: http://www.ncbi.nlm.nih.gov/taxonomy)"
-            },
-            "publications": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "pattern": "^[^:,]+?:[^:,]+?$"
-              }
-            },
-            "parentProject": {
-              "$ref": "#/definitions/projectAccession"
-            },
-            "childProjects": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/projectAccession"
-              }
-            },
-            "peerProjects": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/projectAccession"
-              }
-            },
-            "links": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            "holdDate": {
-              "type": "string",
-              "format": "date",
-              "examples": [
-                "2018-11-13"
-              ]
-            }
+      "type": "object",
+      "if": {
+        "required": [
+          "projectAccession"
+        ]
+      },
+      "then": {
+        "properties": {
+          "projectAccession": {
+            "$ref": "#/definitions/projectAccession"
           }
         }
-      ]
+      },
+      "else": {
+        "description": "General information about the Project",
+        "required": [
+          "title",
+          "description",
+          "taxId",
+          "centre"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Title of the project",
+            "minLength": 20,
+            "maxLength": 250
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the project",
+            "minLength": 20,
+            "maxLength": 4000
+          },
+          "centre": {
+            "type": "string",
+            "description": "Centre, institute or company submitting the project"
+          },
+          "taxId": {
+            "type": "number",
+            "description": "Taxonomy ID of the species associated with the project (found here: http://www.ncbi.nlm.nih.gov/taxonomy)"
+          },
+          "publications": {
+            "type": "array",
+            "description": "Publications associated with the project, each given as <database>:<identifier>",
+            "items": {
+              "type": "string",
+              "pattern": "^[^:,]+?:[^:,]+?$",
+              "examples": [
+                "DOI:10.1093/nar/gkw1121",
+                "PMID:24565421"
+              ]
+            }
+          },
+          "parentProject": {
+            "$ref": "#/definitions/projectAccession"
+          },
+          "childProjects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/projectAccession"
+            }
+          },
+          "peerProjects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/projectAccession"
+            }
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "holdDate": {
+            "type": "string",
+            "format": "date",
+            "examples": [
+              "2018-11-13"
+            ]
+          }
+        }
+      }
     },
     "analysis": {
       "type": "array",
@@ -309,21 +313,24 @@
       "minItems": 1,
       "items": {
         "type": "object",
-        "oneOf": [
-          {
-            "required": [
-              "analysisAlias",
-              "sampleInVCF",
-              "bioSampleAccession"
-            ]
-          },
-          {
-            "required": [
-              "analysisAlias",
-              "bioSampleObject"
-            ]
-          }
-        ],
+        "if": {
+          "required": [
+            "bioSampleAccession"
+          ]
+        },
+        "then": {
+          "required": [
+            "analysisAlias",
+            "sampleInVCF",
+            "bioSampleAccession"
+          ]
+        },
+        "else": {
+          "required": [
+            "analysisAlias",
+            "bioSampleObject"
+          ]
+        },
         "properties": {
           "analysisAlias": {
             "type": "array",

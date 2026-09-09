@@ -165,9 +165,13 @@ class XlsxParser:
                 cell = row[header_index]
                 if cell.value is not None:
                     has_notnull = True
-                data[header] = self.trim_value(self.cast_value(
-                    cell.value, self.xlsx_conf[worksheet].get(CAST_KEY_NAME, {}).get(header)
-                ))
+                try:
+                    value = self.cast_value(
+                        cell.value, self.xlsx_conf[worksheet].get(CAST_KEY_NAME, {}).get(header)
+                    )
+                except Exception as e:
+                    value = cell.value
+                data[header] = self.trim_value(value)
 
             if has_notnull:
                 data['row_num'] = self.row_offset[worksheet]

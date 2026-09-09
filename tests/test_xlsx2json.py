@@ -229,6 +229,28 @@ class TestXlsReader(TestCase):
         with self.assertRaises(jsonschema.ValidationError):
             jsonschema.validate(json_data, eva_json_schema)
 
+    def test_json_validation_reports_only_missing_description(self) -> None:
+        with open(self.eva_schema) as eva_schema_file:
+            eva_json_schema = json.load(eva_schema_file)
+
+        json_data = self.get_expected_json()
+        del json_data['project']['description']
+
+        with self.assertRaises(jsonschema.ValidationError) as context:
+            jsonschema.validate(json_data, eva_json_schema)
+        assert context.exception.message == "'description' is a required property"
+
+    def test_json_validation_reports_only_missing_sample_in_vcf(self) -> None:
+        with open(self.eva_schema) as eva_schema_file:
+            eva_json_schema = json.load(eva_schema_file)
+
+        json_data = self.get_expected_json()
+        del json_data['sample'][0]['sampleInVCF']
+
+        with self.assertRaises(jsonschema.ValidationError) as context:
+            jsonschema.validate(json_data, eva_json_schema)
+        assert context.exception.message == "'sampleInVCF' is a required property"
+
     def build_large_string_of_length(self, length):
         return "A" * length
 

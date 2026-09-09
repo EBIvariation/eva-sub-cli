@@ -155,6 +155,37 @@ class TestSemanticMetadata(TestCase):
                 }
             ])
 
+    def test_check_all_taxonomy_codes_non_numeric(self):
+        # A non-numeric taxId is already reported by the JSON schema validator, so it should be skipped here
+        metadata = {
+            "project": {
+                "taxId": "not-a-number",
+            },
+            "sample": [
+                {
+                    "bioSampleObject": {
+                        "characteristics": {
+                            "taxId": [{"text": "not-a-number"}]
+                        }
+                    }
+                },
+                {
+                    "bioSampleObject": {
+                        "characteristics": {
+                            "taxId": [{"text": "9606"}]
+                        }
+                    }
+                }
+            ]
+        }
+        checker = SemanticMetadataChecker(metadata, {})
+        with patch('eva_sub_cli.semantic_metadata.get_scientific_name_and_common_name') as m_get_sci_name:
+            # Only the valid taxId (9606) should ever be queried
+            m_get_sci_name.side_effect = [('Homo sapiens', 'human')]
+            checker.check_all_taxonomy_codes()
+            self.assertEqual(checker.errors, [])
+            m_get_sci_name.assert_called_once_with(9606)
+
     def test_check_uniqueness_analysis_alias(self):
         metadata = {
             "analysis": [
@@ -216,6 +247,25 @@ class TestSemanticMetadata(TestCase):
                 'description': 'Species sheep sapiens does not match taxonomy 9606 (Homo sapiens)'
             }
         ])
+
+    def test_check_all_scientific_names_non_numeric(self):
+        # A non-numeric taxId is already reported by the JSON schema validator, so it should be skipped here
+        metadata = {
+            "sample": [
+                {
+                    "bioSampleObject": {
+                        "characteristics": {
+                            "taxId": [{"text": "not-a-number"}],
+                            "Organism": [{"text": "homo sapiens"}]
+                        }
+                    }
+                }
+            ]
+        }
+        checker = SemanticMetadataChecker(metadata, {})
+        checker.taxonomy_valid = {}
+        checker.check_all_scientific_names()
+        self.assertEqual(checker.errors, [])
 
     def test_check_existing_biosamples_with_checklist(self):
         checker = SemanticMetadataChecker(metadata, {})
