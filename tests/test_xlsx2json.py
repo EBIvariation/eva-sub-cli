@@ -7,7 +7,8 @@ import jsonschema
 import yaml
 
 from eva_sub_cli import ETC_DIR
-from eva_sub_cli.executables.xlsx2json import XlsxParser, create_xls_template_from_yaml
+from eva_sub_cli.executables.xlsx2json import XlsxParser, create_xls_template_from_yaml, STATEMENTS
+from eva_sub_cli.semantic_metadata import STATEMENTS_KEY, SemanticMetadataChecker, DATA_ACCESS_STATEMENT
 
 
 class TestXlsReader(TestCase):
@@ -24,7 +25,9 @@ class TestXlsReader(TestCase):
             os.path.join(self.resource_dir, 'EVA_Submission_test_errors.yml'),
             os.path.join(self.resource_dir, 'EVA_Submission_test_errors_v2.yml'),
             os.path.join(self.resource_dir, 'EVA_Submission_test_with_project_accession.yml'),
-            os.path.join(self.resource_dir, 'EVA_Submission_test_with_project_accession_output.json')
+            os.path.join(self.resource_dir, 'EVA_Submission_test_with_project_accession_output.json'),
+            os.path.join(self.resource_dir, 'EVA_Submission_test_output_without_data_acknowledgement_sheet.json'),
+            os.path.join(self.resource_dir, 'EVA_Submission_test_errors_without_data_acknowledgement_sheet.yml')
         ]
         for f in files_from_tests:
             if os.path.exists(f):
@@ -59,7 +62,7 @@ class TestXlsReader(TestCase):
         with open(output_json) as open_file:
             json_data = json.load(open_file)
             # assert json file is created with expected data
-            assert sorted(json_data.keys()) == ['analysis', 'files', 'project', 'sample', 'submitterDetails']
+            assert sorted(json_data.keys()) == ['analysis', 'files', 'project', 'sample', 'statements', 'submitterDetails']
             self.assertEqual(self.get_expected_json(), json_data)
 
         # assert json schema
@@ -87,7 +90,7 @@ class TestXlsReader(TestCase):
         with open(output_json) as open_file:
             json_data = json.load(open_file)
             # assert json file is created with expected data
-            assert sorted(json_data.keys()) == ['analysis', 'files', 'project', 'sample', 'submitterDetails']
+            assert sorted(json_data.keys()) == ['analysis', 'files', 'project', 'sample', 'statements', 'submitterDetails']
             self.assertEqual(self.get_expected_json(), json_data)
 
         # assert json schema
@@ -115,13 +118,48 @@ class TestXlsReader(TestCase):
             json_data = json.load(open_file)
             # assert json file is created with expected data
             assert sorted(json_data.keys()) == ['analysis', 'files', 'project', 'sample', 'submitterDetails']
-            self.assertEqual(self.get_expected_json(), json_data)
+            self.assertEqual(self.get_expected_json_v2(), json_data)
 
         # assert json schema
         with open(self.eva_schema) as eva_schema_file:
             eva_json_schema = json.load(eva_schema_file)
 
         jsonschema.validate(json_data, eva_json_schema)
+
+    def test_conversion_2_json_with_old_worksheet(self) -> None:
+        xls_filename = os.path.join(self.resource_dir, 'EVA_Submission_test_without_data_acknowledgement_sheet.xlsx')
+        self.parser = XlsxParser(xls_filename, self.conf_filename)
+        output_json = os.path.join(self.resource_dir, 'EVA_Submission_test_output_without_data_acknowledgement_sheet.json')
+        errors_yaml = os.path.join(self.resource_dir, 'EVA_Submission_test_errors_without_data_acknowledgement_sheet.yml')
+        self.parser.json(output_json)
+        self.parser.save_errors(errors_yaml)
+
+        # confirm the error - expected sheet not found
+        with open(errors_yaml) as open_file:
+            errors_data = yaml.safe_load(open_file)
+            assert errors_data == [{'column': '', 'description': 'Could not find expected worksheet Statements. Download the latest unmodified '
+                           f'template from https://raw.githubusercontent.com/EBIvariation/eva-sub-cli/main/eva_sub_cli/'
+                           f'etc/EVA_Submission_template.xlsx', 'row': '', 'sheet': 'Statements'}]
+
+        with open(output_json) as open_file:
+            json_data = json.load(open_file)
+            # assert json file is created with expected data
+            assert sorted(json_data.keys()) == ['analysis', 'files', 'project', 'sample', 'statements', 'submitterDetails']
+            expected_json_data = self.get_expected_json()
+            expected_json_data['statements'] = []
+            self.assertEqual(expected_json_data, json_data)
+
+    def test_template_statement_matches_data_access_statement_constant(self):
+        template_xlsx = os.path.join(ETC_DIR, 'EVA_Submission_template.xlsx')
+        conf_filename = os.path.join(ETC_DIR, 'spreadsheet2json_conf.yaml')
+        parser = XlsxParser(template_xlsx, conf_filename)
+        parser.active_worksheet = STATEMENTS
+        acknowledgements = parser.get_data_acknowledgement_json_data()[STATEMENTS_KEY]
+        template_statement = acknowledgements[0]['statement']
+        self.assertEqual(
+            SemanticMetadataChecker._normalize(template_statement),
+            SemanticMetadataChecker._normalize(DATA_ACCESS_STATEMENT)
+        )
 
     def test_conversion_2_json_with_project_accession(self) -> None:
         xls_filename = os.path.join(self.resource_dir, 'EVA_Submission_test_with_project_accession.xlsx')
@@ -139,7 +177,7 @@ class TestXlsReader(TestCase):
         with open(output_json) as open_file:
             json_data = json.load(open_file)
             # assert json file is created with expected data
-            assert sorted(json_data.keys()) == ['analysis', 'files', 'project', 'sample', 'submitterDetails']
+            assert sorted(json_data.keys()) == ['analysis', 'files', 'project', 'sample', 'statements', 'submitterDetails']
             # get expected json and remove other fields apart from project accession for comparison
             expected_json = self.get_expected_json()
             expected_json['project'] = {'projectAccession': 'PRJEB12345'}
@@ -167,7 +205,7 @@ class TestXlsReader(TestCase):
         with open(output_json) as open_file:
             json_data = json.load(open_file)
             # assert json file is created with expected data
-            assert sorted(json_data.keys()) == ['analysis', 'files', 'project', 'sample', 'submitterDetails']
+            assert sorted(json_data.keys()) == ['analysis', 'files', 'project', 'sample', 'statements', 'submitterDetails']
             expected_json = self.get_expected_json()
             expected_json['analysis'][0]['links'] = ['BioProject:PRJNA1435562']
             self.assertEqual(expected_json, json_data)
@@ -201,7 +239,7 @@ class TestXlsReader(TestCase):
         assert os.path.exists(output_json)
         with open(output_json) as open_file:
             json_data = json.load(open_file)
-            assert sorted(json_data.keys()) == ['analysis', 'files', 'project', 'sample', 'submitterDetails']
+            assert sorted(json_data.keys()) == ['analysis', 'files', 'project', 'sample', 'statements', 'submitterDetails']
             # required field taxId is missing
             assert 'taxId' not in json_data['project']
             # novel sample is missing scientific name in characteristics and sample name
@@ -233,6 +271,16 @@ class TestXlsReader(TestCase):
         return "A" * length
 
     def get_expected_json(self):
+        json_data = self.get_expected_json_v2()
+        json_data["statements"] = [
+            {
+                "acknowledgement": True,
+                "statement": "To the best of my knowledge, the data being submitted are not subject to any restrictions that prohibit their open sharing and are submitted in compliance with applicable national and international access and benefit-sharing obligations, in accordance with the EMBL-EBI Terms of Use (https://www.ebi.ac.uk/about/terms-of-use/)."
+            }
+        ]
+        return json_data
+
+    def get_expected_json_v2(self):
         return {
             "submitterDetails": [
                 {

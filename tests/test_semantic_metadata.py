@@ -1,12 +1,12 @@
 from datetime import datetime, timedelta
 from unittest import TestCase
 from unittest.mock import patch
-from requests import HTTPError, Response
 
 import pytest
 from ebi_eva_common_pyutils.biosamples_communicators import NoAuthHALCommunicator
+from requests import HTTPError, Response
 
-from eva_sub_cli.semantic_metadata import SemanticMetadataChecker
+from eva_sub_cli.semantic_metadata import SemanticMetadataChecker, DATA_ACCESS_STATEMENT
 
 metadata = {
     "sample": [
@@ -105,7 +105,8 @@ class TestSemanticMetadata(TestCase):
             m_ena_download.side_effect = [True, True, HTTPError('problem downloading', response=Response())]
             checker.check_all_project_accessions()
             self.assertEqual(checker.errors, [
-                {'property': '/project/childProjects/1', 'description': 'Project PRJEBNA does not exist in ENA or is private'}
+                {'property': '/project/childProjects/1',
+                 'description': 'Project PRJEBNA does not exist in ENA or is private'}
             ])
 
     def test_check_all_taxonomy_codes(self):
@@ -174,7 +175,7 @@ class TestSemanticMetadata(TestCase):
                 'description': 'Analysis alias alias1 is present 2 times in the Analysis Sheet'
             }
         ]
-)
+                         )
 
     def test_check_all_scientific_names(self):
         metadata = {
@@ -220,7 +221,8 @@ class TestSemanticMetadata(TestCase):
     def test_check_existing_biosamples_with_checklist(self):
         checker = SemanticMetadataChecker(metadata, {})
         with patch.object(SemanticMetadataChecker, '_get_biosample',
-                          side_effect=[valid_sample, ValueError, invalid_sample1, invalid_sample2, old_invalid_sample, old_invalid_sample2]) as m_get_sample:
+                          side_effect=[valid_sample, ValueError, invalid_sample1, invalid_sample2, old_invalid_sample,
+                                       old_invalid_sample2]) as m_get_sample:
             checker.check_existing_biosamples()
             self.assertEqual(
                 checker.errors[0],
@@ -236,7 +238,7 @@ class TestSemanticMetadata(TestCase):
                 'Error validating existing sample SAME00003: geographic location (country and~1or sea) must be equal to one of the allowed values:'))
 
             self.assertEqual(checker.errors[3]['description'],
-                "Error validating existing sample SAME00004: must have required property 'geographic location (country and/or sea)'")
+                             "Error validating existing sample SAME00004: must have required property 'geographic location (country and/or sea)'")
 
             # error message lists long regex for collection date
             self.assertTrue(checker.errors[4]['description'].startswith(
@@ -246,13 +248,17 @@ class TestSemanticMetadata(TestCase):
     def test_check_existing_biosamples(self):
         checker = SemanticMetadataChecker(metadata, {}, sample_checklist=None)
         with patch.object(NoAuthHALCommunicator, 'follows_link',
-                          side_effect=[valid_sample, ValueError, invalid_sample1, invalid_sample2, old_invalid_sample, old_invalid_sample2]) as m_follows_link:
+                          side_effect=[valid_sample, ValueError, invalid_sample1, invalid_sample2, old_invalid_sample,
+                                       old_invalid_sample2]) as m_follows_link:
             checker.check_existing_biosamples()
             self.assertEqual(checker.errors, [
-                {'description': 'SAME00002 does not exist or is private','property': '/sample/1/bioSampleAccession'},
-                {'description': 'Existing sample SAME00003 does not have a valid collection date', 'property': '/sample/2/bioSampleAccession'},
-                {'description': 'Existing sample SAME00004 does not have a valid collection date', 'property': '/sample/3/bioSampleAccession'},
-                {'description': 'Existing sample SAME00004 does not have a valid geographic location', 'property': '/sample/3/bioSampleAccession'}])
+                {'description': 'SAME00002 does not exist or is private', 'property': '/sample/1/bioSampleAccession'},
+                {'description': 'Existing sample SAME00003 does not have a valid collection date',
+                 'property': '/sample/2/bioSampleAccession'},
+                {'description': 'Existing sample SAME00004 does not have a valid collection date',
+                 'property': '/sample/3/bioSampleAccession'},
+                {'description': 'Existing sample SAME00004 does not have a valid geographic location',
+                 'property': '/sample/3/bioSampleAccession'}])
 
     @pytest.mark.skip(reason='Contact BioSample API')
     def test_check_existing_real_biosamples(self):
@@ -313,7 +319,8 @@ class TestSemanticMetadata(TestCase):
 
         checker.check_all_analysis_run_accessions()
         assert checker.errors == [
-            {'property': '/analysis/1/runAccessions', 'description': 'Run SRR00000000001 does not exist in ENA or is private'}]
+            {'property': '/analysis/1/runAccessions',
+             'description': 'Run SRR00000000001 does not exist in ENA or is private'}]
 
     def test_check_all_analysis_contain_samples(self):
         # all analysis contain samples
@@ -415,3 +422,30 @@ class TestSemanticMetadata(TestCase):
         checker = SemanticMetadataChecker(metadata, {})
         checker.check_hold_date()
         self.assertEqual(checker.errors, [])
+
+    def test_check_statementss(self):
+        # statement present and acknowledged
+        metadata = {"statements": [{
+            "acknowledgement": True,
+            "statement": DATA_ACCESS_STATEMENT
+        }]}
+        checker = SemanticMetadataChecker(metadata, {})
+        checker.check_statements()
+        self.assertEqual(checker.errors, [])
+
+        # statement present but not acknowledged
+        metadata = {"statements": [{
+            "acknowledgement": False,
+            "statement": DATA_ACCESS_STATEMENT
+        }]}
+        checker = SemanticMetadataChecker(metadata, {})
+        checker.check_statements()
+        self.assertEqual(checker.errors, [{'description': 'Data Access & Sharing statement not acknowledged',
+                                           'property': '/statements'}])
+
+        # no data present for acknowledgement
+        metadata = {"statements": []}
+        checker = SemanticMetadataChecker(metadata, {})
+        checker.check_statements()
+        self.assertEqual(checker.errors, [{'description': 'Data Access & Sharing statement not acknowledged',
+                                           'property': '/statements'}])

@@ -1,4 +1,5 @@
 import json
+import re
 from collections import Counter
 from copy import deepcopy
 from datetime import datetime, timedelta
@@ -13,6 +14,7 @@ from retry import retry
 from eva_sub_cli.date_utils import check_date
 
 PROJECT_KEY = 'project'
+STATEMENTS_KEY = 'statements'
 ANALYSIS_KEY = 'analysis'
 SAMPLE_KEY = 'sample'
 FILES_KEY = 'files'
@@ -32,6 +34,11 @@ HOLD_DATE_KEY = 'holdDate'
 
 # Samples created before this date are not required to have collection date or geographic location
 threshold_2023 = datetime(2023, 1, 1)
+
+DATA_ACCESS_STATEMENT = """To the best of my knowledge, the data being submitted are not subject to any 
+       restrictions that prohibit their open sharing and are submitted in compliance with applicable national and 
+       international access and benefit-sharing obligations, in accordance with the EMBL-EBI Terms of Use
+       (https://www.ebi.ac.uk/about/terms-of-use/)."""
 
 
 def cast_list(l, type_to_cast=str):
@@ -64,6 +71,20 @@ class SemanticMetadataChecker(AppLogger):
         self.check_all_analysis_contain_samples()
         self.check_all_samples_have_sample_in_vcf()
         self.check_hold_date()
+        self.check_statements()
+
+    @staticmethod
+    def _normalize(text):
+        return re.sub(r'\s+', ' ', text).strip().lower()
+
+    def check_statements(self):
+        if STATEMENTS_KEY in self.metadata:
+            for entry in self.metadata[STATEMENTS_KEY]:
+                if (self._normalize(entry.get('statement') or '') == self._normalize(DATA_ACCESS_STATEMENT)
+                        and entry.get('acknowledgement')):
+                    return
+
+        self.add_error(f'/{STATEMENTS_KEY}', 'Data Access & Sharing statement not acknowledged')
 
     def check_hold_date(self):
         """Check that holdDate is no later than 2 years from today."""
@@ -329,8 +350,8 @@ class SemanticMetadataChecker(AppLogger):
             json_path = f'/{SAMPLE_KEY}/{idx}/{SAMPLE_IN_VCF_KEY}'
             analysis_aliases = sample.get(ANALYSIS_ALIAS_KEY, [])
             if any([self.evidence_type_results.get(analysis_alias, {}).get('evidence_type') != 'allele_frequency' for
-                        analysis_alias in analysis_aliases]):
+                    analysis_alias in analysis_aliases]):
                 # SampleInVCF is required
                 if sample.get(SAMPLE_IN_VCF_KEY) is None or sample.get(SAMPLE_IN_VCF_KEY) == '':
-                    self.add_error(json_path, f'{SAMPLE_IN_VCF_KEY} must be provided when Genotypes are present in the VCF file')
-
+                    self.add_error(json_path,
+                                   f'{SAMPLE_IN_VCF_KEY} must be provided when Genotypes are present in the VCF file')
