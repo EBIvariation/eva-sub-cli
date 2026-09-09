@@ -73,7 +73,7 @@ The submitted project or sample accession cannot be found in ENA or is not publi
 
 EVA cannot access or validate private objects. Make sure the project or sample has been released publicly before submitting it to EVA for validation.
 
-## 5. NCBI BioSamples geographic location/collection date issue 
+## 5. BioSamples issued by NCBI geographic location/collection date issue 
 
 **Example Validation Error** 
 
