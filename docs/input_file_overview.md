@@ -95,8 +95,8 @@ statement carefully and confirm your agreement before submitting.
 Additional information about the Access and Benefit-Sharing statement is available in our
 [submission FAQs](https://www.ebi.ac.uk/eva/?Help#submissionPanel&link=confirm-data-shared-openly).
 
-NOTE: To use your Webin account, you must also log in to ENA and confirm the Access and
-Benefit-Sharing acknowledgement there. [See here](https://ena-docs.readthedocs.io/en/latest/submit/general-guide/interactive.html).
+NOTE: To use your Webin account, you must also log in to your account and do a one time confirmation of the Access and
+Benefit-Sharing acknowledgement there. [Webin login](https://www.ebi.ac.uk/ena/submit/webin/login) => Manage Account => Tick the box => Save.
 
 ### Analysis
 
