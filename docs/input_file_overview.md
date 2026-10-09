@@ -87,6 +87,17 @@ One important column to note is the Hold Date, which is the date until which the
 release the data automatically after this date. If it is missing, the default value is three days after the date of
 submission.
 
+### Statements
+
+This sheet contains statements that the submitter must agree to before submitting data. Please read each
+statement carefully and confirm your agreement before submitting.
+
+Additional information about the Access and Benefit-Sharing statement is available in our
+[submission FAQs](https://www.ebi.ac.uk/eva/?Help#submissionPanel&link=confirm-data-shared-openly).
+
+NOTE: To use your Webin account, you must also log in to your account and do a one time confirmation of the Access and
+Benefit-Sharing acknowledgement there. [Webin login](https://www.ebi.ac.uk/ena/submit/webin/login) => Manage Account => Tick the box => Save.
+
 ### Analysis
 
 For EVA, an analysis is a grouping of samples and data files. This sheet allows us to link VCF files to a project and
