@@ -551,14 +551,12 @@ class Validator(AppLogger):
                                                                     'metadata_validation.txt'))
         if metadata_check_file:
             errors = parse_biovalidator_validation_results(metadata_check_file)
+            self.results[METADATA_CHECK]['json_report_path'] = metadata_check_file
         else:
-            error_txt = f"Cannot locate metadata_validation.txt. The process might have failed."
+            error_txt = "Cannot locate metadata_validation.txt. The process might have failed."
             self.error(error_txt)
             errors = [{'property': '/', 'description': error_txt}]
-        self.results[METADATA_CHECK].update({
-            'json_report_path': metadata_check_file,
-            'json_errors': errors
-        })
+        self.results[METADATA_CHECK]['json_errors'] = errors
         return metadata_check_file
 
     def _collect_semantic_metadata_results(self):

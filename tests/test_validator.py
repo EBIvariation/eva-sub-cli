@@ -774,6 +774,26 @@ class TestValidator(TestCase):
             validator._assess_validation_results()
             assert validator.results[METADATA_CHECK][PASS] is False
 
+    def test__collect_metadata_results_missing_biovalidator_report_with_xlsx(self):
+        with TemporaryDirectory() as submission_dir:
+            validator = self.create_validator_with_copied_output(submission_dir,
+                                                                  metadata_xlsx=self.metadata_xlsx_file,
+                                                                  validation_tasks=[METADATA_CHECK])
+            os.remove(os.path.join(validator.output_dir, 'other_validations', 'metadata_validation.txt'))
+            validator._collect_validation_workflow_results()
+            metadata_results = validator.results[METADATA_CHECK]
+            assert metadata_results[RUN_STATUS_KEY] == RUN_STATUS_SUCCESS
+            assert 'json_report_path' not in metadata_results
+            assert 'spreadsheet_report_path' not in metadata_results
+            assert 'spreadsheet_errors' in metadata_results
+            expected_error = {
+                'property': '/',
+                'description': 'Cannot locate metadata_validation.txt. The process might have failed.'
+            }
+            assert expected_error in metadata_results['json_errors']
+            validator._assess_validation_results()
+            assert metadata_results[PASS] is False
+
     def test__collect_metadata_results_all_files_missing(self):
         # Test for a nextflow run that never completed any part of the metadata check -> the whole
         # task should be reported as crashed, even though each sub-collector still records its own
