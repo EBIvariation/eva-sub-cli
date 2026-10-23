@@ -117,7 +117,10 @@ def validate_vcf_mapping(vcf_mapping):
     for vcf_file, fasta_file, report_file in vcf_mapping:
         if not (vcf_file and os.path.isfile(vcf_file)):
             raise UserFileNotFoundException(f'The variant file {vcf_file} does not exist, please check the file path.')
-        if not (fasta_file and os.path.isfile(fasta_file)):
+        if not fasta_file:
+            raise UserFileNotFoundException(f'No reference fasta is provided for the variant file {vcf_file}. Please '
+                                            f'set the reference fasta path in the analysis associated with this VCF.')
+        if not os.path.isfile(fasta_file):
             raise UserFileNotFoundException(f'The reference fasta {fasta_file} does not exist, please check the file '
                                             f'path.')
         if fasta_file.lower().endswith('gz'):
@@ -140,15 +143,15 @@ def get_project_and_vcf_fasta_mapping_from_metadata_json(metadata_json):
 
     analysis_alias_dict = defaultdict(dict)
     for analysis in metadata.analyses:
-        analysis_alias_dict[analysis['analysisAlias']]['referenceFasta'] = analysis['referenceFasta']
-        analysis_alias_dict[analysis['analysisAlias']]['assemblyReport'] = analysis['assemblyReport'] \
+        analysis_alias_dict[analysis['analysisAlias']]['referenceFasta'] = analysis.get('referenceFasta')
+        analysis_alias_dict[analysis['analysisAlias']]['assemblyReport'] = analysis.get('assemblyReport') \
             if 'assemblyReport' in analysis else ''
 
     for file_dict in metadata.resolved_files:
         reference_fasta = analysis_alias_dict[file_dict['analysisAlias']]['referenceFasta']
         assembly_report = analysis_alias_dict[file_dict['analysisAlias']]['assemblyReport']
         vcf_fasta_report_mapping.append([os.path.abspath(file_dict['fileName']),
-                                         os.path.abspath(reference_fasta),
+                                         os.path.abspath(reference_fasta) if reference_fasta else '',
                                          os.path.abspath(assembly_report) if assembly_report else ''])
 
     return project_title, vcf_fasta_report_mapping
@@ -217,8 +220,8 @@ def get_project_and_vcf_fasta_mapping_from_metadata_xlsx(metadata_xlsx, metadata
         reference_fasta = analysis_alias_dict[analysis_alias]
         if reference_fasta:
             reference_fasta = os.path.abspath(reference_fasta)
-        if file_name and reference_fasta:
-            vcf_fasta_report_mapping.append([file_name, reference_fasta, ''])
+        if file_name:
+            vcf_fasta_report_mapping.append([file_name, reference_fasta or '', ''])
 
     return project_title, vcf_fasta_report_mapping
 

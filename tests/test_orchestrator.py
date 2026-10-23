@@ -112,6 +112,27 @@ class TestOrchestrator(unittest.TestCase):
         with self.assertRaises(NoVcfsFoundException):
             get_project_title_and_create_vcf_files_mapping(self.test_sub_dir, metadata_for_test_path, None, None)
 
+    def test_get_project_title_and_create_vcf_files_mapping_xlsx_no_reference_fasta(self):
+        workbook = load_workbook(self.metadata_xlsx)
+        analysis_sheet = workbook['Analysis']
+        analysis_headers = {cell.value: cell.column for cell in analysis_sheet[1]}
+        for row in range(2, analysis_sheet.max_row + 1):
+            analysis_sheet.cell(row=row, column=analysis_headers['Reference Fasta Path']).value = None
+        workbook.save(self.metadata_xlsx)
+        with self.assertRaisesRegex(UserFileNotFoundException,
+                                    r'No reference fasta is provided for the variant file .*example1.vcf.gz'):
+            get_project_title_and_create_vcf_files_mapping(self.test_sub_dir, None, self.metadata_xlsx,
+                                                           self.metadata_xlsx_version)
+
+    def test_get_project_title_and_create_vcf_files_mapping_json_no_reference_fasta(self):
+        metadata_for_test_path = os.path.join(self.test_sub_dir, 'test_metadata.json')
+        metadata = EvaMetadataJson(self.metadata_json)
+        for analysis in metadata.analyses:
+            analysis.pop('referenceFasta', None)
+        metadata.write(metadata_for_test_path)
+        with self.assertRaisesRegex(UserFileNotFoundException, r'No reference fasta is provided for the variant file'):
+            get_project_title_and_create_vcf_files_mapping(self.test_sub_dir, metadata_for_test_path, None, None)
+
     def test_check_validation_required(self):
         tasks = ['submit']
 
