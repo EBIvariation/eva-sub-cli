@@ -32,6 +32,7 @@ classifiers = [
 [project.scripts]
 'eva-sub-cli.py'='eva_sub_cli.executables.cli:main'
 'check_fasta_insdc.py'='eva_sub_cli.executables.check_fasta_insdc:main'
+'generate_sequence_collection.py'='eva_sub_cli.executables.generate_sequence_collection:main'
 'check_metadata_semantics.py'='eva_sub_cli.executables.check_metadata_semantics:main'
 'samples_checker.py'='eva_sub_cli.executables.samples_checker:main'
 'evidence_type_checker.py'='eva_sub_cli.executables.evidence_type_checker:main'

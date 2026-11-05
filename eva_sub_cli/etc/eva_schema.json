@@ -223,6 +223,11 @@
             "type": "string",
             "description": "The path to the reference in fasta format that was used to create the VCF. (This is a local path)"
           },
+          "referenceSequenceCollection": {
+            "type": "string",
+            "description": "GA4GH sequence collection top level digest of the reference fasta used for validation. This is calculated by eva-sub-cli and should not be provided.",
+            "pattern": "^[A-Za-z0-9_-]{32}$"
+          },
           "assemblyReport": {
             "type": "string",
             "description": "The path to the assembly report associated with the assembly as found in NCBI assemblies. (This is a local path and only applicable for GCAs)"
@@ -424,6 +429,48 @@
                   "description": "MD5 hash of the part"
                 }
               }
+            }
+          }
+        }
+      }
+    },
+    "sequenceCollections": {
+      "type": "array",
+      "description": "GA4GH sequence collections of the reference fasta files used for validation. This is calculated by eva-sub-cli and should not be provided.",
+      "items": {
+        "type": "object",
+        "required": [
+          "digest",
+          "names",
+          "lengths",
+          "sequences"
+        ],
+        "properties": {
+          "digest": {
+            "type": "string",
+            "description": "Top level digest of the sequence collection",
+            "pattern": "^[A-Za-z0-9_-]{32}$"
+          },
+          "names": {
+            "type": "array",
+            "description": "Names of the sequences",
+            "items": {
+              "type": "string"
+            }
+          },
+          "lengths": {
+            "type": "array",
+            "description": "Lengths of the sequences",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "sequences": {
+            "type": "array",
+            "description": "Refget digests of the sequences",
+            "items": {
+              "type": "string",
+              "pattern": "^SQ\\.[A-Za-z0-9_-]{32}$"
             }
           }
         }

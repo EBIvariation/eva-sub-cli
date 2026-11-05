@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import csv
 import datetime
+import json
 import logging
 import os
 import shutil
@@ -527,6 +528,7 @@ class Validator(AppLogger):
             self._convert_biovalidator_validation_to_spreadsheet()
             self._write_spreadsheet_validation_results()
         file_info_file = self._collect_file_info_to_metadata()
+        self._collect_sequence_collections_to_metadata()
         self._add_schema_to_metadata()
 
         if not any([metadata_validation_file, metadata_semantic_file, file_info_file,
@@ -705,6 +707,53 @@ class Validator(AppLogger):
             else:
                 self.results[METADATA_CHECK]['json_errors'] = errors
         return md5sum_file
+
+    def _load_sequence_collections(self):
+        """Returns the sequence collections calculated for each fasta file, keyed by fasta file name."""
+        sequence_collections = {}
+        for fasta_file in self.fasta_files:
+            fasta_name = os.path.basename(fasta_file)
+            seqcol_file = resolve_single_file_path(
+                os.path.join(self.output_dir, 'other_validations', f'{fasta_name}_seqcol.json'))
+            if not seqcol_file:
+                self.warning(f'Cannot locate the sequence collection for {fasta_name}. The process might have failed.')
+                continue
+            try:
+                with open(seqcol_file) as open_json:
+                    sequence_collections[fasta_name] = json.load(open_json)
+            except ValueError as e:
+                self.warning(f'Cannot parse the sequence collection in {seqcol_file}: {e}')
+        return sequence_collections
+
+    def _collect_sequence_collections_to_metadata(self):
+        """
+        Attach the sequence collection digest of the reference fasta to each analysis and add the sequence
+        collections to the metadata.
+        This is not used for validation so failures are only logged.
+        """
+        if not self.metadata_json_post_validation:
+            return
+        sequence_collections = self._load_sequence_collections()
+        metadata = EvaMetadataJson(self.metadata_json_post_validation)
+        try:
+            collections_per_digest = {}
+            for analysis in metadata.analyses:
+                if not analysis.get('referenceFasta'):
+                    continue
+                sequence_collection = sequence_collections.get(os.path.basename(analysis['referenceFasta']))
+                if not sequence_collection:
+                    self.warning(f'No sequence collection found for analysis {analysis.get("analysisAlias")}')
+                    continue
+                analysis['referenceSequenceCollection'] = sequence_collection['digest']
+                collections_per_digest[sequence_collection['digest']] = sequence_collection
+            if not collections_per_digest:
+                return
+            metadata.set_analyses(metadata.analyses)
+            metadata.set_sequence_collections(list(collections_per_digest.values()))
+        except Exception as e:
+            self.warning('Error while adding sequence collections to the metadata json: ' + str(e))
+            return
+        metadata.write(self.metadata_json_post_validation)
 
     def _add_schema_to_metadata(self):
         if self.metadata_json_post_validation:

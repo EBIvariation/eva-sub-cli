@@ -1,12 +1,15 @@
+import json
 import os.path
 import shutil
 from copy import deepcopy
 from tempfile import TemporaryDirectory
 from unittest import TestCase
 
+import jsonschema
 import yaml
 
 import eva_sub_cli
+from eva_sub_cli import ETC_DIR
 from eva_sub_cli.metadata import EvaMetadataJson
 from eva_sub_cli.validators.validator import (Validator, VALIDATION_OUTPUT_DIR, VCF_CHECK, ASSEMBLY_CHECK,
                                               READY_FOR_SUBMISSION_TO_EVA,
@@ -755,6 +758,66 @@ class TestValidator(TestCase):
             assert expected_error in validator.results[METADATA_CHECK]['json_errors']
             validator._assess_validation_results()
             assert validator.results[METADATA_CHECK][PASS] is False
+
+    def _create_metadata_with_reference_fasta(self, submission_dir, reference_fastas):
+        with open(self.metadata_json_file) as open_json:
+            content = json.load(open_json)
+        analysis_template = content['analysis'][0]
+        content['analysis'] = []
+        for i, reference_fasta in enumerate(reference_fastas):
+            analysis = dict(analysis_template, analysisAlias=f'A{i}', referenceFasta=reference_fasta)
+            content['analysis'].append(analysis)
+        metadata_json = os.path.join(submission_dir, 'metadata_with_fasta.json')
+        with open(metadata_json, 'w') as open_json:
+            json.dump(content, open_json)
+        return metadata_json
+
+    def test__collect_sequence_collections_to_metadata(self):
+        expected_digest = 'TgdJYLMYo2VuTkSSSdAP8HTM0PYXzJ8f'
+        with TemporaryDirectory() as submission_dir:
+            fasta = os.path.join(self.fasta_files, 'input_passed.fa')
+            # Two analyses sharing the same fasta (one relative path) and one analysis without fasta
+            metadata_json = self._create_metadata_with_reference_fasta(
+                submission_dir, [fasta, os.path.relpath(fasta), None])
+            validator = self.create_validator_with_copied_output(submission_dir, metadata_json=metadata_json)
+            validator._collect_validation_workflow_results()
+
+            metadata = EvaMetadataJson(metadata_json)
+            assert [a.get('referenceSequenceCollection') for a in metadata.analyses] == [
+                expected_digest, expected_digest, None]
+            assert metadata.sequence_collections == [{
+                'digest': expected_digest, 'names': ['chr1'], 'lengths': [59940],
+                'sequences': ['SQ.vNo95y6NDASFUcn0YTKIzX1LmIxXbK7i']
+            }]
+
+    def test__collect_sequence_collections_to_metadata_missing_seqcol(self):
+        with TemporaryDirectory() as submission_dir:
+            metadata_json = self._create_metadata_with_reference_fasta(
+                submission_dir, [os.path.join(self.fasta_files, 'input_passed.fa')])
+            validator = self.create_validator_with_copied_output(submission_dir, metadata_json=metadata_json)
+            os.remove(os.path.join(validator.output_dir, 'other_validations', 'input_passed.fa_seqcol.json'))
+            validator._collect_validation_workflow_results()
+            json_errors = validator.results[METADATA_CHECK]['json_errors']
+
+            metadata = EvaMetadataJson(metadata_json)
+            assert 'referenceSequenceCollection' not in metadata.analyses[0]
+            assert 'sequenceCollections' not in metadata.content
+            # Not reported to the user
+            assert not any('sequence collection' in error['description'].lower() for error in json_errors)
+
+    def test_metadata_with_sequence_collections_is_valid_against_schema(self):
+        with TemporaryDirectory() as submission_dir:
+            metadata_json = self._create_metadata_with_reference_fasta(
+                submission_dir, [os.path.join(self.fasta_files, 'input_passed.fa')])
+            validator = self.create_validator_with_copied_output(submission_dir, metadata_json=metadata_json)
+            validator._collect_validation_workflow_results()
+            with open(os.path.join(ETC_DIR, 'eva_schema.json')) as open_json:
+                schema = json.load(open_json)
+            metadata = EvaMetadataJson(metadata_json)
+            analysis_schema = schema['properties']['analysis']['items']['properties']
+            jsonschema.validate(metadata.analyses[0]['referenceSequenceCollection'],
+                                analysis_schema['referenceSequenceCollection'])
+            jsonschema.validate(metadata.sequence_collections, schema['properties']['sequenceCollections'])
 
     def test_collect_biovalidator_validation_results_missing_report(self):
         # Test for a nextflow run that did not complete and never produced metadata_validation.txt,

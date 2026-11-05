@@ -1,0 +1,102 @@
+{
+  "base.fa": {
+    "digest": "XZlrcEGi6mlopZ2uD8ObHkQB1d0oDwKk",
+    "level1": {
+      "names": "Fw1r9eRxfOZD98KKrhlYQNEdSRHoVxAG",
+      "lengths": "cGRMZIb3AVgkcAfNv39RN7hnT5Chk7RX",
+      "sequences": "0uDQVLuHaOZi1u76LjV__yrVUIz9Bwhr"
+    },
+    "level2": {
+      "names": [
+        "chrX",
+        "chr1",
+        "chr2"
+      ],
+      "lengths": [
+        8,
+        4,
+        4
+      ],
+      "sequences": [
+        "SQ.iYtREV555dUFKg2_agSJW6suquUyPpMw",
+        "SQ.YBbVX0dLKG1ieEDCiMmkrTZFt_Z5Vdaj",
+        "SQ.AcLxtBuKEPk_7PGE_H4dGElwZHCujwH6"
+      ]
+    }
+  },
+  "different_names.fa": {
+    "digest": "QvT5tAQ0B8Vkxd-qFftlzEk2QyfPtgOv",
+    "level1": {
+      "names": "lrCv6NNXom7AC9tKFWqhcLLZsrcgJIqq",
+      "lengths": "cGRMZIb3AVgkcAfNv39RN7hnT5Chk7RX",
+      "sequences": "0uDQVLuHaOZi1u76LjV__yrVUIz9Bwhr"
+    },
+    "level2": {
+      "names": [
+        "X",
+        "1",
+        "2"
+      ],
+      "lengths": [
+        8,
+        4,
+        4
+      ],
+      "sequences": [
+        "SQ.iYtREV555dUFKg2_agSJW6suquUyPpMw",
+        "SQ.YBbVX0dLKG1ieEDCiMmkrTZFt_Z5Vdaj",
+        "SQ.AcLxtBuKEPk_7PGE_H4dGElwZHCujwH6"
+      ]
+    }
+  },
+  "different_order.fa": {
+    "digest": "Tpdsg75D4GKCGEHtIiDSL9Zx-DSuX5V8",
+    "level1": {
+      "names": "dOAOfPGkf3wAf3CUsbjVTKhY9Wq2DL6f",
+      "lengths": "x5qpE4FtMkvlwpKIzvHs3a02Nex5tthp",
+      "sequences": "7t6Ulz6OeUWu6FBxntbvFKOl8w3icl2h"
+    },
+    "level2": {
+      "names": [
+        "chr1",
+        "chr2",
+        "chrX"
+      ],
+      "lengths": [
+        4,
+        4,
+        8
+      ],
+      "sequences": [
+        "SQ.YBbVX0dLKG1ieEDCiMmkrTZFt_Z5Vdaj",
+        "SQ.AcLxtBuKEPk_7PGE_H4dGElwZHCujwH6",
+        "SQ.iYtREV555dUFKg2_agSJW6suquUyPpMw"
+      ]
+    }
+  },
+  "pair_swap.fa": {
+    "digest": "UNGAdNDmBbQbHihecPPFxwTydTcdFKxL",
+    "level1": {
+      "names": "gSWbV6khfIsnlQTyw1PmlQ8G7VRfIWbU",
+      "lengths": "cGRMZIb3AVgkcAfNv39RN7hnT5Chk7RX",
+      "sequences": "0uDQVLuHaOZi1u76LjV__yrVUIz9Bwhr"
+    },
+    "level2": {
+      "names": [
+        "chr2",
+        "chr1",
+        "chrX"
+      ],
+      "lengths": [
+        8,
+        4,
+        4
+      ],
+      "sequences": [
+        "SQ.iYtREV555dUFKg2_agSJW6suquUyPpMw",
+        "SQ.YBbVX0dLKG1ieEDCiMmkrTZFt_Z5Vdaj",
+        "SQ.AcLxtBuKEPk_7PGE_H4dGElwZHCujwH6"
+      ]
+    }
+  }
+}

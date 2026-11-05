@@ -25,8 +25,15 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install Java and Node
-        run: sudo apt update && sudo apt install -y default-jdk nodejs npm git curl
+      # Nextflow 23.10 supports Java up to 21
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Install Node
+        run: sudo apt update && sudo apt install -y nodejs npm git curl
 
       - name: Install vcf-validator and vcf-assembly-checker
         run: |
