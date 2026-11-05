@@ -55,6 +55,14 @@ class EvaMetadataJson(AppLogger):
         assert isinstance(analysis_list, list)
         self.content['analysis'] = analysis_list
 
+    @property
+    def sequence_collections(self):
+        return self.content.get('sequenceCollections', [])
+
+    def set_sequence_collections(self, sequence_collection_list):
+        assert isinstance(sequence_collection_list, list)
+        self.content['sequenceCollections'] = sequence_collection_list
+
     @cached_property
     def samples_per_analysis(self):
         """Returns mapping of analysis alias to sample names, based on metadata."""

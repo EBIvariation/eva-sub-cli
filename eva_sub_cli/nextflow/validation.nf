@@ -40,6 +40,7 @@ params.python_scripts = [
     "samples_checker": "samples_checker.py",
     "evidence_type_checker": "evidence_type_checker.py",
     "fasta_checker": "check_fasta_insdc.py",
+    "sequence_collection": "generate_sequence_collection.py",
     "xlsx2json": "xlsx2json.py",
     "semantic_checker": "check_metadata_semantics.py",
     "trim_down": "trim_down.py",
@@ -85,6 +86,8 @@ workflow {
             file(joinBasePath(row.fasta)),
             file(joinBasePath(row.report))
         )}
+    // Sequence collection is calculated on the original (not trimmed down) fasta files
+    generate_sequence_collection(vcf_and_ref_ch.map{row -> row[1]}.unique())
     if (params.shallow_validation) {
         // create a smaller vcf and fasta then replace the channel
         trim_down_vcf(vcf_and_ref_ch)
@@ -249,6 +252,31 @@ process collect_file_size_and_md5 {
     script:
     """
     cat $file_size_and_digests > file_info.txt
+    """
+}
+
+
+/*
+* Calculate the GA4GH sequence collection of the reference fasta
+*/
+process generate_sequence_collection {
+
+    label 'med_time', 'small_mem'
+
+    publishDir output_dir,
+            overwrite: true,
+            mode: "copy"
+
+    input:
+    path(fasta)
+
+    output:
+    path "${fasta}_seqcol.json", emit: sequence_collection_json
+    path "${fasta}_seqcol.log", emit: sequence_collection_log
+
+    script:
+    """
+    $params.python_scripts.sequence_collection --input_fasta $fasta --output_json ${fasta}_seqcol.json > ${fasta}_seqcol.log 2>&1
     """
 }
 
