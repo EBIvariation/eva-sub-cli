@@ -1,3 +1,7 @@
+---
+nav_order: 7
+---
+
 # **Frequently encountered VCF validation issues** 
 
 This section provides a curated overview of some of the common VCF validation errors. Each error is illustrated with a real validation output example, followed by a brief description about the error and the expected resolution for EVA submissions.
