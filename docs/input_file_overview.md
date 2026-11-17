@@ -1,3 +1,7 @@
+---
+nav_order: 4
+---
+
 # Overview of Input Files
 
 View our [video tutorial on input files](https://embl-ebi.cloud.panopto.eu/Panopto/Pages/Viewer.aspx?id=9284869a-9f57-43c6-8222-b3aa0158941e).

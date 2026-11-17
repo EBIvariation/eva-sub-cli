@@ -1,3 +1,7 @@
+---
+nav_order: 5
+---
+
 # Overview of Validation Checks 
 
 The CLI tool performs the following validation checks and generates corresponding reports:

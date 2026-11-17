@@ -1,3 +1,7 @@
+---
+nav_order: 6
+---
+
 # **Frequently encountered metadata errors** 
 
 This section provides a curated overview of some of the common metadata errors. Each error is illustrated with a real validation output example, followed by a brief description of the error and the expected resolution for EVA submissions.

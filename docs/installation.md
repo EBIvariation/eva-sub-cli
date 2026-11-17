@@ -1,3 +1,7 @@
+---
+nav_order: 2
+---
+
 # Installation
 
 There are two main ways to install eva-sub-cli, either through [conda](#1-conda) or [pip](#2-pip).
